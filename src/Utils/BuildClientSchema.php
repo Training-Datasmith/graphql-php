@@ -130,9 +130,7 @@ class BuildClientSchema
                 ?? $this->buildType($typeIntrospection);
         }
 
-        $description = isset($schemaIntrospection['description'])
-            ? $schemaIntrospection['description']
-            : null;
+        $description = $schemaIntrospection['description'] ?? null;
 
         $queryType = isset($schemaIntrospection['queryType'])
             ? $this->getObjectType($schemaIntrospection['queryType'])

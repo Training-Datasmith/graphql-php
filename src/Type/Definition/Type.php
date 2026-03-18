@@ -238,7 +238,7 @@ abstract class Type implements \JsonSerializable
      *
      * @api
      */
-    public static function isInputType($type): bool
+    public static function isInputType(?\GraphQL\Type\Definition\Type $type): bool
     {
         return self::getNamedType($type) instanceof InputType;
     }
@@ -270,7 +270,7 @@ abstract class Type implements \JsonSerializable
      *
      * @api
      */
-    public static function isOutputType($type): bool
+    public static function isOutputType(?\GraphQL\Type\Definition\Type $type): bool
     {
         return self::getNamedType($type) instanceof OutputType;
     }

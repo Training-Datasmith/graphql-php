@@ -255,7 +255,7 @@ class QueryComplexity extends QuerySecurityRule
             );
 
             if (is_array($errors) && $errors !== []) {
-                throw new Error(implode("\n\n", array_map(static fn ($error) => $error->getMessage(), $errors)));
+                throw new Error(implode("\n\n", array_map(static fn ($error): string => $error->getMessage(), $errors)));
             }
 
             $args = Values::getArgumentValues($fieldDef, $node, $variableValues);

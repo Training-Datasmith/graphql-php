@@ -199,11 +199,13 @@ class BreakingChangesFinder
         $breakingChanges = [];
         foreach ($oldTypeMap as $typeName => $oldType) {
             $newType = $newTypeMap[$typeName] ?? null;
-            if (
-                ! $oldType instanceof ObjectType && ! $oldType instanceof InterfaceType
-                || ! $newType instanceof ObjectType && ! $newType instanceof InterfaceType
-                || ! ($newType instanceof $oldType)
-            ) {
+            if (! $oldType instanceof ObjectType && ! $oldType instanceof InterfaceType) {
+                continue;
+            }
+            if (! $newType instanceof ObjectType && ! $newType instanceof InterfaceType) {
+                continue;
+            }
+            if (! ($newType instanceof $oldType)) {
                 continue;
             }
 
@@ -249,14 +251,14 @@ class BreakingChangesFinder
         }
 
         if ($oldType instanceof ListOfType) {
-            return // if they're both lists, make sure the underlying types are compatible
-                ($newType instanceof ListOfType && self::isChangeSafeForObjectOrInterfaceField(
-                    $oldType->getWrappedType(),
-                    $newType->getWrappedType()
-                ))
-                // moving from nullable to non-null of the same underlying type is safe
-                || ($newType instanceof NonNull
-                    && self::isChangeSafeForObjectOrInterfaceField($oldType, $newType->getWrappedType()));
+            if ($newType instanceof ListOfType && self::isChangeSafeForObjectOrInterfaceField(
+                $oldType->getWrappedType(),
+                $newType->getWrappedType()
+            )) {
+                return true;
+            }
+            return $newType instanceof NonNull
+                && self::isChangeSafeForObjectOrInterfaceField($oldType, $newType->getWrappedType());
         }
 
         if ($oldType instanceof NonNull) {
@@ -284,7 +286,10 @@ class BreakingChangesFinder
         $dangerousChanges = [];
         foreach ($oldTypeMap as $typeName => $oldType) {
             $newType = $newTypeMap[$typeName] ?? null;
-            if (! ($oldType instanceof InputObjectType) || ! ($newType instanceof InputObjectType)) {
+            if (! ($oldType instanceof InputObjectType)) {
+                continue;
+            }
+            if (! ($newType instanceof InputObjectType)) {
                 continue;
             }
 
@@ -371,14 +376,14 @@ class BreakingChangesFinder
         }
 
         if ($oldType instanceof NonNull) {
-            return // if they're both non-null, make sure the underlying types are compatible
-                ($newType instanceof NonNull && self::isChangeSafeForInputObjectFieldOrFieldArg(
-                    $oldType->getWrappedType(),
-                    $newType->getWrappedType()
-                ))
-                // moving from non-null to nullable of the same underlying type is safe
-                || ! ($newType instanceof NonNull)
-                && self::isChangeSafeForInputObjectFieldOrFieldArg($oldType->getWrappedType(), $newType);
+            if ($newType instanceof NonNull && self::isChangeSafeForInputObjectFieldOrFieldArg(
+                $oldType->getWrappedType(),
+                $newType->getWrappedType()
+            )) {
+                return true;
+            }
+            return ! ($newType instanceof NonNull)
+            && self::isChangeSafeForInputObjectFieldOrFieldArg($oldType->getWrappedType(), $newType);
         }
 
         return false;
@@ -402,7 +407,10 @@ class BreakingChangesFinder
         $typesRemovedFromUnion = [];
         foreach ($oldTypeMap as $typeName => $oldType) {
             $newType = $newTypeMap[$typeName] ?? null;
-            if (! ($oldType instanceof UnionType) || ! ($newType instanceof UnionType)) {
+            if (! ($oldType instanceof UnionType)) {
+                continue;
+            }
+            if (! ($newType instanceof UnionType)) {
                 continue;
             }
 
@@ -442,7 +450,10 @@ class BreakingChangesFinder
         $valuesRemovedFromEnums = [];
         foreach ($oldTypeMap as $typeName => $oldType) {
             $newType = $newTypeMap[$typeName] ?? null;
-            if (! ($oldType instanceof EnumType) || ! ($newType instanceof EnumType)) {
+            if (! ($oldType instanceof EnumType)) {
+                continue;
+            }
+            if (! ($newType instanceof EnumType)) {
                 continue;
             }
 
@@ -486,11 +497,13 @@ class BreakingChangesFinder
 
         foreach ($oldTypeMap as $typeName => $oldType) {
             $newType = $newTypeMap[$typeName] ?? null;
-            if (
-                ! $oldType instanceof ObjectType && ! $oldType instanceof InterfaceType
-                || ! $newType instanceof ObjectType && ! $newType instanceof InterfaceType
-                || ! ($newType instanceof $oldType)
-            ) {
+            if (! $oldType instanceof ObjectType && ! $oldType instanceof InterfaceType) {
+                continue;
+            }
+            if (! $newType instanceof ObjectType && ! $newType instanceof InterfaceType) {
+                continue;
+            }
+            if (! ($newType instanceof $oldType)) {
                 continue;
             }
 
@@ -588,7 +601,10 @@ class BreakingChangesFinder
 
         foreach ($oldTypeMap as $typeName => $oldType) {
             $newType = $newTypeMap[$typeName] ?? null;
-            if (! ($oldType instanceof ImplementingType) || ! ($newType instanceof ImplementingType)) {
+            if (! ($oldType instanceof ImplementingType)) {
+                continue;
+            }
+            if (! ($newType instanceof ImplementingType)) {
                 continue;
             }
 
@@ -836,7 +852,10 @@ class BreakingChangesFinder
         $valuesAddedToEnums = [];
         foreach ($oldTypeMap as $typeName => $oldType) {
             $newType = $newTypeMap[$typeName] ?? null;
-            if (! ($oldType instanceof EnumType) || ! ($newType instanceof EnumType)) {
+            if (! ($oldType instanceof EnumType)) {
+                continue;
+            }
+            if (! ($newType instanceof EnumType)) {
                 continue;
             }
 
@@ -873,10 +892,10 @@ class BreakingChangesFinder
 
         foreach ($newTypeMap as $typeName => $newType) {
             $oldType = $oldTypeMap[$typeName] ?? null;
-            if (
-                ! $oldType instanceof ObjectType && ! $oldType instanceof InterfaceType
-                || ! $newType instanceof ObjectType && ! $newType instanceof InterfaceType
-            ) {
+            if (! $oldType instanceof ObjectType && ! $oldType instanceof InterfaceType) {
+                continue;
+            }
+            if (! $newType instanceof ObjectType && ! $newType instanceof InterfaceType) {
                 continue;
             }
 
@@ -920,7 +939,10 @@ class BreakingChangesFinder
         $typesAddedToUnion = [];
         foreach ($newTypeMap as $typeName => $newType) {
             $oldType = $oldTypeMap[$typeName] ?? null;
-            if (! ($oldType instanceof UnionType) || ! ($newType instanceof UnionType)) {
+            if (! ($oldType instanceof UnionType)) {
+                continue;
+            }
+            if (! ($newType instanceof UnionType)) {
                 continue;
             }
 

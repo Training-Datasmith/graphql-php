@@ -92,10 +92,12 @@ class AST
         }
 
         foreach ($node as $key => $value) {
-            if ($key === 'loc' || $key === 'kind') {
+            if ($key === 'loc') {
                 continue;
             }
-
+            if ($key === 'kind') {
+                continue;
+            }
             if (is_array($value)) {
                 $value = isset($value[0]) || $value === []
                     ? new NodeList($value)

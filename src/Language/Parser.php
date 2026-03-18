@@ -1193,7 +1193,10 @@ class Parser
 
     private function peekDescription(): bool
     {
-        return $this->peek(Token::STRING) || $this->peek(Token::BLOCK_STRING);
+        if ($this->peek(Token::STRING)) {
+            return true;
+        }
+        return $this->peek(Token::BLOCK_STRING);
     }
 
     /**
@@ -1338,19 +1341,17 @@ class Parser
             $this->lexer->advance();
 
             /** @phpstan-var NodeList<FieldDefinitionNode> $nodeList */
-            $nodeList = new NodeList([]);
-        } else {
-            /** @phpstan-var NodeList<FieldDefinitionNode> $nodeList */
-            $nodeList = $this->peek(Token::BRACE_L)
-                ? $this->many(
-                    Token::BRACE_L,
-                    fn (): FieldDefinitionNode => $this->parseFieldDefinition(),
-                    Token::BRACE_R
-                )
-                : new NodeList([]);
+            return new NodeList([]);
         }
 
-        return $nodeList;
+        /** @phpstan-var NodeList<FieldDefinitionNode> $nodeList */
+        return $this->peek(Token::BRACE_L)
+            ? $this->many(
+                Token::BRACE_L,
+                fn (): FieldDefinitionNode => $this->parseFieldDefinition(),
+                Token::BRACE_R
+            )
+            : new NodeList([]);
     }
 
     /**

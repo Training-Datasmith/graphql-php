@@ -369,7 +369,7 @@ GRAPHQL;
                             'defaultValue' => false,
                         ],
                     ],
-                    'resolve' => static function (Type $type, $args): ?array {
+                    'resolve' => static function (Type $type, array $args): ?array {
                         if ($type instanceof ObjectType || $type instanceof InterfaceType) {
                             $fields = $type->getVisibleFields();
 
@@ -406,7 +406,7 @@ GRAPHQL;
                             'defaultValue' => false,
                         ],
                     ],
-                    'resolve' => static function ($type, $args): ?array {
+                    'resolve' => static function ($type, array $args): ?array {
                         if ($type instanceof EnumType) {
                             $values = $type->getValues();
 
@@ -431,7 +431,7 @@ GRAPHQL;
                             'defaultValue' => false,
                         ],
                     ],
-                    'resolve' => static function ($type, $args): ?array {
+                    'resolve' => static function ($type, array $args): ?array {
                         if ($type instanceof InputObjectType) {
                             $fields = $type->getFields();
 
@@ -531,7 +531,7 @@ GRAPHQL;
                             'defaultValue' => false,
                         ],
                     ],
-                    'resolve' => static function (FieldDefinition $field, $args): array {
+                    'resolve' => static function (FieldDefinition $field, array $args): array {
                         $values = $field->args;
 
                         if (! $args['includeDeprecated']) {
@@ -684,7 +684,7 @@ GRAPHQL;
                             'defaultValue' => false,
                         ],
                     ],
-                    'resolve' => static function (Directive $directive, $args): array {
+                    'resolve' => static function (Directive $directive, array $args): array {
                         $values = $directive->args;
 
                         if (! $args['includeDeprecated']) {

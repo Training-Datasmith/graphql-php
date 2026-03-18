@@ -38,16 +38,6 @@ class CustomScalarType extends ScalarType
     // @phpstan-ignore-next-line specialize type
     public array $config;
 
-    /**
-     * @param array<string, mixed> $config
-     *
-     * @phpstan-param CustomScalarConfig $config
-     */
-    public function __construct(array $config)
-    {
-        parent::__construct($config);
-    }
-
     public function serialize($value)
     {
         if (isset($this->config['serialize'])) {

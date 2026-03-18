@@ -59,8 +59,7 @@ class TypeInfo
 
     private ?Argument $argument = null;
 
-    /** @var mixed */
-    private $enumValue;
+    private ?\GraphQL\Type\Definition\EnumValueDefinition $enumValue = null;
 
     public function __construct(Schema $schema)
     {

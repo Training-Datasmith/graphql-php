@@ -520,6 +520,6 @@ class Printer
     /** @param array<string|null> $parts */
     protected static function join(array $parts, string $separator = ''): string
     {
-        return implode($separator, array_filter($parts, static fn (?string $part) => $part !== '' && $part !== null));
+        return implode($separator, array_filter($parts, static fn (?string $part): bool => $part !== '' && $part !== null));
     }
 }

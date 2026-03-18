@@ -533,7 +533,7 @@ class ReferenceExecutor implements ExecutorImplementation
     {
         $result = $this->promiseReduce(
             array_keys($fields->getArrayCopy()),
-            function ($results, $responseName) use ($contextValue, $path, $unaliasedPath, $parentType, $rootValue, $fields) {
+            function (array $results, string $responseName) use ($contextValue, $path, $unaliasedPath, $parentType, $rootValue, $fields) {
                 $fieldNodes = $fields[$responseName];
                 assert($fieldNodes instanceof \ArrayObject, 'The keys of $fields populate $responseName');
 
