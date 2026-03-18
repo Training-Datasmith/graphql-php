@@ -1,16 +1,20 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace GraphQL\Executor\Promise\Adapter;
 
 use Amp\Deferred;
 use Amp\Failure;
+
+use function Amp\Promise\all;
+
 use Amp\Promise as AmpPromise;
 use Amp\Success;
 use GraphQL\Error\InvariantViolation;
 use GraphQL\Executor\Promise\Promise;
-use GraphQL\Executor\Promise\PromiseAdapter;
 
-use function Amp\Promise\all;
+use GraphQL\Executor\Promise\PromiseAdapter;
 
 class AmpPromiseAdapter implements PromiseAdapter
 {

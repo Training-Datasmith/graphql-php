@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace GraphQL\Executor\Promise\Adapter;
 
@@ -157,8 +159,12 @@ class SyncPromiseAdapter implements PromiseAdapter
     }
 
     /** Execute just before starting to run promise completion. */
-    protected function beforeWait(Promise $promise): void {}
+    protected function beforeWait(Promise $promise): void
+    {
+    }
 
     /** Execute while running promise completion. */
-    protected function onWait(Promise $promise): void {}
+    protected function onWait(Promise $promise): void
+    {
+    }
 }

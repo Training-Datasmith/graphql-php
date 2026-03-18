@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace GraphQL\Language\AST;
 
@@ -8,4 +10,6 @@ namespace GraphQL\Language\AST;
  *   | TypeSystemDefinitionNode
  *   | TypeSystemExtensionNode;.
  */
-interface DefinitionNode {}
+interface DefinitionNode
+{
+}

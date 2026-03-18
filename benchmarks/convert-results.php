@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 /**
  * Converts a phpbench --dump-file XML to the customSmallerIsBetter JSON format

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 use GraphQL\Benchmarks\HugeSchemaBench;
 use GraphQL\Benchmarks\LexerBench;

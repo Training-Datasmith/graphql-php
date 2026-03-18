@@ -1,14 +1,19 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace GraphQL\Executor\Promise\Adapter;
 
 use GraphQL\Error\InvariantViolation;
 use GraphQL\Executor\Promise\Promise;
 use GraphQL\Executor\Promise\PromiseAdapter;
-use React\Promise\Promise as ReactPromise;
-use React\Promise\PromiseInterface as ReactPromiseInterface;
 
 use function React\Promise\all;
+
+use React\Promise\Promise as ReactPromise;
+
+use React\Promise\PromiseInterface as ReactPromiseInterface;
+
 use function React\Promise\reject;
 use function React\Promise\resolve;
 

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 /*
  * The resolvers for "product" and "article" run asynchronously.
@@ -6,12 +8,13 @@
  * Keep in mind everything in "call" should be non-blocking, check out async libraries like amphp/mysql, amphp/http-client.
  */
 
+use function Amp\call;
+
 use Amp\Promise;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
-use GraphQL\Type\Schema;
 
-use function Amp\call;
+use GraphQL\Type\Schema;
 
 return new Schema([
     'query' => new ObjectType([

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace GraphQL\Tests\Validator;
 
@@ -16,7 +18,7 @@ final class CustomRuleTest extends ValidatorTestCase
 
     public function testAddRuleCanReplaceDefaultRules(): void
     {
-        DocumentValidator::addRule(new class() extends ExecutableDefinitions {
+        DocumentValidator::addRule(new class () extends ExecutableDefinitions {
             public function getName(): string
             {
                 return ExecutableDefinitions::class;

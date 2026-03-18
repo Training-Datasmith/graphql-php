@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace GraphQL\Tests\Executor;
 
@@ -1223,7 +1225,7 @@ final class ExecutorTest extends TestCase
                     ],
                     'arrayAccess' => [
                         'type' => $ArrayAccess,
-                        'resolve' => static fn (): \ArrayAccess => new class() implements \ArrayAccess {
+                        'resolve' => static fn (): \ArrayAccess => new class () implements \ArrayAccess {
                             /** @param mixed $offset */
                             #[\ReturnTypeWillChange]
                             public function offsetExists($offset): bool
@@ -1262,16 +1264,20 @@ final class ExecutorTest extends TestCase
                              * @param mixed $value
                              */
                             #[\ReturnTypeWillChange]
-                            public function offsetSet($offset, $value): void {}
+                            public function offsetSet($offset, $value): void
+                            {
+                            }
 
                             /** @param mixed $offset */
                             #[\ReturnTypeWillChange]
-                            public function offsetUnset($offset): void {}
+                            public function offsetUnset($offset): void
+                            {
+                            }
                         },
                     ],
                     'objectField' => [
                         'type' => $ObjectField,
-                        'resolve' => static fn (): \stdClass => new class() extends \stdClass {
+                        'resolve' => static fn (): \stdClass => new class () extends \stdClass {
                             public ?int $set = 1;
 
                             public ?int $unset;
@@ -1279,7 +1285,7 @@ final class ExecutorTest extends TestCase
                     ],
                     'objectVirtual' => [
                         'type' => $ObjectVirtual,
-                        'resolve' => static fn (): object => new class() {
+                        'resolve' => static fn (): object => new class () {
                             public function __isset(string $name): bool
                             {
                                 switch ($name) {

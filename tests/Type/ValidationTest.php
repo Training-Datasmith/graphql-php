@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace GraphQL\Tests\Type;
 
@@ -61,9 +63,12 @@ final class ValidationTest extends TestCaseBase
 
         $this->SomeScalarType = new CustomScalarType([
             'name' => 'SomeScalar',
-            'serialize' => static function (): void {},
-            'parseValue' => static function (): void {},
-            'parseLiteral' => static function (): void {},
+            'serialize' => static function (): void {
+            },
+            'parseValue' => static function (): void {
+            },
+            'parseLiteral' => static function (): void {
+            },
         ]);
 
         $this->SomeInterfaceType = new InterfaceType([

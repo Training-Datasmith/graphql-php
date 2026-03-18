@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace GraphQL\Tests\Utils;
 
@@ -183,7 +185,7 @@ final class CoerceInputValueTest extends TestCase
         $message = 'message';
         $value = ['value' => 1];
 
-        $clientSafeException = new class($message) extends \Exception implements ClientAware {
+        $clientSafeException = new class ($message) extends \Exception implements ClientAware {
             public function isClientSafe(): bool
             {
                 return true;

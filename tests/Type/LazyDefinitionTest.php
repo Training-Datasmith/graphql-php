@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace GraphQL\Tests\Type;
 
@@ -53,7 +55,7 @@ final class LazyDefinitionTest extends TestCaseBase
         $objType = new ObjectType([
             'name' => 'SomeObject',
             'fields' => [
-                'f' => new class() {
+                'f' => new class () {
                     /**
                      * @throws InvariantViolation
                      *

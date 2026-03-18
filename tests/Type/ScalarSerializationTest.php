@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace GraphQL\Tests\Type;
 
@@ -111,7 +113,7 @@ final class ScalarSerializationTest extends TestCase
         self::assertSame('1', $stringType->serialize(true));
         self::assertSame('', $stringType->serialize(false));
         self::assertSame('', $stringType->serialize(null));
-        self::assertSame('foo', $stringType->serialize(new class() implements \Stringable {
+        self::assertSame('foo', $stringType->serialize(new class () implements \Stringable {
             public function __toString(): string
             {
                 return 'foo';

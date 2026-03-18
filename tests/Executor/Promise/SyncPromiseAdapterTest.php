@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace GraphQL\Tests\Executor\Promise;
 
@@ -21,7 +23,8 @@ final class SyncPromiseAdapterTest extends TestCase
 
     public function testIsThenable(): void
     {
-        self::assertTrue($this->promises->isThenable(new Deferred(static function (): void {})));
+        self::assertTrue($this->promises->isThenable(new Deferred(static function (): void {
+        })));
         self::assertFalse($this->promises->isThenable(false));
         self::assertFalse($this->promises->isThenable(true));
         self::assertFalse($this->promises->isThenable(1));
@@ -34,7 +37,8 @@ final class SyncPromiseAdapterTest extends TestCase
 
     public function testConvert(): void
     {
-        $dfd = new Deferred(static function (): void {});
+        $dfd = new Deferred(static function (): void {
+        });
         $result = $this->promises->convertThenable($dfd);
 
         self::assertInstanceOf(SyncPromise::class, $result->adoptedPromise);
@@ -46,7 +50,8 @@ final class SyncPromiseAdapterTest extends TestCase
 
     public function testThen(): void
     {
-        $dfd = new Deferred(static function (): void {});
+        $dfd = new Deferred(static function (): void {
+        });
         $promise = $this->promises->convertThenable($dfd);
 
         $result = $this->promises->then($promise);
@@ -56,7 +61,8 @@ final class SyncPromiseAdapterTest extends TestCase
 
     public function testCreatePromise(): void
     {
-        $promise = $this->promises->create(static function ($resolve, $reject): void {});
+        $promise = $this->promises->create(static function ($resolve, $reject): void {
+        });
 
         self::assertInstanceOf(SyncPromise::class, $promise->adoptedPromise);
 

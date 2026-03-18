@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace GraphQL\Tests\Type;
 
@@ -56,7 +58,8 @@ final class EnumTypeTest extends TestCase
         $otherEnum = new OtherEnumType();
 
         $Complex1 = [
-            'someRandomFunction' => static function (): void {},
+            'someRandomFunction' => static function (): void {
+            },
         ];
         $Complex2 = new \ArrayObject(['someRandomValue' => 123]);
 

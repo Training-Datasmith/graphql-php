@@ -1,6 +1,10 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace GraphQL\Tests\Executor\Promise;
+
+use function Amp\call;
 
 use Amp\Deferred;
 use Amp\Delayed;
@@ -9,9 +13,8 @@ use Amp\LazyPromise;
 use Amp\Promise;
 use Amp\Success;
 use GraphQL\Executor\Promise\Adapter\AmpPromiseAdapter;
-use PHPUnit\Framework\TestCase;
 
-use function Amp\call;
+use PHPUnit\Framework\TestCase;
 
 /**
  * @group AmpPromise
@@ -31,7 +34,8 @@ final class AmpPromiseAdapterTest extends TestCase
         self::assertTrue($ampAdapter->isThenable(new Failure(new \Exception())));
         self::assertTrue($ampAdapter->isThenable(new Delayed(0)));
         self::assertTrue(
-            $ampAdapter->isThenable(new LazyPromise(static function (): void {}))
+            $ampAdapter->isThenable(new LazyPromise(static function (): void {
+            }))
         );
         self::assertFalse($ampAdapter->isThenable(false));
         self::assertFalse($ampAdapter->isThenable(true));

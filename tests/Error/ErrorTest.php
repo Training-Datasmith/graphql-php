@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace GraphQL\Tests\Error;
 
@@ -151,7 +153,7 @@ final class ErrorTest extends TestCase
 
     public function testErrorReadsOverriddenMethods(): void
     {
-        $error = new class('msg', null, null, [], null, null, ['foo' => 'bar']) extends Error {
+        $error = new class ('msg', null, null, [], null, null, ['foo' => 'bar']) extends Error {
             /** @return array<string, mixed> */
             public function getExtensions(): array
             {
@@ -185,7 +187,7 @@ final class ErrorTest extends TestCase
         self::assertSame([1 => 2], $locatedError->getPositions());
         self::assertNotNull($locatedError->getSource());
 
-        $error = new class('msg', new NullValueNode([]), null, []) extends Error {
+        $error = new class ('msg', new NullValueNode([]), null, []) extends Error {
             /** @return list<NullValueNode> */
             public function getNodes(): array
             {

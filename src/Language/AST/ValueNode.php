@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace GraphQL\Language\AST;
 
@@ -13,4 +15,6 @@ namespace GraphQL\Language\AST;
  * | ListValueNode
  * | ObjectValueNode.
  */
-interface ValueNode {}
+interface ValueNode
+{
+}

@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace GraphQL\Tests\Utils;
 
@@ -38,7 +40,8 @@ final class MixedStoreTest extends TestCase
         yield ['a'];
         yield [[]];
         yield [new \stdClass()];
-        yield [static function (): void {}];
+        yield [static function (): void {
+        }];
 
         /** @var MixedStore<mixed> $mixedStore */
         $mixedStore = new MixedStore();
@@ -155,6 +158,7 @@ final class MixedStoreTest extends TestCase
     {
         $this->assertAcceptsKeyValue(new \stdClass(), $value);
         $this->assertAcceptsKeyValue(new MixedStore(), $value);
-        $this->assertAcceptsKeyValue(static function (): void {}, $value);
+        $this->assertAcceptsKeyValue(static function (): void {
+        }, $value);
     }
 }

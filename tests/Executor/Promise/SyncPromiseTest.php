@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace GraphQL\Tests\Executor\Promise;
 
@@ -85,7 +87,8 @@ final class SyncPromiseTest extends TestCaseBase
 
         $nextPromise = $promise->then(
             null,
-            static function (): void {}
+            static function (): void {
+            }
         );
         self::assertSame($promise, $nextPromise);
 
@@ -255,7 +258,8 @@ final class SyncPromiseTest extends TestCaseBase
         }
 
         $nextPromise = $promise->then(
-            static function (): void {}
+            static function (): void {
+            }
         );
         self::assertSame($promise, $nextPromise);
 
