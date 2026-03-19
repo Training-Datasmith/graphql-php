@@ -140,7 +140,7 @@ class OperationParams
             return $value;
         }
 
-        $decoded = json_decode($value, true);
+        $decoded = json_decode($value, true, 32);
         if (json_last_error() === \JSON_ERROR_NONE) {
             return $decoded;
         }
