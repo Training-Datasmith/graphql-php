@@ -1,8 +1,7 @@
 <?php
 
-declare(strict_types=1);
-
-namespace GraphQL\Error;
+declare (strict_types=1);
+namespace Graph_Ql\Error;
 
 /**
  * Implementing ClientAware allows graphql-php to decide if this error is safe to be shown to clients.
@@ -12,12 +11,12 @@ namespace GraphQL\Error;
  *
  * All other errors will have their message replaced with "Internal server error".
  */
-interface ClientAware
+interface Client_Aware
 {
     /**
      * Is it safe to show the error message to clients?
      *
      * @api
      */
-    public function isClientSafe(): bool;
+    public function is_client_safe(): bool;
 }

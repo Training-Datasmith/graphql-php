@@ -1,14 +1,12 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Type\Definition;
 
-namespace GraphQL\Type\Definition;
-
-use GraphQL\Error\InvariantViolation;
-use GraphQL\Type\Introspection;
-use GraphQL\Type\SchemaConfig;
-use GraphQL\Utils\Utils;
-
+use Graph_Ql\Error\Invariant_Violation;
+use Graph_Ql\Type\Introspection;
+use Graph_Ql\Type\Schema_Config;
+use Graph_Ql\Utils\Utils;
 /**
  * Registry of built-in GraphQL types and base class for all other types.
  */
@@ -19,23 +17,14 @@ abstract class Type implements \JsonSerializable
     public const STRING = 'String';
     public const BOOLEAN = 'Boolean';
     public const ID = 'ID';
-
     /** @var list<string> */
-    public const BUILT_IN_SCALAR_NAMES = [
-        self::INT,
-        self::FLOAT,
-        self::STRING,
-        self::BOOLEAN,
-        self::ID,
-    ];
-
+    public const BUILT_IN_SCALAR_NAMES = [self::INT, self::FLOAT, self::STRING, self::BOOLEAN, self::ID];
     /**
      * @deprecated use {@see Type::BUILT_IN_SCALAR_NAMES}
      *
      * @var list<string>
      */
     public const STANDARD_TYPE_NAMES = self::BUILT_IN_SCALAR_NAMES;
-
     /**
      * Names of all built-in types: built-in scalars and introspection types.
      *
@@ -43,67 +32,61 @@ abstract class Type implements \JsonSerializable
      *
      * @var list<string>
      */
-    public const BUILT_IN_TYPE_NAMES = [
-        ...self::BUILT_IN_SCALAR_NAMES,
-        ...Introspection::TYPE_NAMES,
-    ];
-
+    public const BUILT_IN_TYPE_NAMES = [...self::BUILT_IN_SCALAR_NAMES, ...Introspection::TYPE_NAMES];
     /** @var array<string, ScalarType>|null */
-    protected static ?array $builtInScalars;
-
+    protected static ?array $built_in_scalars;
     /** @var array<string, Type&NamedType>|null */
-    protected static ?array $builtInTypes;
-
+    protected static ?array $built_in_types;
     /**
      * Returns the built-in Int scalar type.
      *
      * @api
      */
-    public static function int(): ScalarType
+    public static function int(): Scalar_Type
     {
-        return static::$builtInScalars[self::INT] ??= new IntType(); // @phpstan-ignore missingType.checkedException (static configuration is known to be correct)
+        return static::$built_in_scalars[self::INT] ??= new Int_Type();
+        // @phpstan-ignore missingType.checkedException (static configuration is known to be correct)
     }
-
     /**
      * Returns the built-in Float scalar type.
      *
      * @api
      */
-    public static function float(): ScalarType
+    public static function float(): Scalar_Type
     {
-        return static::$builtInScalars[self::FLOAT] ??= new FloatType(); // @phpstan-ignore missingType.checkedException (static configuration is known to be correct)
+        return static::$built_in_scalars[self::FLOAT] ??= new Float_Type();
+        // @phpstan-ignore missingType.checkedException (static configuration is known to be correct)
     }
-
     /**
      * Returns the built-in String scalar type.
      *
      * @api
      */
-    public static function string(): ScalarType
+    public static function string(): Scalar_Type
     {
-        return static::$builtInScalars[self::STRING] ??= new StringType(); // @phpstan-ignore missingType.checkedException (static configuration is known to be correct)
+        return static::$built_in_scalars[self::STRING] ??= new String_Type();
+        // @phpstan-ignore missingType.checkedException (static configuration is known to be correct)
     }
-
     /**
      * Returns the built-in Boolean scalar type.
      *
      * @api
      */
-    public static function boolean(): ScalarType
+    public static function boolean(): Scalar_Type
     {
-        return static::$builtInScalars[self::BOOLEAN] ??= new BooleanType(); // @phpstan-ignore missingType.checkedException (static configuration is known to be correct)
+        return static::$built_in_scalars[self::BOOLEAN] ??= new Boolean_Type();
+        // @phpstan-ignore missingType.checkedException (static configuration is known to be correct)
     }
-
     /**
      * Returns the built-in ID scalar type.
      *
      * @api
      */
-    public static function id(): ScalarType
+    public static function id(): Scalar_Type
     {
-        return static::$builtInScalars[self::ID] ??= new IDType(); // @phpstan-ignore missingType.checkedException (static configuration is known to be correct)
+        return static::$built_in_scalars[self::ID] ??= new Id_Type();
+        // @phpstan-ignore missingType.checkedException (static configuration is known to be correct)
     }
-
     /**
      * Wraps the given type in a list type.
      *
@@ -115,11 +98,10 @@ abstract class Type implements \JsonSerializable
      *
      * @api
      */
-    public static function listOf($type): ListOfType
+    public static function list_of($type): List_Of_Type
     {
-        return new ListOfType($type);
+        return new List_Of_Type($type);
     }
-
     /**
      * Wraps the given type in a non-null type.
      *
@@ -127,15 +109,13 @@ abstract class Type implements \JsonSerializable
      *
      * @api
      */
-    public static function nonNull($type): NonNull
+    public static function non_null($type): Non_Null
     {
-        if ($type instanceof NonNull) {
+        if ($type instanceof Non_Null) {
             return $type;
         }
-
-        return new NonNull($type);
+        return new Non_Null($type);
     }
-
     /**
      * Returns all built-in types: built-in scalars and introspection types.
      *
@@ -143,14 +123,10 @@ abstract class Type implements \JsonSerializable
      *
      * @return array<string, Type&NamedType>
      */
-    public static function builtInTypes(): array
+    public static function built_in_types(): array
     {
-        return self::$builtInTypes ??= array_merge(
-            Introspection::getTypes(),
-            self::builtInScalars()
-        );
+        return self::$built_in_types ??= array_merge(Introspection::get_types(), self::built_in_scalars());
     }
-
     /**
      * Returns all built-in scalar types.
      *
@@ -158,17 +134,10 @@ abstract class Type implements \JsonSerializable
      *
      * @return array<string, ScalarType>
      */
-    public static function builtInScalars(): array
+    public static function built_in_scalars(): array
     {
-        return [
-            self::INT => static::int(),
-            self::FLOAT => static::float(),
-            self::STRING => static::string(),
-            self::BOOLEAN => static::boolean(),
-            self::ID => static::id(),
-        ];
+        return [self::INT => static::int(), self::FLOAT => static::float(), self::STRING => static::string(), self::BOOLEAN => static::boolean(), self::ID => static::id()];
     }
-
     /**
      * Returns all built-in scalar types.
      *
@@ -176,11 +145,10 @@ abstract class Type implements \JsonSerializable
      *
      * @return array<string, ScalarType>
      */
-    public static function getStandardTypes(): array
+    public static function get_standard_types(): array
     {
-        return self::builtInScalars();
+        return self::built_in_scalars();
     }
-
     /**
      * Allows partially or completely overriding the standard types globally.
      *
@@ -190,31 +158,27 @@ abstract class Type implements \JsonSerializable
      *
      * @throws InvariantViolation
      */
-    public static function overrideStandardTypes(array $types): void
+    public static function override_standard_types(array $types): void
     {
         // Reset caches that might contain instances of built-in scalars
-        static::$builtInTypes = null;
-        Introspection::resetCachedInstances();
-        Directive::resetCachedInstances();
-
+        static::$built_in_types = null;
+        Introspection::reset_cached_instances();
+        Directive::reset_cached_instances();
         foreach ($types as $type) {
             // @phpstan-ignore-next-line generic type is not enforced by PHP
-            if (! $type instanceof ScalarType) {
-                $typeClass = ScalarType::class;
-                $notType = Utils::printSafe($type);
-                throw new InvariantViolation("Expecting instance of {$typeClass}, got {$notType}");
+            if (!$type instanceof Scalar_Type) {
+                $type_class = Scalar_Type::class;
+                $not_type = Utils::print_safe($type);
+                throw new Invariant_Violation("Expecting instance of {$type_class}, got {$not_type}");
             }
-
-            if (! in_array($type->name, self::BUILT_IN_SCALAR_NAMES, true)) {
-                $standardTypeNames = implode(', ', self::BUILT_IN_SCALAR_NAMES);
-                $notStandardTypeName = Utils::printSafe($type->name);
-                throw new InvariantViolation("Expecting one of the following names for a standard type: {$standardTypeNames}; got {$notStandardTypeName}");
+            if (!in_array($type->name, self::BUILT_IN_SCALAR_NAMES, true)) {
+                $standard_type_names = implode(', ', self::BUILT_IN_SCALAR_NAMES);
+                $not_standard_type_name = Utils::print_safe($type->name);
+                throw new Invariant_Violation("Expecting one of the following names for a standard type: {$standard_type_names}; got {$not_standard_type_name}");
             }
-
-            static::$builtInScalars[$type->name] = $type;
+            static::$built_in_scalars[$type->name] = $type;
         }
     }
-
     /**
      * Determines if the given type is a built-in scalar (Int, Float, String, Boolean, ID).
      *
@@ -227,12 +191,10 @@ abstract class Type implements \JsonSerializable
      *
      * @api
      */
-    public static function isBuiltInScalar($type): bool
+    public static function is_built_in_scalar($type): bool
     {
-        return $type instanceof ScalarType
-            && in_array($type->name, self::BUILT_IN_SCALAR_NAMES, true);
+        return $type instanceof Scalar_Type && in_array($type->name, self::BUILT_IN_SCALAR_NAMES, true);
     }
-
     /**
      * Determines if the given type is an input type.
      *
@@ -240,11 +202,10 @@ abstract class Type implements \JsonSerializable
      *
      * @api
      */
-    public static function isInputType(?\GraphQL\Type\Definition\Type $type): bool
+    public static function is_input_type(?\Graph_Ql\Type\Definition\Type $type): bool
     {
-        return self::getNamedType($type) instanceof InputType;
+        return self::get_named_type($type) instanceof Input_Type;
     }
-
     /**
      * Returns the underlying named type of the given type.
      *
@@ -254,17 +215,14 @@ abstract class Type implements \JsonSerializable
      *
      * @api
      */
-    public static function getNamedType(?Type $type): ?Type
+    public static function get_named_type(?Type $type): ?Type
     {
-        if ($type instanceof WrappingType) {
-            return $type->getInnermostType();
+        if ($type instanceof Wrapping_Type) {
+            return $type->get_innermost_type();
         }
-
-        assert($type === null || $type instanceof NamedType, 'only other option');
-
+        assert($type === null || $type instanceof Named_Type, 'only other option');
         return $type;
     }
-
     /**
      * Determines if the given type is an output type.
      *
@@ -272,11 +230,10 @@ abstract class Type implements \JsonSerializable
      *
      * @api
      */
-    public static function isOutputType(?\GraphQL\Type\Definition\Type $type): bool
+    public static function is_output_type(?\Graph_Ql\Type\Definition\Type $type): bool
     {
-        return self::getNamedType($type) instanceof OutputType;
+        return self::get_named_type($type) instanceof Output_Type;
     }
-
     /**
      * Determines if the given type is a leaf type.
      *
@@ -284,11 +241,10 @@ abstract class Type implements \JsonSerializable
      *
      * @api
      */
-    public static function isLeafType($type): bool
+    public static function is_leaf_type($type): bool
     {
-        return $type instanceof LeafType;
+        return $type instanceof Leaf_Type;
     }
-
     /**
      * Determines if the given type is a composite type.
      *
@@ -296,11 +252,10 @@ abstract class Type implements \JsonSerializable
      *
      * @api
      */
-    public static function isCompositeType($type): bool
+    public static function is_composite_type($type): bool
     {
-        return $type instanceof CompositeType;
+        return $type instanceof Composite_Type;
     }
-
     /**
      * Determines if the given type is an abstract type.
      *
@@ -308,11 +263,10 @@ abstract class Type implements \JsonSerializable
      *
      * @api
      */
-    public static function isAbstractType($type): bool
+    public static function is_abstract_type($type): bool
     {
-        return $type instanceof AbstractType;
+        return $type instanceof Abstract_Type;
     }
-
     /**
      * Unwraps a potentially non-null type to return the underlying nullable type.
      *
@@ -320,27 +274,22 @@ abstract class Type implements \JsonSerializable
      *
      * @api
      */
-    public static function getNullableType(Type $type): Type
+    public static function get_nullable_type(Type $type): Type
     {
-        if ($type instanceof NonNull) {
-            return $type->getWrappedType();
+        if ($type instanceof Non_Null) {
+            return $type->get_wrapped_type();
         }
-
-        assert($type instanceof NullableType, 'only other option');
-
+        assert($type instanceof Nullable_Type, 'only other option');
         return $type;
     }
-
-    abstract public function toString(): string;
-
+    abstract public function to_string(): string;
     public function __toString(): string
     {
-        return $this->toString();
+        return $this->to_string();
     }
-
-    #[\ReturnTypeWillChange]
+    #[\Return_Type_Will_Change]
     public function jsonSerialize(): string
     {
-        return $this->toString();
+        return $this->to_string();
     }
 }

@@ -1,29 +1,22 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Language\AST;
 
-namespace GraphQL\Language\AST;
-
-class FieldNode extends Node implements SelectionNode
+class Field_Node extends Node implements Selection_Node
 {
-    public string $kind = NodeKind::FIELD;
-
-    public NameNode $name;
-
-    public ?NameNode $alias = null;
-
+    public string $kind = Node_Kind::FIELD;
+    public Name_Node $name;
+    public ?Name_Node $alias = null;
     /** @var NodeList<ArgumentNode> */
-    public NodeList $arguments;
-
+    public Node_List $arguments;
     /** @var NodeList<DirectiveNode> */
-    public NodeList $directives;
-
-    public ?SelectionSetNode $selectionSet = null;
-
+    public Node_List $directives;
+    public ?Selection_Set_Node $selection_set = null;
     public function __construct(array $vars)
     {
         parent::__construct($vars);
-        $this->directives ??= new NodeList([]);
-        $this->arguments ??= new NodeList([]);
+        $this->directives ??= new Node_List([]);
+        $this->arguments ??= new Node_List([]);
     }
 }

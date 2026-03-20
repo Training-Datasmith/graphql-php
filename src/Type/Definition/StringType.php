@@ -1,62 +1,49 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Type\Definition;
 
-namespace GraphQL\Type\Definition;
-
-use GraphQL\Error\Error;
-use GraphQL\Error\SerializationError;
-use GraphQL\Language\AST\Node;
-use GraphQL\Language\AST\StringValueNode;
-use GraphQL\Language\Printer;
-use GraphQL\Utils\Utils;
-
-class StringType extends ScalarType
+use Graph_Ql\Error\Error;
+use Graph_Ql\Error\Serialization_Error;
+use Graph_Ql\Language\AST\Node;
+use Graph_Ql\Language\AST\String_Value_Node;
+use Graph_Ql\Language\Printer;
+use Graph_Ql\Utils\Utils;
+class String_Type extends Scalar_Type
 {
     public string $name = Type::STRING;
-
-    public ?string $description
-        = 'The `String` scalar type represents textual data, represented as UTF-8
+    public ?string $description = 'The `String` scalar type represents textual data, represented as UTF-8
 character sequences. The String type is most often used by GraphQL to
 represent free-form human-readable text.';
-
     /** @throws SerializationError */
     public function serialize($value): string
     {
-        $canCast = is_scalar($value)
-            || (is_object($value) && method_exists($value, '__toString'))
-            || $value === null;
-
-        if (! $canCast) {
-            $notStringable = Utils::printSafe($value);
-            throw new SerializationError("String cannot represent value: {$notStringable}");
+        $can_cast = is_scalar($value) || is_object($value) && method_exists($value, '__toString') || $value === null;
+        if (!$can_cast) {
+            $not_stringable = Utils::print_safe($value);
+            throw new Serialization_Error("String cannot represent value: {$not_stringable}");
         }
-
         return (string) $value;
     }
-
     /** @throws Error */
-    public function parseValue($value): string
+    public function parse_value($value): string
     {
-        if (! is_string($value)) {
-            $notString = Utils::printSafeJson($value);
-            throw new Error("String cannot represent a non string value: {$notString}");
+        if (!is_string($value)) {
+            $not_string = Utils::print_safe_json($value);
+            throw new Error("String cannot represent a non string value: {$not_string}");
         }
-
         return $value;
     }
-
     /**
      * @throws \JsonException
      * @throws Error
      */
-    public function parseLiteral(Node $valueNode, ?array $variables = null): string
+    public function parse_literal(Node $value_node, ?array $variables = null): string
     {
-        if ($valueNode instanceof StringValueNode) {
-            return $valueNode->value;
+        if ($value_node instanceof String_Value_Node) {
+            return $value_node->value;
         }
-
-        $notString = Printer::doPrint($valueNode);
-        throw new Error("String cannot represent a non string value: {$notString}", $valueNode);
+        $not_string = Printer::do_print($value_node);
+        throw new Error("String cannot represent a non string value: {$not_string}", $value_node);
     }
 }

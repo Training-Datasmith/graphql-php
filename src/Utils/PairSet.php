@@ -1,45 +1,39 @@
 <?php
 
-declare(strict_types=1);
-
-namespace GraphQL\Utils;
+declare (strict_types=1);
+namespace Graph_Ql\Utils;
 
 /**
  * A way to keep track of pairs of things when the ordering of the pair does
  * not matter. We do this by maintaining a sort of double adjacency sets.
  */
-class PairSet
+class Pair_Set
 {
     /** @var array<string, array<string, bool>> */
     private array $data = [];
-
-    public function has(string $a, string $b, bool $areMutuallyExclusive): bool
+    public function has(string $a, string $b, bool $are_mutually_exclusive): bool
     {
         $first = $this->data[$a] ?? null;
         $result = $first !== null && isset($first[$b]) ? $first[$b] : null;
         if ($result === null) {
             return false;
         }
-
         // areMutuallyExclusive being false is a superset of being true,
         // hence if we want to know if this PairSet "has" these two with no
         // exclusivity, we have to ensure it was added as such.
-        if ($areMutuallyExclusive === false) {
+        if ($are_mutually_exclusive === false) {
             return $result === false;
         }
-
         return true;
     }
-
-    public function add(string $a, string $b, bool $areMutuallyExclusive): void
+    public function add(string $a, string $b, bool $are_mutually_exclusive): void
     {
-        $this->pairSetAdd($a, $b, $areMutuallyExclusive);
-        $this->pairSetAdd($b, $a, $areMutuallyExclusive);
+        $this->pair_set_add($a, $b, $are_mutually_exclusive);
+        $this->pair_set_add($b, $a, $are_mutually_exclusive);
     }
-
-    private function pairSetAdd(string $a, string $b, bool $areMutuallyExclusive): void
+    private function pair_set_add(string $a, string $b, bool $are_mutually_exclusive): void
     {
         $this->data[$a] ??= [];
-        $this->data[$a][$b] = $areMutuallyExclusive;
+        $this->data[$a][$b] = $are_mutually_exclusive;
     }
 }

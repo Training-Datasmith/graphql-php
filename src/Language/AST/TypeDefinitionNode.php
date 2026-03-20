@@ -1,8 +1,7 @@
 <?php
 
-declare(strict_types=1);
-
-namespace GraphQL\Language\AST;
+declare (strict_types=1);
+namespace Graph_Ql\Language\AST;
 
 /**
  * export type TypeDefinitionNode = ScalarTypeDefinitionNode
@@ -12,7 +11,7 @@ namespace GraphQL\Language\AST;
  * | EnumTypeDefinitionNode
  * | InputObjectTypeDefinitionNode.
  */
-interface TypeDefinitionNode extends TypeSystemDefinitionNode
+interface Type_Definition_Node extends Type_System_Definition_Node
 {
-    public function getName(): NameNode;
+    public function get_name(): Name_Node;
 }

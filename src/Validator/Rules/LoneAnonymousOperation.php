@@ -1,49 +1,39 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Validator\Rules;
 
-namespace GraphQL\Validator\Rules;
-
-use GraphQL\Error\Error;
-use GraphQL\Language\AST\DocumentNode;
-use GraphQL\Language\AST\NodeKind;
-use GraphQL\Language\AST\OperationDefinitionNode;
-use GraphQL\Validator\QueryValidationContext;
-
+use Graph_Ql\Error\Error;
+use Graph_Ql\Language\AST\Document_Node;
+use Graph_Ql\Language\AST\Node_Kind;
+use Graph_Ql\Language\AST\Operation_Definition_Node;
+use Graph_Ql\Validator\Query_Validation_Context;
 /**
  * Lone anonymous operation.
  *
  * A GraphQL document is only valid if when it contains an anonymous operation
  * (the query shorthand) that it contains only that one operation definition.
  */
-class LoneAnonymousOperation extends ValidationRule
+class Lone_Anonymous_Operation extends Validation_Rule
 {
-    public function getVisitor(QueryValidationContext $context): array
+    public function get_visitor(Query_Validation_Context $context): array
     {
-        $operationCount = 0;
-
-        return [
-            NodeKind::DOCUMENT => static function (DocumentNode $node) use (&$operationCount): void {
-                $operationCount = 0;
-                foreach ($node->definitions as $definition) {
-                    if ($definition instanceof OperationDefinitionNode) {
-                        ++$operationCount;
-                    }
+        $operation_count = 0;
+        return [Node_Kind::DOCUMENT => static function (Document_Node $node) use (&$operation_count): void {
+            $operation_count = 0;
+            foreach ($node->definitions as $definition) {
+                if ($definition instanceof Operation_Definition_Node) {
+                    ++$operation_count;
                 }
-            },
-            NodeKind::OPERATION_DEFINITION => static function (OperationDefinitionNode $node) use (&$operationCount, $context): void {
-                if ($node->name !== null || $operationCount <= 1) {
-                    return;
-                }
-
-                $context->reportError(
-                    new Error(static::anonOperationNotAloneMessage(), [$node])
-                );
-            },
-        ];
+            }
+        }, Node_Kind::OPERATION_DEFINITION => static function (Operation_Definition_Node $node) use (&$operation_count, $context): void {
+            if ($node->name !== null || $operation_count <= 1) {
+                return;
+            }
+            $context->report_error(new Error(static::anon_operation_not_alone_message(), [$node]));
+        }];
     }
-
-    public static function anonOperationNotAloneMessage(): string
+    public static function anon_operation_not_alone_message(): string
     {
         return 'This anonymous operation must be the only defined operation.';
     }

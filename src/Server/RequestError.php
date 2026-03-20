@@ -1,14 +1,12 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Server;
 
-namespace GraphQL\Server;
-
-use GraphQL\Error\ClientAware;
-
-class RequestError extends \Exception implements ClientAware
+use Graph_Ql\Error\Client_Aware;
+class Request_Error extends \Exception implements Client_Aware
 {
-    public function isClientSafe(): bool
+    public function is_client_safe(): bool
     {
         return true;
     }

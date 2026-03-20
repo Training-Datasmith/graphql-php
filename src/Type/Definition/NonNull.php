@@ -1,23 +1,20 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Type\Definition;
 
-namespace GraphQL\Type\Definition;
-
-use GraphQL\Type\Schema;
-
+use Graph_Ql\Type\Schema;
 /**
  * @phpstan-type WrappedType (NullableType&Type)|callable():(NullableType&Type)
  */
-class NonNull extends Type implements WrappingType, OutputType, InputType
+class Non_Null extends Type implements Wrapping_Type, Output_Type, Input_Type
 {
     /**
      * @var Type|callable
      *
      * @phpstan-var WrappedType
      */
-    private $wrappedType;
-
+    private $wrapped_type;
     /**
      * @param Type|callable $type
      *
@@ -25,29 +22,24 @@ class NonNull extends Type implements WrappingType, OutputType, InputType
      */
     public function __construct($type)
     {
-        $this->wrappedType = $type;
+        $this->wrapped_type = $type;
     }
-
-    public function toString(): string
+    public function to_string(): string
     {
-        return $this->getWrappedType()->toString() . '!';
+        return $this->get_wrapped_type()->to_string() . '!';
     }
-
     /** @return NullableType&Type */
-    public function getWrappedType(): Type
+    public function get_wrapped_type(): Type
     {
-        return Schema::resolveType($this->wrappedType);
+        return Schema::resolve_type($this->wrapped_type);
     }
-
-    public function getInnermostType(): NamedType
+    public function get_innermost_type(): Named_Type
     {
-        $type = $this->getWrappedType();
-        while ($type instanceof WrappingType) {
-            $type = $type->getWrappedType();
+        $type = $this->get_wrapped_type();
+        while ($type instanceof Wrapping_Type) {
+            $type = $type->get_wrapped_type();
         }
-
-        assert($type instanceof NamedType, 'known because we unwrapped all the way down');
-
+        assert($type instanceof Named_Type, 'known because we unwrapped all the way down');
         return $type;
     }
 }

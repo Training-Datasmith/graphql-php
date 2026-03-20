@@ -1,13 +1,11 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Language\AST;
 
-namespace GraphQL\Language\AST;
-
-class ObjectValueNode extends Node implements ValueNode
+class Object_Value_Node extends Node implements Value_Node
 {
-    public string $kind = NodeKind::OBJECT;
-
+    public string $kind = Node_Kind::OBJECT;
     /** @var NodeList<ObjectFieldNode> */
-    public NodeList $fields;
+    public Node_List $fields;
 }

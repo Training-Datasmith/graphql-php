@@ -1,15 +1,13 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Type\Definition;
 
-namespace GraphQL\Type\Definition;
-
-use GraphQL\Error\InvariantViolation;
-use GraphQL\Language\AST\UnionTypeDefinitionNode;
-use GraphQL\Language\AST\UnionTypeExtensionNode;
-use GraphQL\Type\Schema;
-use GraphQL\Utils\Utils;
-
+use Graph_Ql\Error\Invariant_Violation;
+use Graph_Ql\Language\AST\Union_Type_Definition_Node;
+use Graph_Ql\Language\AST\Union_Type_Extension_Node;
+use Graph_Ql\Type\Schema;
+use Graph_Ql\Utils\Utils;
 /**
  * @phpstan-import-type ResolveType from AbstractType
  * @phpstan-import-type ResolveValue from AbstractType
@@ -25,32 +23,26 @@ use GraphQL\Utils\Utils;
  *   extensionASTNodes?: array<UnionTypeExtensionNode>|null
  * }
  */
-class UnionType extends Type implements AbstractType, OutputType, CompositeType, NullableType, NamedType
+class Union_Type extends Type implements Abstract_Type, Output_Type, Composite_Type, Nullable_Type, Named_Type
 {
-    use NamedTypeImplementation;
-
-    public ?UnionTypeDefinitionNode $astNode;
-
+    use Named_Type_Implementation;
+    public ?Union_Type_Definition_Node $ast_node;
     /** @var array<UnionTypeExtensionNode> */
-    public array $extensionASTNodes;
-
+    public array $extension_ast_nodes;
     /** @phpstan-var UnionConfig */
     public array $config;
-
     /**
      * Lazily initialized.
      *
      * @var array<int, ObjectType>
      */
     private array $types;
-
     /**
      * Lazily initialized.
      *
      * @var array<string, bool>
      */
-    private array $possibleTypeNames;
-
+    private array $possible_type_names;
     /**
      * @phpstan-param UnionConfig $config
      *
@@ -58,96 +50,81 @@ class UnionType extends Type implements AbstractType, OutputType, CompositeType,
      */
     public function __construct(array $config)
     {
-        $this->name = $config['name'] ?? $this->inferName();
+        $this->name = $config['name'] ?? $this->infer_name();
         $this->description = $config['description'] ?? $this->description ?? null;
-        $this->astNode = $config['astNode'] ?? null;
-        $this->extensionASTNodes = $config['extensionASTNodes'] ?? [];
-
+        $this->ast_node = $config['astNode'] ?? null;
+        $this->extension_ast_nodes = $config['extensionASTNodes'] ?? [];
         $this->config = $config;
     }
-
     /** @throws InvariantViolation */
-    public function isPossibleType(Type $type): bool
+    public function is_possible_type(Type $type): bool
     {
-        if (! $type instanceof ObjectType) {
+        if (!$type instanceof Object_Type) {
             return false;
         }
-
-        if (! isset($this->possibleTypeNames)) {
-            $this->possibleTypeNames = [];
-            foreach ($this->getTypes() as $possibleType) {
-                $this->possibleTypeNames[$possibleType->name] = true;
+        if (!isset($this->possible_type_names)) {
+            $this->possible_type_names = [];
+            foreach ($this->get_types() as $possible_type) {
+                $this->possible_type_names[$possible_type->name] = true;
             }
         }
-
-        return isset($this->possibleTypeNames[$type->name]);
+        return isset($this->possible_type_names[$type->name]);
     }
-
     /**
      * @throws InvariantViolation
      *
      * @return array<int, ObjectType>
      */
-    public function getTypes(): array
+    public function get_types(): array
     {
-        if (! isset($this->types)) {
+        if (!isset($this->types)) {
             $this->types = [];
-
-            $types = $this->config['types'] ?? null; // @phpstan-ignore nullCoalesce.initializedProperty (unnecessary according to types, but can happen during runtime)
+            $types = $this->config['types'] ?? null;
+            // @phpstan-ignore nullCoalesce.initializedProperty (unnecessary according to types, but can happen during runtime)
             if (is_callable($types)) {
                 $types = $types();
             }
-
-            if (! is_iterable($types)) {
-                throw new InvariantViolation("Must provide iterable of types or a callable which returns such an iterable for Union {$this->name}.");
+            if (!is_iterable($types)) {
+                throw new Invariant_Violation("Must provide iterable of types or a callable which returns such an iterable for Union {$this->name}.");
             }
-
             foreach ($types as $type) {
-                $this->types[] = Schema::resolveType($type); // @phpstan-ignore argument.templateType
+                $this->types[] = Schema::resolve_type($type);
+                // @phpstan-ignore argument.templateType
             }
         }
-
         return $this->types;
     }
-
-    public function resolveValue($objectValue, $context, ResolveInfo $info)
+    public function resolve_value($object_value, $context, Resolve_Info $info)
     {
         if (isset($this->config['resolveValue'])) {
-            return ($this->config['resolveValue'])($objectValue, $context, $info);
+            return $this->config['resolveValue']($object_value, $context, $info);
         }
-
-        return $objectValue;
+        return $object_value;
     }
-
-    public function resolveType($objectValue, $context, ResolveInfo $info)
+    public function resolve_type($object_value, $context, Resolve_Info $info)
     {
         if (isset($this->config['resolveType'])) {
-            return ($this->config['resolveType'])($objectValue, $context, $info);
+            return $this->config['resolveType']($object_value, $context, $info);
         }
-
         return null;
     }
-
-    public function assertValid(): void
+    public function assert_valid(): void
     {
-        Utils::assertValidName($this->name);
-
-        $resolveType = $this->config['resolveType'] ?? null;
+        Utils::assert_valid_name($this->name);
+        $resolve_type = $this->config['resolveType'] ?? null;
         // @phpstan-ignore-next-line unnecessary according to types, but can happen during runtime
-        if (isset($resolveType) && ! is_callable($resolveType)) {
-            $notCallable = Utils::printSafe($resolveType);
-            throw new InvariantViolation("{$this->name} must provide \"resolveType\" as null or a callable, but got: {$notCallable}.");
+        if (isset($resolve_type) && !is_callable($resolve_type)) {
+            $not_callable = Utils::print_safe($resolve_type);
+            throw new Invariant_Violation("{$this->name} must provide \"resolveType\" as null or a callable, but got: {$not_callable}.");
         }
     }
-
-    public function astNode(): ?UnionTypeDefinitionNode
+    public function ast_node(): ?Union_Type_Definition_Node
     {
-        return $this->astNode;
+        return $this->ast_node;
     }
-
     /** @return array<UnionTypeExtensionNode> */
-    public function extensionASTNodes(): array
+    public function extension_ast_nodes(): array
     {
-        return $this->extensionASTNodes;
+        return $this->extension_ast_nodes;
     }
 }

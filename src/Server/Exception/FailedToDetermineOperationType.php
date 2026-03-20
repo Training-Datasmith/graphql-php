@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Server\Exception;
 
-namespace GraphQL\Server\Exception;
-
-use GraphQL\Server\RequestError;
-
-class FailedToDetermineOperationType extends RequestError
+use Graph_Ql\Server\Request_Error;
+class Failed_To_Determine_Operation_Type extends Request_Error
 {
 }

@@ -1,8 +1,7 @@
 <?php
 
-declare(strict_types=1);
-
-namespace GraphQL\Server;
+declare (strict_types=1);
+namespace Graph_Ql\Server;
 
 /**
  * Structure representing parsed HTTP parameters for GraphQL operation.
@@ -11,7 +10,7 @@ namespace GraphQL\Server;
  * is only meant to serve as an intermediary representation which is
  * not yet validated.
  */
-class OperationParams
+class Operation_Params
 {
     /**
      * Id of the query (when using persisted queries).
@@ -25,8 +24,7 @@ class OperationParams
      *
      * @var mixed should be string|null
      */
-    public $queryId;
-
+    public $query_id;
     /**
      * A document containing GraphQL operations and fragments to execute.
      *
@@ -35,7 +33,6 @@ class OperationParams
      * @var mixed should be string|null
      */
     public $query;
-
     /**
      * The name of the operation in the document to execute.
      *
@@ -44,7 +41,6 @@ class OperationParams
      * @var mixed should be string|null
      */
     public $operation;
-
     /**
      * Values for any variables defined by the operation.
      *
@@ -53,7 +49,6 @@ class OperationParams
      * @var mixed should be array<string, mixed>
      */
     public $variables;
-
     /**
      * Reserved for implementors to extend the protocol however they see fit.
      *
@@ -62,14 +57,12 @@ class OperationParams
      * @var mixed should be array<string, mixed>
      */
     public $extensions;
-
     /**
      * Executed in read-only context (e.g. via HTTP GET request)?
      *
      * @api
      */
-    public bool $readOnly;
-
+    public bool $read_only;
     /**
      * The raw params used to construct this instance.
      *
@@ -77,8 +70,7 @@ class OperationParams
      *
      * @var array<string, mixed>
      */
-    public array $originalInput;
-
+    public array $original_input;
     /**
      * Creates an instance from given array.
      *
@@ -86,47 +78,39 @@ class OperationParams
      *
      * @api
      */
-    public static function create(array $params, bool $readonly = false): OperationParams
+    public static function create(array $params, bool $readonly = false): Operation_Params
     {
         $instance = new static();
-
         $params = array_change_key_case($params, \CASE_LOWER);
-        $instance->originalInput = $params;
-
+        $instance->original_input = $params;
         $params += [
             'query' => null,
             'queryid' => null,
-            'documentid' => null, // alias to queryid
-            'id' => null, // alias to queryid
+            'documentid' => null,
+            // alias to queryid
+            'id' => null,
+            // alias to queryid
             'operationname' => null,
             'variables' => null,
             'extensions' => null,
         ];
-
         foreach ($params as &$value) {
             if ($value === '') {
                 $value = null;
             }
         }
-
         $instance->query = $params['query'];
-        $instance->queryId = $params['queryid'] ?? $params['documentid'] ?? $params['id'];
+        $instance->query_id = $params['queryid'] ?? $params['documentid'] ?? $params['id'];
         $instance->operation = $params['operationname'];
-        $instance->variables = static::decodeIfJSON($params['variables']);
-        $instance->extensions = static::decodeIfJSON($params['extensions']);
-        $instance->readOnly = $readonly;
-
+        $instance->variables = static::decode_if_json($params['variables']);
+        $instance->extensions = static::decode_if_json($params['extensions']);
+        $instance->read_only = $readonly;
         // Apollo server/client compatibility
-        if (
-            isset($instance->extensions['persistedQuery']['sha256Hash'])
-            && $instance->queryId === null
-        ) {
-            $instance->queryId = $instance->extensions['persistedQuery']['sha256Hash'];
+        if (isset($instance->extensions['persistedQuery']['sha256Hash']) && $instance->query_id === null) {
+            $instance->query_id = $instance->extensions['persistedQuery']['sha256Hash'];
         }
-
         return $instance;
     }
-
     /**
      * Decodes the value if it is JSON, otherwise returns it unchanged.
      *
@@ -134,17 +118,15 @@ class OperationParams
      *
      * @return mixed
      */
-    protected static function decodeIfJSON($value)
+    protected static function decode_if_json($value)
     {
-        if (! is_string($value)) {
+        if (!is_string($value)) {
             return $value;
         }
-
         $decoded = json_decode($value, true, 32);
         if (json_last_error() === \JSON_ERROR_NONE) {
             return $decoded;
         }
-
         return $value;
     }
 }

@@ -1,96 +1,67 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Validator\Rules;
 
-namespace GraphQL\Validator\Rules;
-
-use GraphQL\Error\Error;
-use GraphQL\Language\AST\NodeKind;
-use GraphQL\Language\AST\ObjectValueNode;
-use GraphQL\Type\Definition\InputObjectType;
-use GraphQL\Type\Definition\Type;
-use GraphQL\Validator\QueryValidationContext;
-
+use Graph_Ql\Error\Error;
+use Graph_Ql\Language\AST\Node_Kind;
+use Graph_Ql\Language\AST\Object_Value_Node;
+use Graph_Ql\Type\Definition\Input_Object_Type;
+use Graph_Ql\Type\Definition\Type;
+use Graph_Ql\Validator\Query_Validation_Context;
 /**
  * OneOf Input Objects validation rule.
  *
  * Validates that OneOf Input Objects have exactly one non-null field provided.
  */
-class OneOfInputObjectsRule extends ValidationRule
+class One_Of_Input_Objects_Rule extends Validation_Rule
 {
-    public function getVisitor(QueryValidationContext $context): array
+    public function get_visitor(Query_Validation_Context $context): array
     {
-        return [
-            NodeKind::OBJECT => static function (ObjectValueNode $node) use ($context): void {
-                $type = $context->getInputType();
-
-                if ($type === null) {
-                    return;
+        return [Node_Kind::OBJECT => static function (Object_Value_Node $node) use ($context): void {
+            $type = $context->get_input_type();
+            if ($type === null) {
+                return;
+            }
+            $named_type = Type::get_named_type($type);
+            if (!$named_type instanceof Input_Object_Type || !$named_type->is_one_of()) {
+                return;
+            }
+            $provided_fields = [];
+            $null_fields = [];
+            foreach ($node->fields as $field_node) {
+                $field_name = $field_node->name->value;
+                $provided_fields[] = $field_name;
+                // Check if the field value is explicitly null
+                if ($field_node->value->kind === Node_Kind::NULL) {
+                    $null_fields[] = $field_name;
                 }
-
-                $namedType = Type::getNamedType($type);
-                if (! ($namedType instanceof InputObjectType)
-                    || ! $namedType->isOneOf()
-                ) {
-                    return;
-                }
-
-                $providedFields = [];
-                $nullFields = [];
-
-                foreach ($node->fields as $fieldNode) {
-                    $fieldName = $fieldNode->name->value;
-                    $providedFields[] = $fieldName;
-
-                    // Check if the field value is explicitly null
-                    if ($fieldNode->value->kind === NodeKind::NULL) {
-                        $nullFields[] = $fieldName;
-                    }
-                }
-
-                $fieldCount = count($providedFields);
-
-                if ($fieldCount === 0) {
-                    $context->reportError(new Error(
-                        static::oneOfInputObjectExpectedExactlyOneFieldMessage($namedType->name),
-                        [$node]
-                    ));
-
-                    return;
-                }
-
-                if ($fieldCount > 1) {
-                    $context->reportError(new Error(
-                        static::oneOfInputObjectExpectedExactlyOneFieldMessage($namedType->name, $fieldCount),
-                        [$node]
-                    ));
-
-                    return;
-                }
-
-                // At this point, $fieldCount === 1
-                if (count($nullFields) > 0) {
-                    // Exactly one field provided, but it's null
-                    $context->reportError(new Error(
-                        static::oneOfInputObjectFieldValueMustNotBeNullMessage($namedType->name, $nullFields[0]),
-                        [$node]
-                    ));
-                }
-            },
-        ];
+            }
+            $field_count = count($provided_fields);
+            if ($field_count === 0) {
+                $context->report_error(new Error(static::one_of_input_object_expected_exactly_one_field_message($named_type->name), [$node]));
+                return;
+            }
+            if ($field_count > 1) {
+                $context->report_error(new Error(static::one_of_input_object_expected_exactly_one_field_message($named_type->name, $field_count), [$node]));
+                return;
+            }
+            // At this point, $fieldCount === 1
+            if (count($null_fields) > 0) {
+                // Exactly one field provided, but it's null
+                $context->report_error(new Error(static::one_of_input_object_field_value_must_not_be_null_message($named_type->name, $null_fields[0]), [$node]));
+            }
+        }];
     }
-
-    public static function oneOfInputObjectExpectedExactlyOneFieldMessage(string $typeName, ?int $providedCount = null): string
+    public static function one_of_input_object_expected_exactly_one_field_message(string $type_name, ?int $provided_count = null): string
     {
-        if ($providedCount === null) {
-            return "OneOf input object '{$typeName}' must specify exactly one field.";
+        if ($provided_count === null) {
+            return "OneOf input object '{$type_name}' must specify exactly one field.";
         }
-
-        return "OneOf input object '{$typeName}' must specify exactly one field, but {$providedCount} fields were provided.";
+        return "OneOf input object '{$type_name}' must specify exactly one field, but {$provided_count} fields were provided.";
     }
-
-    public static function oneOfInputObjectFieldValueMustNotBeNullMessage(string $typeName, string $fieldName): string
+    public static function one_of_input_object_field_value_must_not_be_null_message(string $type_name, string $field_name): string
     {
-        return "OneOf input object '{$typeName}' field '{$fieldName}' must be non-null.";
+        return "OneOf input object '{$type_name}' field '{$field_name}' must be non-null.";
     }
 }

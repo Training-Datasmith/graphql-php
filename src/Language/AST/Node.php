@@ -1,12 +1,10 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Language\AST;
 
-namespace GraphQL\Language\AST;
-
-use GraphQL\Error\InvariantViolation;
-use GraphQL\Utils\Utils;
-
+use Graph_Ql\Error\Invariant_Violation;
+use Graph_Ql\Utils\Utils;
 /**
  * type Node = NameNode
  * | DocumentNode
@@ -36,15 +34,12 @@ use GraphQL\Utils\Utils;
 abstract class Node implements \JsonSerializable
 {
     public ?Location $loc = null;
-
     public string $kind;
-
     /** @param array<string, mixed> $vars */
     public function __construct(array $vars)
     {
         Utils::assign($this, $vars);
     }
-
     /**
      * Returns a clone of this instance and all its children, except Location $loc.
      *
@@ -53,11 +48,10 @@ abstract class Node implements \JsonSerializable
      *
      * @return static
      */
-    public function cloneDeep(): self
+    public function clone_deep(): self
     {
-        return static::cloneValue($this);
+        return static::clone_value($this);
     }
-
     /**
      * @template TNode of Node
      * @template TCloneable of TNode|NodeList<TNode>|Location|string
@@ -69,35 +63,31 @@ abstract class Node implements \JsonSerializable
      *
      * @phpstan-return TCloneable
      */
-    protected static function cloneValue($value)
+    protected static function clone_value($value)
     {
         if ($value instanceof self) {
             $cloned = clone $value;
-            foreach (get_object_vars($cloned) as $prop => $propValue) {
-                $cloned->{$prop} = static::cloneValue($propValue); // @phpstan-ignore argument.templateType
+            foreach (get_object_vars($cloned) as $prop => $prop_value) {
+                $cloned->{$prop} = static::clone_value($prop_value);
+                // @phpstan-ignore argument.templateType
             }
-
             return $cloned;
         }
-
-        if ($value instanceof NodeList) {
+        if ($value instanceof Node_List) {
             /**
              * @phpstan-var TCloneable
              *
              * @phpstan-ignore varTag.nativeType (PHPStan is strict about template types and sees NodeList<TNode> as potentially different from TCloneable)
              */
-            return $value->cloneDeep();
+            return $value->clone_deep();
         }
-
         return $value;
     }
-
     /** @throws \JsonException */
     public function __toString(): string
     {
         return json_encode($this, JSON_THROW_ON_ERROR);
     }
-
     /**
      * Improves upon the default serialization by:
      * - excluding null values
@@ -107,41 +97,35 @@ abstract class Node implements \JsonSerializable
      */
     public function jsonSerialize(): array
     {
-        return $this->toArray();
+        return $this->to_array();
     }
-
     /** @return array<string, mixed> */
-    public function toArray(): array
+    public function to_array(): array
     {
-        return self::recursiveToArray($this);
+        return self::recursive_to_array($this);
     }
-
     /** @return array<string, mixed> */
-    private static function recursiveToArray(Node $node): array
+    private static function recursive_to_array(Node $node): array
     {
         $result = [];
-
-        foreach (get_object_vars($node) as $prop => $propValue) {
-            if ($propValue === null) {
+        foreach (get_object_vars($node) as $prop => $prop_value) {
+            if ($prop_value === null) {
                 continue;
             }
-
-            if ($propValue instanceof NodeList) {
+            if ($prop_value instanceof Node_List) {
                 $converted = [];
-                foreach ($propValue as $item) {
-                    $converted[] = self::recursiveToArray($item);
+                foreach ($prop_value as $item) {
+                    $converted[] = self::recursive_to_array($item);
                 }
-            } elseif ($propValue instanceof Node) {
-                $converted = self::recursiveToArray($propValue);
-            } elseif ($propValue instanceof Location) {
-                $converted = $propValue->toArray();
+            } elseif ($prop_value instanceof Node) {
+                $converted = self::recursive_to_array($prop_value);
+            } elseif ($prop_value instanceof Location) {
+                $converted = $prop_value->to_array();
             } else {
-                $converted = $propValue;
+                $converted = $prop_value;
             }
-
             $result[$prop] = $converted;
         }
-
         return $result;
     }
 }

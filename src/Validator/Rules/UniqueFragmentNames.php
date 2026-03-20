@@ -1,46 +1,34 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Validator\Rules;
 
-namespace GraphQL\Validator\Rules;
-
-use GraphQL\Error\Error;
-use GraphQL\Language\AST\FragmentDefinitionNode;
-use GraphQL\Language\AST\NameNode;
-use GraphQL\Language\AST\NodeKind;
-use GraphQL\Language\Visitor;
-use GraphQL\Language\VisitorOperation;
-use GraphQL\Validator\QueryValidationContext;
-
-class UniqueFragmentNames extends ValidationRule
+use Graph_Ql\Error\Error;
+use Graph_Ql\Language\AST\Fragment_Definition_Node;
+use Graph_Ql\Language\AST\Name_Node;
+use Graph_Ql\Language\AST\Node_Kind;
+use Graph_Ql\Language\Visitor;
+use Graph_Ql\Language\Visitor_Operation;
+use Graph_Ql\Validator\Query_Validation_Context;
+class Unique_Fragment_Names extends Validation_Rule
 {
     /** @var array<string, NameNode> */
-    protected array $knownFragmentNames;
-
-    public function getVisitor(QueryValidationContext $context): array
+    protected array $known_fragment_names;
+    public function get_visitor(Query_Validation_Context $context): array
     {
-        $this->knownFragmentNames = [];
-
-        return [
-            NodeKind::OPERATION_DEFINITION => static fn (): VisitorOperation => Visitor::skipNode(),
-            NodeKind::FRAGMENT_DEFINITION => function (FragmentDefinitionNode $node) use ($context): VisitorOperation {
-                $fragmentName = $node->name->value;
-                if (! isset($this->knownFragmentNames[$fragmentName])) {
-                    $this->knownFragmentNames[$fragmentName] = $node->name;
-                } else {
-                    $context->reportError(new Error(
-                        static::duplicateFragmentNameMessage($fragmentName),
-                        [$this->knownFragmentNames[$fragmentName], $node->name]
-                    ));
-                }
-
-                return Visitor::skipNode();
-            },
-        ];
+        $this->known_fragment_names = [];
+        return [Node_Kind::OPERATION_DEFINITION => static fn(): Visitor_Operation => Visitor::skip_node(), Node_Kind::FRAGMENT_DEFINITION => function (Fragment_Definition_Node $node) use ($context): Visitor_Operation {
+            $fragment_name = $node->name->value;
+            if (!isset($this->known_fragment_names[$fragment_name])) {
+                $this->known_fragment_names[$fragment_name] = $node->name;
+            } else {
+                $context->report_error(new Error(static::duplicate_fragment_name_message($fragment_name), [$this->known_fragment_names[$fragment_name], $node->name]));
+            }
+            return Visitor::skip_node();
+        }];
     }
-
-    public static function duplicateFragmentNameMessage(string $fragName): string
+    public static function duplicate_fragment_name_message(string $frag_name): string
     {
-        return "There can be only one fragment named \"{$fragName}\".";
+        return "There can be only one fragment named \"{$frag_name}\".";
     }
 }

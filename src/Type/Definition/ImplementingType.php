@@ -1,18 +1,16 @@
 <?php
 
-declare(strict_types=1);
-
-namespace GraphQL\Type\Definition;
+declare (strict_types=1);
+namespace Graph_Ql\Type\Definition;
 
 /**
  * export type GraphQLImplementingType =
  * GraphQLObjectType |
  * GraphQLInterfaceType;.
  */
-interface ImplementingType
+interface Implementing_Type
 {
-    public function implementsInterface(InterfaceType $interfaceType): bool;
-
+    public function implements_interface(Interface_Type $interface_type): bool;
     /** @return array<int, InterfaceType> */
-    public function getInterfaces(): array;
+    public function get_interfaces(): array;
 }

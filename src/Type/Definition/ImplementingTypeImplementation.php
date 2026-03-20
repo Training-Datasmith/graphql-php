@@ -1,16 +1,14 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Type\Definition;
 
-namespace GraphQL\Type\Definition;
-
-use GraphQL\Error\InvariantViolation;
-use GraphQL\Type\Schema;
-
+use Graph_Ql\Error\Invariant_Violation;
+use Graph_Ql\Type\Schema;
 /**
  * @see ImplementingType
  */
-trait ImplementingTypeImplementation
+trait Implementing_Type_Implementation
 {
     /**
      * Lazily initialized.
@@ -18,65 +16,54 @@ trait ImplementingTypeImplementation
      * @var array<int, InterfaceType>
      */
     private array $interfaces;
-
-    public function implementsInterface(InterfaceType $interfaceType): bool
+    public function implements_interface(Interface_Type $interface_type): bool
     {
-        if (! isset($this->interfaces)) {
-            $this->initializeInterfaces();
+        if (!isset($this->interfaces)) {
+            $this->initialize_interfaces();
         }
-
         foreach ($this->interfaces as $interface) {
-            if ($interfaceType->name === $interface->name) {
+            if ($interface_type->name === $interface->name) {
                 return true;
             }
         }
-
         return false;
     }
-
     /** @return array<int, InterfaceType> */
-    public function getInterfaces(): array
+    public function get_interfaces(): array
     {
-        if (! isset($this->interfaces)) {
-            $this->initializeInterfaces();
+        if (!isset($this->interfaces)) {
+            $this->initialize_interfaces();
         }
-
         return $this->interfaces;
     }
-
-    private function initializeInterfaces(): void
+    private function initialize_interfaces(): void
     {
         $this->interfaces = [];
-
-        if (! isset($this->config['interfaces'])) {
+        if (!isset($this->config['interfaces'])) {
             return;
         }
-
         $interfaces = $this->config['interfaces'];
         if (is_callable($interfaces)) {
             $interfaces = $interfaces();
         }
-
         foreach ($interfaces as $interface) {
-            $this->interfaces[] = Schema::resolveType($interface); // @phpstan-ignore argument.templateType
+            $this->interfaces[] = Schema::resolve_type($interface);
+            // @phpstan-ignore argument.templateType
         }
     }
-
     /** @throws InvariantViolation */
-    protected function assertValidInterfaces(): void
+    protected function assert_valid_interfaces(): void
     {
-        if (! isset($this->config['interfaces'])) {
+        if (!isset($this->config['interfaces'])) {
             return;
         }
-
         $interfaces = $this->config['interfaces'];
         if (is_callable($interfaces)) {
             $interfaces = $interfaces();
         }
-
         // @phpstan-ignore-next-line should not happen if used correctly
-        if (! is_iterable($interfaces)) {
-            throw new InvariantViolation("{$this->name} interfaces must be an iterable or a callable which returns an iterable.");
+        if (!is_iterable($interfaces)) {
+            throw new Invariant_Violation("{$this->name} interfaces must be an iterable or a callable which returns an iterable.");
         }
     }
 }

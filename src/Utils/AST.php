@@ -1,45 +1,43 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Utils;
 
-namespace GraphQL\Utils;
-
-use GraphQL\Error\Error;
-use GraphQL\Error\InvariantViolation;
-use GraphQL\Error\SerializationError;
-use GraphQL\Language\AST\BooleanValueNode;
-use GraphQL\Language\AST\DefinitionNode;
-use GraphQL\Language\AST\DocumentNode;
-use GraphQL\Language\AST\EnumValueNode;
-use GraphQL\Language\AST\FloatValueNode;
-use GraphQL\Language\AST\IntValueNode;
-use GraphQL\Language\AST\ListTypeNode;
-use GraphQL\Language\AST\ListValueNode;
-use GraphQL\Language\AST\Location;
-use GraphQL\Language\AST\NamedTypeNode;
-use GraphQL\Language\AST\NameNode;
-use GraphQL\Language\AST\Node;
-use GraphQL\Language\AST\NodeKind;
-use GraphQL\Language\AST\NodeList;
-use GraphQL\Language\AST\NonNullTypeNode;
-use GraphQL\Language\AST\NullValueNode;
-use GraphQL\Language\AST\ObjectFieldNode;
-use GraphQL\Language\AST\ObjectValueNode;
-use GraphQL\Language\AST\OperationDefinitionNode;
-use GraphQL\Language\AST\StringValueNode;
-use GraphQL\Language\AST\ValueNode;
-use GraphQL\Language\AST\VariableNode;
-use GraphQL\Type\Definition\EnumType;
-use GraphQL\Type\Definition\IDType;
-use GraphQL\Type\Definition\InputObjectType;
-use GraphQL\Type\Definition\InputType;
-use GraphQL\Type\Definition\LeafType;
-use GraphQL\Type\Definition\ListOfType;
-use GraphQL\Type\Definition\NonNull;
-use GraphQL\Type\Definition\NullableType;
-use GraphQL\Type\Definition\ScalarType;
-use GraphQL\Type\Definition\Type;
-
+use Graph_Ql\Error\Error;
+use Graph_Ql\Error\Invariant_Violation;
+use Graph_Ql\Error\Serialization_Error;
+use Graph_Ql\Language\AST\Boolean_Value_Node;
+use Graph_Ql\Language\AST\Definition_Node;
+use Graph_Ql\Language\AST\Document_Node;
+use Graph_Ql\Language\AST\Enum_Value_Node;
+use Graph_Ql\Language\AST\Float_Value_Node;
+use Graph_Ql\Language\AST\Int_Value_Node;
+use Graph_Ql\Language\AST\List_Type_Node;
+use Graph_Ql\Language\AST\List_Value_Node;
+use Graph_Ql\Language\AST\Location;
+use Graph_Ql\Language\AST\Named_Type_Node;
+use Graph_Ql\Language\AST\Name_Node;
+use Graph_Ql\Language\AST\Node;
+use Graph_Ql\Language\AST\Node_Kind;
+use Graph_Ql\Language\AST\Node_List;
+use Graph_Ql\Language\AST\Non_Null_Type_Node;
+use Graph_Ql\Language\AST\Null_Value_Node;
+use Graph_Ql\Language\AST\Object_Field_Node;
+use Graph_Ql\Language\AST\Object_Value_Node;
+use Graph_Ql\Language\AST\Operation_Definition_Node;
+use Graph_Ql\Language\AST\String_Value_Node;
+use Graph_Ql\Language\AST\Value_Node;
+use Graph_Ql\Language\AST\Variable_Node;
+use Graph_Ql\Type\Definition\Enum_Type;
+use Graph_Ql\Type\Definition\Id_Type;
+use Graph_Ql\Type\Definition\Input_Object_Type;
+use Graph_Ql\Type\Definition\Input_Type;
+use Graph_Ql\Type\Definition\Leaf_Type;
+use Graph_Ql\Type\Definition\List_Of_Type;
+use Graph_Ql\Type\Definition\Non_Null;
+use Graph_Ql\Type\Definition\Nullable_Type;
+use Graph_Ql\Type\Definition\Scalar_Type;
+use Graph_Ql\Type\Definition\Type;
 /**
  * Various utilities dealing with AST.
  */
@@ -73,26 +71,22 @@ class AST
      * @throws \JsonException
      * @throws InvariantViolation
      */
-    public static function fromArray(array $node): Node
+    public static function from_array(array $node): Node
     {
         $kind = $node['kind'] ?? null;
         if ($kind === null) {
-            $safeNode = Utils::printSafeJson($node);
-            throw new InvariantViolation("Node is missing kind: {$safeNode}");
+            $safe_node = Utils::print_safe_json($node);
+            throw new Invariant_Violation("Node is missing kind: {$safe_node}");
         }
-
-        $class = NodeKind::CLASS_MAP[$kind] ?? null;
+        $class = Node_Kind::CLASS_MAP[$kind] ?? null;
         if ($class === null) {
-            $safeNode = Utils::printSafeJson($node);
-            throw new InvariantViolation("Node has unexpected kind: {$safeNode}");
+            $safe_node = Utils::print_safe_json($node);
+            throw new Invariant_Violation("Node has unexpected kind: {$safe_node}");
         }
-
         $instance = new $class([]);
-
         if (isset($node['loc']['start'], $node['loc']['end'])) {
             $instance->loc = Location::create($node['loc']['start'], $node['loc']['end']);
         }
-
         foreach ($node as $key => $value) {
             if ($key === 'loc') {
                 continue;
@@ -101,17 +95,12 @@ class AST
                 continue;
             }
             if (is_array($value)) {
-                $value = isset($value[0]) || $value === []
-                    ? new NodeList($value)
-                    : self::fromArray($value);
+                $value = isset($value[0]) || $value === [] ? new Node_List($value) : self::from_array($value);
             }
-
             $instance->{$key} = $value;
         }
-
         return $instance;
     }
-
     /**
      * Convert AST node to serializable array.
      *
@@ -119,11 +108,10 @@ class AST
      *
      * @api
      */
-    public static function toArray(Node $node): array
+    public static function to_array(Node $node): array
     {
-        return $node->toArray();
+        return $node->to_array();
     }
-
     /**
      * Produces a GraphQL Value AST given a PHP value.
      *
@@ -153,136 +141,103 @@ class AST
      *
      * @api
      */
-    public static function astFromValue($value, InputType $type): ?ValueNode
+    public static function ast_from_value($value, Input_Type $type): ?Value_Node
     {
-        if ($type instanceof NonNull) {
-            $wrappedType = $type->getWrappedType();
-            assert($wrappedType instanceof InputType);
-
-            $astValue = self::astFromValue($value, $wrappedType);
-
-            return $astValue instanceof NullValueNode
-                ? null
-                : $astValue;
+        if ($type instanceof Non_Null) {
+            $wrapped_type = $type->get_wrapped_type();
+            assert($wrapped_type instanceof Input_Type);
+            $ast_value = self::ast_from_value($value, $wrapped_type);
+            return $ast_value instanceof Null_Value_Node ? null : $ast_value;
         }
-
         if ($value === null) {
-            return new NullValueNode([]);
+            return new Null_Value_Node([]);
         }
-
         // Convert PHP iterables to GraphQL list. If the GraphQLType is a list, but
         // the value is not an array, convert the value using the list's item type.
-        if ($type instanceof ListOfType) {
-            $itemType = $type->getWrappedType();
-            assert($itemType instanceof InputType, 'proven by schema validation');
-
+        if ($type instanceof List_Of_Type) {
+            $item_type = $type->get_wrapped_type();
+            assert($item_type instanceof Input_Type, 'proven by schema validation');
             if (is_iterable($value)) {
-                $valuesNodes = [];
+                $values_nodes = [];
                 foreach ($value as $item) {
-                    $itemNode = self::astFromValue($item, $itemType);
-                    if ($itemNode !== null) {
-                        $valuesNodes[] = $itemNode;
+                    $item_node = self::ast_from_value($item, $item_type);
+                    if ($item_node !== null) {
+                        $values_nodes[] = $item_node;
                     }
                 }
-
-                return new ListValueNode(['values' => new NodeList($valuesNodes)]);
+                return new List_Value_Node(['values' => new Node_List($values_nodes)]);
             }
-
-            return self::astFromValue($value, $itemType);
+            return self::ast_from_value($value, $item_type);
         }
-
         // Populate the fields of the input object by creating ASTs from each value
         // in the PHP object according to the fields in the input type.
-        if ($type instanceof InputObjectType) {
-            $isArray = is_array($value);
-            $isArrayLike = $isArray || $value instanceof \ArrayAccess;
-            if (! $isArrayLike && ! is_object($value)) {
+        if ($type instanceof Input_Object_Type) {
+            $is_array = is_array($value);
+            $is_array_like = $is_array || $value instanceof \ArrayAccess;
+            if (!$is_array_like && !is_object($value)) {
                 return null;
             }
-
-            $fields = $type->getFields();
-            $fieldNodes = [];
-            foreach ($fields as $fieldName => $field) {
-                $fieldValue = $isArrayLike
-                    ? $value[$fieldName] ?? null
-                    : $value->{$fieldName} ?? null;
-
+            $fields = $type->get_fields();
+            $field_nodes = [];
+            foreach ($fields as $field_name => $field) {
+                $field_value = $is_array_like ? $value[$field_name] ?? null : $value->{$field_name} ?? null;
                 // Have to check additionally if key exists, since we differentiate between
                 // "no key" and "value is null":
-                if ($fieldValue !== null) {
-                    $fieldExists = true;
-                } elseif ($isArray) {
-                    $fieldExists = array_key_exists($fieldName, $value);
-                } elseif ($isArrayLike) {
-                    $fieldExists = $value->offsetExists($fieldName);
+                if ($field_value !== null) {
+                    $field_exists = true;
+                } elseif ($is_array) {
+                    $field_exists = array_key_exists($field_name, $value);
+                } elseif ($is_array_like) {
+                    $field_exists = $value->offsetExists($field_name);
                 } else {
-                    $fieldExists = property_exists($value, $fieldName);
+                    $field_exists = property_exists($value, $field_name);
                 }
-
-                if (! $fieldExists) {
+                if (!$field_exists) {
                     continue;
                 }
-
-                $fieldNode = self::astFromValue($fieldValue, $field->getType());
-
-                if ($fieldNode === null) {
+                $field_node = self::ast_from_value($field_value, $field->get_type());
+                if ($field_node === null) {
                     continue;
                 }
-
-                $fieldNodes[] = new ObjectFieldNode([
-                    'name' => new NameNode(['value' => $fieldName]),
-                    'value' => $fieldNode,
-                ]);
+                $field_nodes[] = new Object_Field_Node(['name' => new Name_Node(['value' => $field_name]), 'value' => $field_node]);
             }
-
-            return new ObjectValueNode(['fields' => new NodeList($fieldNodes)]);
+            return new Object_Value_Node(['fields' => new Node_List($field_nodes)]);
         }
-
-        assert($type instanceof LeafType, 'other options were exhausted');
-
+        assert($type instanceof Leaf_Type, 'other options were exhausted');
         // Since value is an internally represented value, it must be serialized
         // to an externally represented value before converting into an AST.
         $serialized = $type->serialize($value);
-
         // Others serialize based on their corresponding PHP scalar types.
         if (is_bool($serialized)) {
-            return new BooleanValueNode(['value' => $serialized]);
+            return new Boolean_Value_Node(['value' => $serialized]);
         }
-
         if (is_int($serialized)) {
-            return new IntValueNode(['value' => (string) $serialized]);
+            return new Int_Value_Node(['value' => (string) $serialized]);
         }
-
         if (is_float($serialized)) {
             /** @phpstan-ignore equal.notAllowed (int cast with == used for performance reasons) */
             if ((int) $serialized == $serialized) {
-                return new IntValueNode(['value' => (string) $serialized]);
+                return new Int_Value_Node(['value' => (string) $serialized]);
             }
-
-            return new FloatValueNode(['value' => (string) $serialized]);
+            return new Float_Value_Node(['value' => (string) $serialized]);
         }
-
         if (is_string($serialized)) {
             // Enum types use Enum literals.
-            if ($type instanceof EnumType) {
-                return new EnumValueNode(['value' => $serialized]);
+            if ($type instanceof Enum_Type) {
+                return new Enum_Value_Node(['value' => $serialized]);
             }
-
             // ID types can use Int literals.
-            $asInt = (int) $serialized;
-            if ($type instanceof IDType && (string) $asInt === $serialized) {
-                return new IntValueNode(['value' => $serialized]);
+            $as_int = (int) $serialized;
+            if ($type instanceof Id_Type && (string) $as_int === $serialized) {
+                return new Int_Value_Node(['value' => $serialized]);
             }
-
             // Use json_encode, which uses the same string encoding as GraphQL,
             // then remove the quotes.
-            return new StringValueNode(['value' => $serialized]);
+            return new String_Value_Node(['value' => $serialized]);
         }
-
-        $notConvertible = Utils::printSafe($serialized);
-        throw new InvariantViolation("Cannot convert value to AST: {$notConvertible}");
+        $not_convertible = Utils::print_safe($serialized);
+        throw new Invariant_Violation("Cannot convert value to AST: {$not_convertible}");
     }
-
     /**
      * Produces a PHP value given a GraphQL Value AST.
      *
@@ -311,149 +266,117 @@ class AST
      *
      * @api
      */
-    public static function valueFromAST(?ValueNode $valueNode, Type $type, ?array $variables = null)
+    public static function value_from_ast(?Value_Node $value_node, Type $type, ?array $variables = null)
     {
         $undefined = Utils::undefined();
-
-        if ($valueNode === null) {
+        if ($value_node === null) {
             // When there is no AST, then there is also no value.
             // Importantly, this is different from returning the GraphQL null value.
             return $undefined;
         }
-
-        if ($type instanceof NonNull) {
-            if ($valueNode instanceof NullValueNode) {
+        if ($type instanceof Non_Null) {
+            if ($value_node instanceof Null_Value_Node) {
                 // Invalid: intentionally return no value.
                 return $undefined;
             }
-
-            return self::valueFromAST($valueNode, $type->getWrappedType(), $variables);
+            return self::value_from_ast($value_node, $type->get_wrapped_type(), $variables);
         }
-
-        if ($valueNode instanceof NullValueNode) {
+        if ($value_node instanceof Null_Value_Node) {
             // This is explicitly returning the value null.
             return null;
         }
-
-        if ($valueNode instanceof VariableNode) {
-            $variableName = $valueNode->name->value;
-
-            if ($variables === null || ! array_key_exists($variableName, $variables)) {
+        if ($value_node instanceof Variable_Node) {
+            $variable_name = $value_node->name->value;
+            if ($variables === null || !array_key_exists($variable_name, $variables)) {
                 // No valid return value.
                 return $undefined;
             }
-
             // Note: This does no further checking that this variable is correct.
             // This assumes that this query has been validated and the variable
             // usage here is of the correct type.
-            return $variables[$variableName];
+            return $variables[$variable_name];
         }
-
-        if ($type instanceof ListOfType) {
-            $itemType = $type->getWrappedType();
-
-            if ($valueNode instanceof ListValueNode) {
-                $coercedValues = [];
-                $itemNodes = $valueNode->values;
-                foreach ($itemNodes as $itemNode) {
-                    if (self::isMissingVariable($itemNode, $variables)) {
+        if ($type instanceof List_Of_Type) {
+            $item_type = $type->get_wrapped_type();
+            if ($value_node instanceof List_Value_Node) {
+                $coerced_values = [];
+                $item_nodes = $value_node->values;
+                foreach ($item_nodes as $item_node) {
+                    if (self::is_missing_variable($item_node, $variables)) {
                         // If an array contains a missing variable, it is either coerced to
                         // null or if the item type is non-null, it considered invalid.
-                        if ($itemType instanceof NonNull) {
+                        if ($item_type instanceof Non_Null) {
                             // Invalid: intentionally return no value.
                             return $undefined;
                         }
-
-                        $coercedValues[] = null;
+                        $coerced_values[] = null;
                     } else {
-                        $itemValue = self::valueFromAST($itemNode, $itemType, $variables);
-                        if ($undefined === $itemValue) {
+                        $item_value = self::value_from_ast($item_node, $item_type, $variables);
+                        if ($undefined === $item_value) {
                             // Invalid: intentionally return no value.
                             return $undefined;
                         }
-
-                        $coercedValues[] = $itemValue;
+                        $coerced_values[] = $item_value;
                     }
                 }
-
-                return $coercedValues;
+                return $coerced_values;
             }
-
-            $coercedValue = self::valueFromAST($valueNode, $itemType, $variables);
-            if ($undefined === $coercedValue) {
+            $coerced_value = self::value_from_ast($value_node, $item_type, $variables);
+            if ($undefined === $coerced_value) {
                 // Invalid: intentionally return no value.
                 return $undefined;
             }
-
-            return [$coercedValue];
+            return [$coerced_value];
         }
-
-        if ($type instanceof InputObjectType) {
-            if (! $valueNode instanceof ObjectValueNode) {
+        if ($type instanceof Input_Object_Type) {
+            if (!$value_node instanceof Object_Value_Node) {
                 // Invalid: intentionally return no value.
                 return $undefined;
             }
-
-            $coercedObj = [];
-            $fields = $type->getFields();
-
-            $fieldNodes = [];
-            foreach ($valueNode->fields as $field) {
-                $fieldNodes[$field->name->value] = $field;
+            $coerced_obj = [];
+            $fields = $type->get_fields();
+            $field_nodes = [];
+            foreach ($value_node->fields as $field) {
+                $field_nodes[$field->name->value] = $field;
             }
-
             foreach ($fields as $field) {
-                $fieldName = $field->name;
-                $fieldNode = $fieldNodes[$fieldName] ?? null;
-
-                if ($fieldNode === null || self::isMissingVariable($fieldNode->value, $variables)) {
-                    if ($field->defaultValueExists()) {
-                        $coercedObj[$fieldName] = $field->defaultValue;
-                    } elseif ($field->getType() instanceof NonNull) {
+                $field_name = $field->name;
+                $field_node = $field_nodes[$field_name] ?? null;
+                if ($field_node === null || self::is_missing_variable($field_node->value, $variables)) {
+                    if ($field->default_value_exists()) {
+                        $coerced_obj[$field_name] = $field->default_value;
+                    } elseif ($field->get_type() instanceof Non_Null) {
                         // Invalid: intentionally return no value.
                         return $undefined;
                     }
-
                     continue;
                 }
-
-                $fieldValue = self::valueFromAST(
-                    $fieldNode->value,
-                    $field->getType(),
-                    $variables
-                );
-
-                if ($undefined === $fieldValue) {
+                $field_value = self::value_from_ast($field_node->value, $field->get_type(), $variables);
+                if ($undefined === $field_value) {
                     // Invalid: intentionally return no value.
                     return $undefined;
                 }
-
-                $coercedObj[$fieldName] = $fieldValue;
+                $coerced_obj[$field_name] = $field_value;
             }
-
-            return $type->parseValue($coercedObj);
+            return $type->parse_value($coerced_obj);
         }
-
-        if ($type instanceof EnumType) {
+        if ($type instanceof Enum_Type) {
             try {
-                return $type->parseLiteral($valueNode, $variables);
+                return $type->parse_literal($value_node, $variables);
             } catch (\Throwable $error) {
                 return $undefined;
             }
         }
-
-        assert($type instanceof ScalarType, 'only remaining option');
-
+        assert($type instanceof Scalar_Type, 'only remaining option');
         // Scalars fulfill parsing a literal value via parseLiteral().
         // Invalid values represent a failure to parse correctly, in which case
         // no value is returned.
         try {
-            return $type->parseLiteral($valueNode, $variables);
+            return $type->parse_literal($value_node, $variables);
         } catch (\Throwable $error) {
             return $undefined;
         }
     }
-
     /**
      * Returns true if the provided valueNode is a variable which is not defined
      * in the set of variables.
@@ -461,12 +384,10 @@ class AST
      * @param ValueNode&Node $valueNode
      * @param array<string, mixed>|null $variables
      */
-    private static function isMissingVariable(ValueNode $valueNode, ?array $variables): bool
+    private static function is_missing_variable(Value_Node $value_node, ?array $variables): bool
     {
-        return $valueNode instanceof VariableNode
-            && ($variables === null || ! array_key_exists($valueNode->name->value, $variables));
+        return $value_node instanceof Variable_Node && ($variables === null || !array_key_exists($value_node->name->value, $variables));
     }
-
     /**
      * Produces a PHP value given a GraphQL Value AST.
      *
@@ -491,50 +412,37 @@ class AST
      *
      * @api
      */
-    public static function valueFromASTUntyped(Node $valueNode, ?array $variables = null)
+    public static function value_from_ast_untyped(Node $value_node, ?array $variables = null)
     {
         switch (true) {
-            case $valueNode instanceof NullValueNode:
+            case $value_node instanceof Null_Value_Node:
                 return null;
-
-            case $valueNode instanceof IntValueNode:
-                return (int) $valueNode->value;
-
-            case $valueNode instanceof FloatValueNode:
-                return (float) $valueNode->value;
-
-            case $valueNode instanceof StringValueNode:
-            case $valueNode instanceof EnumValueNode:
-            case $valueNode instanceof BooleanValueNode:
-                return $valueNode->value;
-
-            case $valueNode instanceof ListValueNode:
+            case $value_node instanceof Int_Value_Node:
+                return (int) $value_node->value;
+            case $value_node instanceof Float_Value_Node:
+                return (float) $value_node->value;
+            case $value_node instanceof String_Value_Node:
+            case $value_node instanceof Enum_Value_Node:
+            case $value_node instanceof Boolean_Value_Node:
+                return $value_node->value;
+            case $value_node instanceof List_Value_Node:
                 $values = [];
-                foreach ($valueNode->values as $node) {
-                    $values[] = self::valueFromASTUntyped($node, $variables);
+                foreach ($value_node->values as $node) {
+                    $values[] = self::value_from_ast_untyped($node, $variables);
                 }
-
                 return $values;
-
-            case $valueNode instanceof ObjectValueNode:
+            case $value_node instanceof Object_Value_Node:
                 $values = [];
-                foreach ($valueNode->fields as $field) {
-                    $values[$field->name->value] = self::valueFromASTUntyped($field->value, $variables);
+                foreach ($value_node->fields as $field) {
+                    $values[$field->name->value] = self::value_from_ast_untyped($field->value, $variables);
                 }
-
                 return $values;
-
-            case $valueNode instanceof VariableNode:
-                $variableName = $valueNode->name->value;
-
-                return ($variables ?? []) !== [] && isset($variables[$variableName])
-                    ? $variables[$variableName]
-                    : null;
+            case $value_node instanceof Variable_Node:
+                $variable_name = $value_node->name->value;
+                return ($variables ?? []) !== [] && isset($variables[$variable_name]) ? $variables[$variable_name] : null;
         }
-
-        throw new Error("Unexpected value kind: {$valueNode->kind}");
+        throw new Error("Unexpected value kind: {$value_node->kind}");
     }
-
     /**
      * Returns type definition for given AST Type node.
      *
@@ -545,30 +453,22 @@ class AST
      *
      * @api
      */
-    public static function typeFromAST(callable $typeLoader, Node $inputTypeNode): ?Type
+    public static function type_from_ast(callable $type_loader, Node $input_type_node): ?Type
     {
-        if ($inputTypeNode instanceof ListTypeNode) {
-            $innerType = self::typeFromAST($typeLoader, $inputTypeNode->type);
-
-            return $innerType === null
-                ? null
-                : new ListOfType($innerType);
+        if ($input_type_node instanceof List_Type_Node) {
+            $inner_type = self::type_from_ast($type_loader, $input_type_node->type);
+            return $inner_type === null ? null : new List_Of_Type($inner_type);
         }
-
-        if ($inputTypeNode instanceof NonNullTypeNode) {
-            $innerType = self::typeFromAST($typeLoader, $inputTypeNode->type);
-            if ($innerType === null) {
+        if ($input_type_node instanceof Non_Null_Type_Node) {
+            $inner_type = self::type_from_ast($type_loader, $input_type_node->type);
+            if ($inner_type === null) {
                 return null;
             }
-
-            assert($innerType instanceof NullableType, 'proven by schema validation');
-
-            return new NonNull($innerType);
+            assert($inner_type instanceof Nullable_Type, 'proven by schema validation');
+            return new Non_Null($inner_type);
         }
-
-        return $typeLoader($inputTypeNode->name->value);
+        return $type_loader($input_type_node->name->value);
     }
-
     /**
      * Returns the operation within a document by name.
      *
@@ -576,29 +476,25 @@ class AST
      *
      * @api
      */
-    public static function getOperationAST(DocumentNode $document, ?string $operationName = null): ?OperationDefinitionNode
+    public static function get_operation_ast(Document_Node $document, ?string $operation_name = null): ?Operation_Definition_Node
     {
         $operation = null;
         foreach ($document->definitions->getIterator() as $node) {
-            if (! $node instanceof OperationDefinitionNode) {
+            if (!$node instanceof Operation_Definition_Node) {
                 continue;
             }
-
-            if ($operationName === null) {
+            if ($operation_name === null) {
                 // We found a second operation, so we bail instead of returning an ambiguous result.
                 if ($operation !== null) {
                     return null;
                 }
-
                 $operation = $node;
-            } elseif ($node->name instanceof NameNode && $node->name->value === $operationName) {
+            } elseif ($node->name instanceof Name_Node && $node->name->value === $operation_name) {
                 return $node;
             }
         }
-
         return $operation;
     }
-
     /**
      * Provided a collection of ASTs, presumably each from different files,
      * concatenate the ASTs together into batched AST, useful for validating many
@@ -608,7 +504,7 @@ class AST
      *
      * @api
      */
-    public static function concatAST(array $documents): DocumentNode
+    public static function concat_ast(array $documents): Document_Node
     {
         /** @var array<int, Node&DefinitionNode> $definitions */
         $definitions = [];
@@ -617,7 +513,6 @@ class AST
                 $definitions[] = $definition;
             }
         }
-
-        return new DocumentNode(['definitions' => new NodeList($definitions)]);
+        return new Document_Node(['definitions' => new Node_List($definitions)]);
     }
 }

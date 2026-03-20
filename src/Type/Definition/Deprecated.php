@@ -1,14 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
-namespace GraphQL\Type\Definition;
+declare (strict_types=1);
+namespace Graph_Ql\Type\Definition;
 
 #[\Attribute(\Attribute::TARGET_ALL)]
 class Deprecated
 {
     public string $reason;
-
     public function __construct(string $reason = Directive::DEFAULT_DEPRECATION_REASON)
     {
         $this->reason = $reason;

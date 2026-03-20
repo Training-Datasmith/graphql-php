@@ -1,12 +1,10 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Language\AST;
 
-namespace GraphQL\Language\AST;
-
-class EnumValueNode extends Node implements ValueNode
+class Enum_Value_Node extends Node implements Value_Node
 {
-    public string $kind = NodeKind::ENUM;
-
+    public string $kind = Node_Kind::ENUM;
     public string $value;
 }

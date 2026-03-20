@@ -1,17 +1,15 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Type\Definition;
 
-namespace GraphQL\Type\Definition;
-
-use GraphQL\Deferred;
-use GraphQL\Error\Error;
-use GraphQL\Error\InvariantViolation;
-use GraphQL\Executor\Executor;
-use GraphQL\Language\AST\ObjectTypeDefinitionNode;
-use GraphQL\Language\AST\ObjectTypeExtensionNode;
-use GraphQL\Utils\Utils;
-
+use Graph_Ql\Deferred;
+use Graph_Ql\Error\Error;
+use Graph_Ql\Error\Invariant_Violation;
+use Graph_Ql\Executor\Executor;
+use Graph_Ql\Language\AST\Object_Type_Definition_Node;
+use Graph_Ql\Language\AST\Object_Type_Extension_Node;
+use Graph_Ql\Utils\Utils;
 /**
  * Object Type Definition.
  *
@@ -63,34 +61,28 @@ use GraphQL\Utils\Utils;
  *   extensionASTNodes?: array<ObjectTypeExtensionNode>|null
  * }
  */
-class ObjectType extends Type implements OutputType, CompositeType, NullableType, HasFieldsType, NamedType, ImplementingType
+class Object_Type extends Type implements Output_Type, Composite_Type, Nullable_Type, Has_Fields_Type, Named_Type, Implementing_Type
 {
-    use HasFieldsTypeImplementation;
-    use NamedTypeImplementation;
-    use ImplementingTypeImplementation;
-
-    public ?ObjectTypeDefinitionNode $astNode;
-
+    use Has_Fields_Type_Implementation;
+    use Named_Type_Implementation;
+    use Implementing_Type_Implementation;
+    public ?Object_Type_Definition_Node $ast_node;
     /** @var array<ObjectTypeExtensionNode> */
-    public array $extensionASTNodes;
-
+    public array $extension_ast_nodes;
     /**
      * @var callable|null
      *
      * @phpstan-var FieldResolver|null
      */
-    public $resolveFieldFn;
-
+    public $resolve_field_fn;
     /**
      * @var callable|null
      *
      * @phpstan-var ArgsMapper|null
      */
-    public $argsMapper;
-
+    public $args_mapper;
     /** @phpstan-var ObjectConfig */
     public array $config;
-
     /**
      * @phpstan-param ObjectConfig $config
      *
@@ -98,48 +90,37 @@ class ObjectType extends Type implements OutputType, CompositeType, NullableType
      */
     public function __construct(array $config)
     {
-        $this->name = $config['name'] ?? $this->inferName();
+        $this->name = $config['name'] ?? $this->infer_name();
         $this->description = $config['description'] ?? null;
-        $this->resolveFieldFn = $config['resolveField'] ?? null;
-        $this->argsMapper = $config['argsMapper'] ?? null;
-        $this->astNode = $config['astNode'] ?? null;
-        $this->extensionASTNodes = $config['extensionASTNodes'] ?? [];
-
+        $this->resolve_field_fn = $config['resolveField'] ?? null;
+        $this->args_mapper = $config['argsMapper'] ?? null;
+        $this->ast_node = $config['astNode'] ?? null;
+        $this->extension_ast_nodes = $config['extensionASTNodes'] ?? [];
         $this->config = $config;
     }
-
     /**
      * @param mixed $type
      *
      * @throws InvariantViolation
      */
-    public static function assertObjectType($type): self
+    public static function assert_object_type($type): self
     {
-        if (! $type instanceof self) {
-            $notObjectType = Utils::printSafe($type);
-            throw new InvariantViolation("Expected {$notObjectType} to be a GraphQL Object type.");
+        if (!$type instanceof self) {
+            $not_object_type = Utils::print_safe($type);
+            throw new Invariant_Violation("Expected {$not_object_type} to be a GraphQL Object type.");
         }
-
         return $type;
     }
-
     /**
      * @param mixed $objectValue The resolved value for the object type
      * @param mixed $context The context that was passed to GraphQL::execute()
      *
      * @return bool|Deferred|null
      */
-    public function isTypeOf($objectValue, $context, ResolveInfo $info)
+    public function is_type_of($object_value, $context, Resolve_Info $info)
     {
-        return isset($this->config['isTypeOf'])
-            ? $this->config['isTypeOf'](
-                $objectValue,
-                $context,
-                $info
-            )
-            : null;
+        return isset($this->config['isTypeOf']) ? $this->config['isTypeOf']($object_value, $context, $info) : null;
     }
-
     /**
      * Validates type config and throws if one of the type options is invalid.
      * Note: this method is shallow, it won't validate object fields and their arguments.
@@ -147,32 +128,27 @@ class ObjectType extends Type implements OutputType, CompositeType, NullableType
      * @throws Error
      * @throws InvariantViolation
      */
-    public function assertValid(): void
+    public function assert_valid(): void
     {
-        Utils::assertValidName($this->name);
-
-        $isTypeOf = $this->config['isTypeOf'] ?? null;
+        Utils::assert_valid_name($this->name);
+        $is_type_of = $this->config['isTypeOf'] ?? null;
         // @phpstan-ignore-next-line unnecessary according to types, but can happen during runtime
-        if (isset($isTypeOf) && ! is_callable($isTypeOf)) {
-            $notCallable = Utils::printSafe($isTypeOf);
-            throw new InvariantViolation("{$this->name} must provide \"isTypeOf\" as null or a callable, but got: {$notCallable}.");
+        if (isset($is_type_of) && !is_callable($is_type_of)) {
+            $not_callable = Utils::print_safe($is_type_of);
+            throw new Invariant_Violation("{$this->name} must provide \"isTypeOf\" as null or a callable, but got: {$not_callable}.");
         }
-
-        foreach ($this->getFields() as $field) {
-            $field->assertValid($this);
+        foreach ($this->get_fields() as $field) {
+            $field->assert_valid($this);
         }
-
-        $this->assertValidInterfaces();
+        $this->assert_valid_interfaces();
     }
-
-    public function astNode(): ?ObjectTypeDefinitionNode
+    public function ast_node(): ?Object_Type_Definition_Node
     {
-        return $this->astNode;
+        return $this->ast_node;
     }
-
     /** @return array<ObjectTypeExtensionNode> */
-    public function extensionASTNodes(): array
+    public function extension_ast_nodes(): array
     {
-        return $this->extensionASTNodes;
+        return $this->extension_ast_nodes;
     }
 }

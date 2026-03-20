@@ -1,21 +1,17 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Executor;
 
-namespace GraphQL\Executor;
-
-use GraphQL\Executor\Promise\Promise;
-
-class PromiseExecutor implements ExecutorImplementation
+use Graph_Ql\Executor\Promise\Promise;
+class Promise_Executor implements Executor_Implementation
 {
     private Promise $result;
-
     public function __construct(Promise $result)
     {
         $this->result = $result;
     }
-
-    public function doExecute(): Promise
+    public function do_execute(): Promise
     {
         return $this->result;
     }

@@ -1,8 +1,7 @@
 <?php
 
-declare(strict_types=1);
-
-namespace GraphQL\Language\AST;
+declare (strict_types=1);
+namespace Graph_Ql\Language\AST;
 
 /**
  * export type DefinitionNode =
@@ -10,6 +9,6 @@ namespace GraphQL\Language\AST;
  *   | TypeSystemDefinitionNode
  *   | TypeSystemExtensionNode;.
  */
-interface DefinitionNode
+interface Definition_Node
 {
 }

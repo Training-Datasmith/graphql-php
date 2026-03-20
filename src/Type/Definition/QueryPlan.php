@@ -1,47 +1,39 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Type\Definition;
 
-namespace GraphQL\Type\Definition;
-
-use GraphQL\Error\Error;
-use GraphQL\Error\InvariantViolation;
-use GraphQL\Executor\Values;
-use GraphQL\Language\AST\FieldNode;
-use GraphQL\Language\AST\FragmentDefinitionNode;
-use GraphQL\Language\AST\FragmentSpreadNode;
-use GraphQL\Language\AST\InlineFragmentNode;
-use GraphQL\Language\AST\SelectionSetNode;
-use GraphQL\Type\Introspection;
-use GraphQL\Type\Schema;
-
+use Graph_Ql\Error\Error;
+use Graph_Ql\Error\Invariant_Violation;
+use Graph_Ql\Executor\Values;
+use Graph_Ql\Language\AST\Field_Node;
+use Graph_Ql\Language\AST\Fragment_Definition_Node;
+use Graph_Ql\Language\AST\Fragment_Spread_Node;
+use Graph_Ql\Language\AST\Inline_Fragment_Node;
+use Graph_Ql\Language\AST\Selection_Set_Node;
+use Graph_Ql\Type\Introspection;
+use Graph_Ql\Type\Schema;
 /**
  * @phpstan-type QueryPlanOptions array{
  *   groupImplementorFields?: bool,
  * }
  */
-class QueryPlan
+class Query_Plan
 {
     /**
      * Map from type names to a list of fields referenced of that type.
      *
      * @var array<string, array<string, true>>
      */
-    private array $typeToFields = [];
-
+    private array $type_to_fields = [];
     private Schema $schema;
-
     /** @var array<string, mixed> */
-    private array $queryPlan = [];
-
+    private array $query_plan = [];
     /** @var array<string, mixed> */
-    private array $variableValues;
-
+    private array $variable_values;
     /** @var array<string, FragmentDefinitionNode> */
     private array $fragments;
-
-    private bool $groupImplementorFields;
-
+    private bool $group_implementor_fields;
     /**
      * @param iterable<FieldNode> $fieldNodes
      * @param array<string, mixed> $variableValues
@@ -52,70 +44,61 @@ class QueryPlan
      * @throws Error
      * @throws InvariantViolation
      */
-    public function __construct(ObjectType $parentType, Schema $schema, iterable $fieldNodes, array $variableValues, array $fragments, array $options = [])
+    public function __construct(Object_Type $parent_type, Schema $schema, iterable $field_nodes, array $variable_values, array $fragments, array $options = [])
     {
         $this->schema = $schema;
-        $this->variableValues = $variableValues;
+        $this->variable_values = $variable_values;
         $this->fragments = $fragments;
-        $this->groupImplementorFields = $options['groupImplementorFields'] ?? false;
-        $this->analyzeQueryPlan($parentType, $fieldNodes);
+        $this->group_implementor_fields = $options['groupImplementorFields'] ?? false;
+        $this->analyze_query_plan($parent_type, $field_nodes);
     }
-
     /** @return array<string, mixed> */
-    public function queryPlan(): array
+    public function query_plan(): array
     {
-        return $this->queryPlan;
+        return $this->query_plan;
     }
-
     /** @return array<int, string> */
-    public function getReferencedTypes(): array
+    public function get_referenced_types(): array
     {
-        return array_keys($this->typeToFields);
+        return array_keys($this->type_to_fields);
     }
-
-    public function hasType(string $type): bool
+    public function has_type(string $type): bool
     {
-        return isset($this->typeToFields[$type]);
+        return isset($this->type_to_fields[$type]);
     }
-
     /**
      * TODO return array<string, true>.
      *
      * @return array<int, string>
      */
-    public function getReferencedFields(): array
+    public function get_referenced_fields(): array
     {
-        $allFields = [];
-        foreach ($this->typeToFields as $fields) {
+        $all_fields = [];
+        foreach ($this->type_to_fields as $fields) {
             foreach ($fields as $field => $_) {
-                $allFields[$field] = true;
+                $all_fields[$field] = true;
             }
         }
-
-        return array_keys($allFields);
+        return array_keys($all_fields);
     }
-
-    public function hasField(string $field): bool
+    public function has_field(string $field): bool
     {
-        foreach ($this->typeToFields as $fields) {
+        foreach ($this->type_to_fields as $fields) {
             if (array_key_exists($field, $fields)) {
                 return true;
             }
         }
-
         return false;
     }
-
     /**
      * TODO return array<string, true>.
      *
      * @return array<int, string>
      */
-    public function subFields(string $typename): array
+    public function sub_fields(string $typename): array
     {
-        return array_keys($this->typeToFields[$typename] ?? []);
+        return array_keys($this->type_to_fields[$typename] ?? []);
     }
-
     /**
      * @param iterable<FieldNode> $fieldNodes
      *
@@ -123,34 +106,27 @@ class QueryPlan
      * @throws Error
      * @throws InvariantViolation
      */
-    private function analyzeQueryPlan(ObjectType $parentType, iterable $fieldNodes): void
+    private function analyze_query_plan(Object_Type $parent_type, iterable $field_nodes): void
     {
-        $queryPlan = [];
+        $query_plan = [];
         $implementors = [];
-        foreach ($fieldNodes as $fieldNode) {
-            if ($fieldNode->selectionSet === null) {
+        foreach ($field_nodes as $field_node) {
+            if ($field_node->selection_set === null) {
                 continue;
             }
-
-            $type = Type::getNamedType(
-                $parentType->getField($fieldNode->name->value)->getType()
-            );
-
-            $subfields = $this->analyzeSelectionSet($fieldNode->selectionSet, $type, $implementors);
-            $queryPlan = $this->arrayMergeDeep($queryPlan, $subfields);
+            $type = Type::get_named_type($parent_type->get_field($field_node->name->value)->get_type());
+            $subfields = $this->analyze_selection_set($field_node->selection_set, $type, $implementors);
+            $query_plan = $this->array_merge_deep($query_plan, $subfields);
         }
-
-        if ($this->groupImplementorFields) {
-            $this->queryPlan = ['fields' => $queryPlan];
-
+        if ($this->group_implementor_fields) {
+            $this->query_plan = ['fields' => $query_plan];
             if ($implementors !== []) {
-                $this->queryPlan['implementors'] = $implementors;
+                $this->query_plan['implementors'] = $implementors;
             }
         } else {
-            $this->queryPlan = $queryPlan;
+            $this->query_plan = $query_plan;
         }
     }
-
     /**
      * @param Type&NamedType $parentType
      * @param array<string, mixed> $implementors
@@ -161,73 +137,53 @@ class QueryPlan
      *
      * @return array<mixed>
      */
-    private function analyzeSelectionSet(SelectionSetNode $selectionSet, Type $parentType, array &$implementors): array
+    private function analyze_selection_set(Selection_Set_Node $selection_set, Type $parent_type, array &$implementors): array
     {
         $fields = [];
         $implementors = [];
-        foreach ($selectionSet->selections as $selection) {
-            if ($selection instanceof FieldNode) {
-                $fieldName = $selection->name->value;
-
-                if ($fieldName === Introspection::TYPE_NAME_FIELD_NAME) {
+        foreach ($selection_set->selections as $selection) {
+            if ($selection instanceof Field_Node) {
+                $field_name = $selection->name->value;
+                if ($field_name === Introspection::TYPE_NAME_FIELD_NAME) {
                     continue;
                 }
-
-                assert($parentType instanceof HasFieldsType, 'ensured by query validation');
-
-                $type = $parentType->getField($fieldName);
-                $selectionType = $type->getType();
-
-                $subImplementors = [];
-                $nestedSelectionSet = $selection->selectionSet;
-                $subfields = $nestedSelectionSet === null
-                    ? []
-                    : $this->analyzeSubFields($selectionType, $nestedSelectionSet, $subImplementors);
-
-                $fields[$fieldName] = [
-                    'type' => $selectionType,
-                    'fields' => $subfields,
-                    'args' => Values::getArgumentValues($type, $selection, $this->variableValues),
-                ];
-                if ($this->groupImplementorFields && $subImplementors !== []) {
-                    $fields[$fieldName]['implementors'] = $subImplementors;
+                assert($parent_type instanceof Has_Fields_Type, 'ensured by query validation');
+                $type = $parent_type->get_field($field_name);
+                $selection_type = $type->get_type();
+                $sub_implementors = [];
+                $nested_selection_set = $selection->selection_set;
+                $subfields = $nested_selection_set === null ? [] : $this->analyze_sub_fields($selection_type, $nested_selection_set, $sub_implementors);
+                $fields[$field_name] = ['type' => $selection_type, 'fields' => $subfields, 'args' => Values::get_argument_values($type, $selection, $this->variable_values)];
+                if ($this->group_implementor_fields && $sub_implementors !== []) {
+                    $fields[$field_name]['implementors'] = $sub_implementors;
                 }
-            } elseif ($selection instanceof FragmentSpreadNode) {
-                $spreadName = $selection->name->value;
-                $fragment = $this->fragments[$spreadName] ?? null;
+            } elseif ($selection instanceof Fragment_Spread_Node) {
+                $spread_name = $selection->name->value;
+                $fragment = $this->fragments[$spread_name] ?? null;
                 if ($fragment === null) {
                     continue;
                 }
-
-                $type = $this->schema->getType($fragment->typeCondition->name->value);
+                $type = $this->schema->get_type($fragment->type_condition->name->value);
                 assert($type instanceof Type, 'ensured by query validation');
-
-                $subfields = $this->analyzeSubFields($type, $fragment->selectionSet);
-                $fields = $this->mergeFields($parentType, $type, $fields, $subfields, $implementors);
-            } elseif ($selection instanceof InlineFragmentNode) {
-                $typeCondition = $selection->typeCondition;
-                $type = $typeCondition === null
-                    ? $parentType
-                    : $this->schema->getType($typeCondition->name->value);
+                $subfields = $this->analyze_sub_fields($type, $fragment->selection_set);
+                $fields = $this->merge_fields($parent_type, $type, $fields, $subfields, $implementors);
+            } elseif ($selection instanceof Inline_Fragment_Node) {
+                $type_condition = $selection->type_condition;
+                $type = $type_condition === null ? $parent_type : $this->schema->get_type($type_condition->name->value);
                 assert($type instanceof Type, 'ensured by query validation');
-
-                $subfields = $this->analyzeSubFields($type, $selection->selectionSet);
-                $fields = $this->mergeFields($parentType, $type, $fields, $subfields, $implementors);
+                $subfields = $this->analyze_sub_fields($type, $selection->selection_set);
+                $fields = $this->merge_fields($parent_type, $type, $fields, $subfields, $implementors);
             }
         }
-
-        $parentTypeName = $parentType->name();
-
+        $parent_type_name = $parent_type->name();
         // TODO evaluate if this line is really necessary.
         // It causes abstract types to appear in getReferencedTypes() even if they do not have any fields directly referencing them.
-        $this->typeToFields[$parentTypeName] ??= [];
-        foreach ($fields as $fieldName => $_) {
-            $this->typeToFields[$parentTypeName][$fieldName] = true;
+        $this->type_to_fields[$parent_type_name] ??= [];
+        foreach ($fields as $field_name => $_) {
+            $this->type_to_fields[$parent_type_name][$field_name] = true;
         }
-
         return $fields;
     }
-
     /**
      * @param array<string, mixed> $implementors
      *
@@ -236,15 +192,11 @@ class QueryPlan
      *
      * @return array<mixed>
      */
-    private function analyzeSubFields(Type $type, SelectionSetNode $selectionSet, array &$implementors = []): array
+    private function analyze_sub_fields(Type $type, Selection_Set_Node $selection_set, array &$implementors = []): array
     {
-        $type = Type::getNamedType($type);
-
-        return $type instanceof ObjectType || $type instanceof AbstractType
-            ? $this->analyzeSelectionSet($selectionSet, $type, $implementors)
-            : [];
+        $type = Type::get_named_type($type);
+        return $type instanceof Object_Type || $type instanceof Abstract_Type ? $this->analyze_selection_set($selection_set, $type, $implementors) : [];
     }
-
     /**
      * @param Type&NamedType $parentType
      * @param Type&NamedType $type
@@ -254,29 +206,16 @@ class QueryPlan
      *
      * @return array<mixed>
      */
-    private function mergeFields(Type $parentType, Type $type, array $fields, array $subfields, array &$implementors): array
+    private function merge_fields(Type $parent_type, Type $type, array $fields, array $subfields, array &$implementors): array
     {
-        if ($this->groupImplementorFields && $parentType instanceof AbstractType && ! $type instanceof AbstractType) {
+        if ($this->group_implementor_fields && $parent_type instanceof Abstract_Type && !$type instanceof Abstract_Type) {
             $name = $type->name;
             assert(is_string($name));
-
-            $implementors[$name] = [
-                'type' => $type,
-                'fields' => $this->arrayMergeDeep(
-                    $implementors[$name]['fields'] ?? [],
-                    array_diff_key($subfields, $fields)
-                ),
-            ];
-
-            return $this->arrayMergeDeep(
-                $fields,
-                array_intersect_key($subfields, $fields)
-            );
+            $implementors[$name] = ['type' => $type, 'fields' => $this->array_merge_deep($implementors[$name]['fields'] ?? [], array_diff_key($subfields, $fields))];
+            return $this->array_merge_deep($fields, array_intersect_key($subfields, $fields));
         }
-
-        return $this->arrayMergeDeep($subfields, $fields);
+        return $this->array_merge_deep($subfields, $fields);
     }
-
     /**
      * Merges nested arrays, but handles non array values differently from array_merge_recursive.
      * While array_merge_recursive tries to merge non-array values, in this implementation they will be overwritten.
@@ -288,20 +227,19 @@ class QueryPlan
      *
      * @return array<mixed>
      */
-    private function arrayMergeDeep(array $array1, array $array2): array
+    private function array_merge_deep(array $array1, array $array2): array
     {
         foreach ($array2 as $key => &$value) {
             if (is_numeric($key)) {
-                if (! in_array($value, $array1, true)) {
+                if (!in_array($value, $array1, true)) {
                     $array1[] = $value;
                 }
             } elseif (is_array($value) && isset($array1[$key]) && is_array($array1[$key])) {
-                $array1[$key] = $this->arrayMergeDeep($array1[$key], $value);
+                $array1[$key] = $this->array_merge_deep($array1[$key], $value);
             } else {
                 $array1[$key] = $value;
             }
         }
-
         return $array1;
     }
 }

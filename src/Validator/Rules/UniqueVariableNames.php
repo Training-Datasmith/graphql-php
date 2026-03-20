@@ -1,44 +1,33 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Validator\Rules;
 
-namespace GraphQL\Validator\Rules;
-
-use GraphQL\Error\Error;
-use GraphQL\Language\AST\NameNode;
-use GraphQL\Language\AST\NodeKind;
-use GraphQL\Language\AST\VariableDefinitionNode;
-use GraphQL\Validator\QueryValidationContext;
-
-class UniqueVariableNames extends ValidationRule
+use Graph_Ql\Error\Error;
+use Graph_Ql\Language\AST\Name_Node;
+use Graph_Ql\Language\AST\Node_Kind;
+use Graph_Ql\Language\AST\Variable_Definition_Node;
+use Graph_Ql\Validator\Query_Validation_Context;
+class Unique_Variable_Names extends Validation_Rule
 {
     /** @var array<string, NameNode> */
-    protected array $knownVariableNames;
-
-    public function getVisitor(QueryValidationContext $context): array
+    protected array $known_variable_names;
+    public function get_visitor(Query_Validation_Context $context): array
     {
-        $this->knownVariableNames = [];
-
-        return [
-            NodeKind::OPERATION_DEFINITION => function (): void {
-                $this->knownVariableNames = [];
-            },
-            NodeKind::VARIABLE_DEFINITION => function (VariableDefinitionNode $node) use ($context): void {
-                $variableName = $node->variable->name->value;
-                if (! isset($this->knownVariableNames[$variableName])) {
-                    $this->knownVariableNames[$variableName] = $node->variable->name;
-                } else {
-                    $context->reportError(new Error(
-                        static::duplicateVariableMessage($variableName),
-                        [$this->knownVariableNames[$variableName], $node->variable->name]
-                    ));
-                }
-            },
-        ];
+        $this->known_variable_names = [];
+        return [Node_Kind::OPERATION_DEFINITION => function (): void {
+            $this->known_variable_names = [];
+        }, Node_Kind::VARIABLE_DEFINITION => function (Variable_Definition_Node $node) use ($context): void {
+            $variable_name = $node->variable->name->value;
+            if (!isset($this->known_variable_names[$variable_name])) {
+                $this->known_variable_names[$variable_name] = $node->variable->name;
+            } else {
+                $context->report_error(new Error(static::duplicate_variable_message($variable_name), [$this->known_variable_names[$variable_name], $node->variable->name]));
+            }
+        }];
     }
-
-    public static function duplicateVariableMessage(string $variableName): string
+    public static function duplicate_variable_message(string $variable_name): string
     {
-        return "There can be only one variable named \"{$variableName}\".";
+        return "There can be only one variable named \"{$variable_name}\".";
     }
 }

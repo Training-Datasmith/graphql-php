@@ -1,9 +1,8 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Language;
 
-namespace GraphQL\Language;
-
-final class VisitorStop extends VisitorOperation
+final class Visitor_Stop extends Visitor_Operation
 {
 }

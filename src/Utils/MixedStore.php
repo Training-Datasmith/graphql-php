@@ -1,8 +1,7 @@
 <?php
 
-declare(strict_types=1);
-
-namespace GraphQL\Utils;
+declare (strict_types=1);
+namespace Graph_Ql\Utils;
 
 /**
  * Similar to PHP array, but allows any type of data to act as key (including arrays, objects, scalars).
@@ -15,198 +14,164 @@ namespace GraphQL\Utils;
  *
  * @see \GraphQL\Tests\Utils\MixedStoreTest
  */
-class MixedStore implements \ArrayAccess
+class Mixed_Store implements \ArrayAccess
 {
     /** @var array<TValue> */
-    private array $standardStore = [];
-
+    private array $standard_store = [];
     /** @var array<TValue> */
-    private array $floatStore = [];
-
+    private array $float_store = [];
     /** @var \SplObjectStorage<object, TValue> */
-    private \SplObjectStorage $objectStore;
-
+    private \Spl_Object_Storage $object_store;
     /** @var array<int, array<mixed>> */
-    private array $arrayKeys = [];
-
+    private array $array_keys = [];
     /** @var array<int, TValue> */
-    private array $arrayValues = [];
-
+    private array $array_values = [];
     /** @var array<mixed> */
-    private ?array $lastArrayKey = null;
-
+    private ?array $last_array_key = null;
     /** @var TValue|null */
-    private $lastArrayValue;
-
+    private $last_array_value;
     /** @var TValue|null */
-    private $nullValue;
-
-    private bool $nullValueIsSet = false;
-
+    private $null_value;
+    private bool $null_value_is_set = false;
     /** @var TValue|null */
-    private $trueValue;
-
-    private bool $trueValueIsSet = false;
-
+    private $true_value;
+    private bool $true_value_is_set = false;
     /** @var TValue|null */
-    private $falseValue;
-
-    private bool $falseValueIsSet = false;
-
+    private $false_value;
+    private bool $false_value_is_set = false;
     public function __construct()
     {
-        $this->objectStore = new \SplObjectStorage();
+        $this->object_store = new \Spl_Object_Storage();
     }
-
     /** @param mixed $offset */
-    #[\ReturnTypeWillChange]
+    #[\Return_Type_Will_Change]
     public function offsetExists($offset): bool
     {
         if ($offset === false) {
-            return $this->falseValueIsSet;
+            return $this->false_value_is_set;
         }
-
         if ($offset === true) {
-            return $this->trueValueIsSet;
+            return $this->true_value_is_set;
         }
-
         if (is_int($offset) || is_string($offset)) {
-            return array_key_exists($offset, $this->standardStore);
+            return array_key_exists($offset, $this->standard_store);
         }
-
         if (is_float($offset)) {
-            return array_key_exists((string) $offset, $this->floatStore);
+            return array_key_exists((string) $offset, $this->float_store);
         }
-
         if (is_object($offset)) {
-            return $this->objectStore->offsetExists($offset);
+            return $this->object_store->offsetExists($offset);
         }
-
         if (is_array($offset)) {
-            foreach ($this->arrayKeys as $index => $entry) {
+            foreach ($this->array_keys as $index => $entry) {
                 if ($entry === $offset) {
-                    $this->lastArrayKey = $offset;
-                    $this->lastArrayValue = $this->arrayValues[$index];
-
+                    $this->last_array_key = $offset;
+                    $this->last_array_value = $this->array_values[$index];
                     return true;
                 }
             }
         }
-
         if ($offset === null) {
-            return $this->nullValueIsSet;
+            return $this->null_value_is_set;
         }
-
         return false;
     }
-
     /**
      * @param mixed $offset
      *
      * @return TValue|null
      */
-    #[\ReturnTypeWillChange]
+    #[\Return_Type_Will_Change]
     public function offsetGet($offset)
     {
         if ($offset === true) {
-            return $this->trueValue;
+            return $this->true_value;
         }
-
         if ($offset === false) {
-            return $this->falseValue;
+            return $this->false_value;
         }
-
         if (is_int($offset) || is_string($offset)) {
-            return $this->standardStore[$offset];
+            return $this->standard_store[$offset];
         }
-
         if (is_float($offset)) {
-            return $this->floatStore[(string) $offset];
+            return $this->float_store[(string) $offset];
         }
-
         if (is_object($offset)) {
-            return $this->objectStore->offsetGet($offset);
+            return $this->object_store->offsetGet($offset);
         }
-
         if (is_array($offset)) {
             // offsetGet is often called directly after offsetExists, so optimize to avoid second loop:
-            if ($this->lastArrayKey === $offset) {
-                return $this->lastArrayValue;
+            if ($this->last_array_key === $offset) {
+                return $this->last_array_value;
             }
-
-            foreach ($this->arrayKeys as $index => $entry) {
+            foreach ($this->array_keys as $index => $entry) {
                 if ($entry === $offset) {
-                    return $this->arrayValues[$index];
+                    return $this->array_values[$index];
                 }
             }
         }
-
         if ($offset === null) {
-            return $this->nullValue;
+            return $this->null_value;
         }
-
         return null;
     }
-
     /**
      * @param mixed $offset
      * @param TValue $value
      *
      * @throws \InvalidArgumentException
      */
-    #[\ReturnTypeWillChange]
+    #[\Return_Type_Will_Change]
     public function offsetSet($offset, $value): void
     {
         if ($offset === false) {
-            $this->falseValue = $value;
-            $this->falseValueIsSet = true;
+            $this->false_value = $value;
+            $this->false_value_is_set = true;
         } elseif ($offset === true) {
-            $this->trueValue = $value;
-            $this->trueValueIsSet = true;
+            $this->true_value = $value;
+            $this->true_value_is_set = true;
         } elseif (is_int($offset) || is_string($offset)) {
-            $this->standardStore[$offset] = $value;
+            $this->standard_store[$offset] = $value;
         } elseif (is_float($offset)) {
-            $this->floatStore[(string) $offset] = $value;
+            $this->float_store[(string) $offset] = $value;
         } elseif (is_object($offset)) {
-            $this->objectStore[$offset] = $value;
+            $this->object_store[$offset] = $value;
         } elseif (is_array($offset)) {
-            $this->arrayKeys[] = $offset;
-            $this->arrayValues[] = $value;
+            $this->array_keys[] = $offset;
+            $this->array_values[] = $value;
         } elseif ($offset === null) {
-            $this->nullValue = $value;
-            $this->nullValueIsSet = true;
+            $this->null_value = $value;
+            $this->null_value_is_set = true;
         } else {
-            $unexpectedOffset = Utils::printSafe($offset);
-            throw new \InvalidArgumentException("Unexpected offset type: {$unexpectedOffset}");
+            $unexpected_offset = Utils::print_safe($offset);
+            throw new \InvalidArgumentException("Unexpected offset type: {$unexpected_offset}");
         }
     }
-
     /** @param mixed $offset */
-    #[\ReturnTypeWillChange]
+    #[\Return_Type_Will_Change]
     public function offsetUnset($offset): void
     {
         if ($offset === true) {
-            $this->trueValue = null;
-            $this->trueValueIsSet = false;
+            $this->true_value = null;
+            $this->true_value_is_set = false;
         } elseif ($offset === false) {
-            $this->falseValue = null;
-            $this->falseValueIsSet = false;
+            $this->false_value = null;
+            $this->false_value_is_set = false;
         } elseif (is_int($offset) || is_string($offset)) {
-            unset($this->standardStore[$offset]);
+            unset($this->standard_store[$offset]);
         } elseif (is_float($offset)) {
-            unset($this->floatStore[(string) $offset]);
+            unset($this->float_store[(string) $offset]);
         } elseif (is_object($offset)) {
-            $this->objectStore->offsetUnset($offset);
+            $this->object_store->offsetUnset($offset);
         } elseif (is_array($offset)) {
-            $index = array_search($offset, $this->arrayKeys, true);
-
+            $index = array_search($offset, $this->array_keys, true);
             if ($index !== false) {
-                array_splice($this->arrayKeys, $index, 1);
-                array_splice($this->arrayValues, $index, 1);
+                array_splice($this->array_keys, $index, 1);
+                array_splice($this->array_values, $index, 1);
             }
         } elseif ($offset === null) {
-            $this->nullValue = null;
-            $this->nullValueIsSet = false;
+            $this->null_value = null;
+            $this->null_value_is_set = false;
         }
     }
 }

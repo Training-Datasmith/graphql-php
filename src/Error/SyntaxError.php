@@ -1,20 +1,13 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Error;
 
-namespace GraphQL\Error;
-
-use GraphQL\Language\Source;
-
-class SyntaxError extends Error
+use Graph_Ql\Language\Source;
+class Syntax_Error extends Error
 {
     public function __construct(Source $source, int $position, string $description)
     {
-        parent::__construct(
-            "Syntax Error: {$description}",
-            null,
-            $source,
-            [$position]
-        );
+        parent::__construct("Syntax Error: {$description}", null, $source, [$position]);
     }
 }

@@ -1,16 +1,13 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Language\AST;
 
-namespace GraphQL\Language\AST;
-
-class SchemaExtensionNode extends Node implements TypeSystemExtensionNode
+class Schema_Extension_Node extends Node implements Type_System_Extension_Node
 {
-    public string $kind = NodeKind::SCHEMA_EXTENSION;
-
+    public string $kind = Node_Kind::SCHEMA_EXTENSION;
     /** @var NodeList<DirectiveNode> */
-    public NodeList $directives;
-
+    public Node_List $directives;
     /** @var NodeList<OperationTypeDefinitionNode> */
-    public NodeList $operationTypes;
+    public Node_List $operation_types;
 }

@@ -1,15 +1,13 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Executor;
 
-namespace GraphQL\Executor;
-
-use GraphQL\Error\Error;
-use GraphQL\Executor\Promise\PromiseAdapter;
-use GraphQL\Language\AST\FragmentDefinitionNode;
-use GraphQL\Language\AST\OperationDefinitionNode;
-use GraphQL\Type\Schema;
-
+use Graph_Ql\Error\Error;
+use Graph_Ql\Executor\Promise\Promise_Adapter;
+use Graph_Ql\Language\AST\Fragment_Definition_Node;
+use Graph_Ql\Language\AST\Operation_Definition_Node;
+use Graph_Ql\Type\Schema;
 /**
  * Data that must be available at all points during query execution.
  *
@@ -19,43 +17,33 @@ use GraphQL\Type\Schema;
  * @phpstan-import-type FieldResolver from Executor
  * @phpstan-import-type ArgsMapper from Executor
  */
-class ExecutionContext
+class Execution_Context
 {
     public Schema $schema;
-
     /** @var array<string, FragmentDefinitionNode> */
     public array $fragments;
-
     /** @var mixed */
-    public $rootValue;
-
+    public $root_value;
     /** @var mixed */
-    public $contextValue;
-
-    public OperationDefinitionNode $operation;
-
+    public $context_value;
+    public Operation_Definition_Node $operation;
     /** @var array<string, mixed> */
-    public array $variableValues;
-
+    public array $variable_values;
     /**
      * @var callable
      *
      * @phpstan-var FieldResolver
      */
-    public $fieldResolver;
-
+    public $field_resolver;
     /**
      * @var callable
      *
      * @phpstan-var ArgsMapper
      */
-    public $argsMapper;
-
+    public $args_mapper;
     /** @var list<Error> */
     public array $errors;
-
-    public PromiseAdapter $promiseAdapter;
-
+    public Promise_Adapter $promise_adapter;
     /**
      * @param array<string, FragmentDefinitionNode> $fragments
      * @param mixed $rootValue
@@ -65,31 +53,20 @@ class ExecutionContext
      *
      * @phpstan-param FieldResolver $fieldResolver
      */
-    public function __construct(
-        Schema $schema,
-        array $fragments,
-        $rootValue,
-        $contextValue,
-        OperationDefinitionNode $operation,
-        array $variableValues,
-        array $errors,
-        callable $fieldResolver,
-        callable $argsMapper,
-        PromiseAdapter $promiseAdapter
-    ) {
+    public function __construct(Schema $schema, array $fragments, $root_value, $context_value, Operation_Definition_Node $operation, array $variable_values, array $errors, callable $field_resolver, callable $args_mapper, Promise_Adapter $promise_adapter)
+    {
         $this->schema = $schema;
         $this->fragments = $fragments;
-        $this->rootValue = $rootValue;
-        $this->contextValue = $contextValue;
+        $this->root_value = $root_value;
+        $this->context_value = $context_value;
         $this->operation = $operation;
-        $this->variableValues = $variableValues;
+        $this->variable_values = $variable_values;
         $this->errors = $errors;
-        $this->fieldResolver = $fieldResolver;
-        $this->argsMapper = $argsMapper;
-        $this->promiseAdapter = $promiseAdapter;
+        $this->field_resolver = $field_resolver;
+        $this->args_mapper = $args_mapper;
+        $this->promise_adapter = $promise_adapter;
     }
-
-    public function addError(Error $error): void
+    public function add_error(Error $error): void
     {
         $this->errors[] = $error;
     }

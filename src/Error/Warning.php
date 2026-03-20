@@ -1,8 +1,7 @@
 <?php
 
-declare(strict_types=1);
-
-namespace GraphQL\Error;
+declare (strict_types=1);
+namespace Graph_Ql\Error;
 
 /**
  * Encapsulates warnings produced by the library.
@@ -21,19 +20,15 @@ final class Warning
     public const WARNING_CONFIG_DEPRECATION = 16;
     public const WARNING_NOT_A_TYPE = 32;
     public const ALL = 63;
-
-    private static int $enableWarnings = self::ALL;
-
+    private static int $enable_warnings = self::ALL;
     /** @var array<int, true> */
     private static array $warned = [];
-
     /**
      * @var callable|null
      *
      * @phpstan-var WarningHandler|null
      */
-    private static $warningHandler;
-
+    private static $warning_handler;
     /**
      * Sets warning handler which can intercept all system warnings.
      * When not set, trigger_error() is used to notify about warnings.
@@ -42,11 +37,10 @@ final class Warning
      *
      * @api
      */
-    public static function setWarningHandler(?callable $warningHandler = null): void
+    public static function set_warning_handler(?callable $warning_handler = null): void
     {
-        self::$warningHandler = $warningHandler;
+        self::$warning_handler = $warning_handler;
     }
-
     /**
      * Suppress warning by id (has no effect when custom warning handler is set).
      *
@@ -61,18 +55,17 @@ final class Warning
     public static function suppress($suppress = true): void
     {
         if ($suppress === true) {
-            self::$enableWarnings = 0;
+            self::$enable_warnings = 0;
         } elseif ($suppress === false) {
-            self::$enableWarnings = self::ALL;
+            self::$enable_warnings = self::ALL;
             // @phpstan-ignore-next-line necessary until we can use proper unions
         } elseif (is_int($suppress)) {
-            self::$enableWarnings &= ~$suppress;
+            self::$enable_warnings &= ~$suppress;
         } else {
             $type = gettype($suppress);
             throw new \InvalidArgumentException("Expected type bool|int, got {$type}.");
         }
     }
-
     /**
      * Re-enable previously suppressed warning by id (has no effect when custom warning handler is set).
      *
@@ -87,38 +80,34 @@ final class Warning
     public static function enable($enable = true): void
     {
         if ($enable === true) {
-            self::$enableWarnings = self::ALL;
+            self::$enable_warnings = self::ALL;
         } elseif ($enable === false) {
-            self::$enableWarnings = 0;
+            self::$enable_warnings = 0;
             // @phpstan-ignore-next-line necessary until we can use proper unions
         } elseif (is_int($enable)) {
-            self::$enableWarnings |= $enable;
+            self::$enable_warnings |= $enable;
         } else {
             $type = gettype($enable);
             throw new \InvalidArgumentException("Expected type bool|int, got {$type}.");
         }
     }
-
-    public static function warnOnce(string $errorMessage, int $warningId, ?int $messageLevel = null): void
+    public static function warn_once(string $error_message, int $warning_id, ?int $message_level = null): void
     {
-        $messageLevel ??= \E_USER_WARNING;
-
-        if (self::$warningHandler !== null) {
-            (self::$warningHandler)($errorMessage, $warningId, $messageLevel);
-        } elseif ((self::$enableWarnings & $warningId) > 0 && ! isset(self::$warned[$warningId])) {
-            self::$warned[$warningId] = true;
-            trigger_error($errorMessage, $messageLevel);
+        $message_level ??= \E_USER_WARNING;
+        if (self::$warning_handler !== null) {
+            (self::$warning_handler)($error_message, $warning_id, $message_level);
+        } elseif ((self::$enable_warnings & $warning_id) > 0 && !isset(self::$warned[$warning_id])) {
+            self::$warned[$warning_id] = true;
+            trigger_error($error_message, $message_level);
         }
     }
-
-    public static function warn(string $errorMessage, int $warningId, ?int $messageLevel = null): void
+    public static function warn(string $error_message, int $warning_id, ?int $message_level = null): void
     {
-        $messageLevel ??= \E_USER_WARNING;
-
-        if (self::$warningHandler !== null) {
-            (self::$warningHandler)($errorMessage, $warningId, $messageLevel);
-        } elseif ((self::$enableWarnings & $warningId) > 0) {
-            trigger_error($errorMessage, $messageLevel);
+        $message_level ??= \E_USER_WARNING;
+        if (self::$warning_handler !== null) {
+            (self::$warning_handler)($error_message, $warning_id, $message_level);
+        } elseif ((self::$enable_warnings & $warning_id) > 0) {
+            trigger_error($error_message, $message_level);
         }
     }
 }

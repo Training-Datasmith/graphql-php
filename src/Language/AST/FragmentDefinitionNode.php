@@ -1,15 +1,12 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Language\AST;
 
-namespace GraphQL\Language\AST;
-
-class FragmentDefinitionNode extends Node implements ExecutableDefinitionNode, HasSelectionSet
+class Fragment_Definition_Node extends Node implements Executable_Definition_Node, Has_Selection_Set
 {
-    public string $kind = NodeKind::FRAGMENT_DEFINITION;
-
-    public NameNode $name;
-
+    public string $kind = Node_Kind::FRAGMENT_DEFINITION;
+    public Name_Node $name;
     /**
      * Note: fragment variable definitions are experimental and may be changed
      * or removed in the future.
@@ -18,23 +15,18 @@ class FragmentDefinitionNode extends Node implements ExecutableDefinitionNode, H
      *
      * @var NodeList<VariableDefinitionNode>|null
      */
-    public ?NodeList $variableDefinitions = null;
-
-    public NamedTypeNode $typeCondition;
-
+    public ?Node_List $variable_definitions = null;
+    public Named_Type_Node $type_condition;
     /** @var NodeList<DirectiveNode> */
-    public NodeList $directives;
-
-    public SelectionSetNode $selectionSet;
-
+    public Node_List $directives;
+    public Selection_Set_Node $selection_set;
     public function __construct(array $vars)
     {
         parent::__construct($vars);
-        $this->directives ??= new NodeList([]);
+        $this->directives ??= new Node_List([]);
     }
-
-    public function getSelectionSet(): SelectionSetNode
+    public function get_selection_set(): Selection_Set_Node
     {
-        return $this->selectionSet;
+        return $this->selection_set;
     }
 }

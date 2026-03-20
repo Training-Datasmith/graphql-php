@@ -1,551 +1,417 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Type;
 
-namespace GraphQL\Type;
-
-use GraphQL\Error\Error;
-use GraphQL\Error\InvariantViolation;
-use GraphQL\Language\AST\DirectiveDefinitionNode;
-use GraphQL\Language\AST\DirectiveNode;
-use GraphQL\Language\AST\EnumTypeDefinitionNode;
-use GraphQL\Language\AST\EnumTypeExtensionNode;
-use GraphQL\Language\AST\FieldDefinitionNode;
-use GraphQL\Language\AST\InputObjectTypeDefinitionNode;
-use GraphQL\Language\AST\InputObjectTypeExtensionNode;
-use GraphQL\Language\AST\InputValueDefinitionNode;
-use GraphQL\Language\AST\InterfaceTypeDefinitionNode;
-use GraphQL\Language\AST\InterfaceTypeExtensionNode;
-use GraphQL\Language\AST\ListTypeNode;
-use GraphQL\Language\AST\NamedTypeNode;
-use GraphQL\Language\AST\Node;
-use GraphQL\Language\AST\NodeList;
-use GraphQL\Language\AST\NonNullTypeNode;
-use GraphQL\Language\AST\ObjectTypeDefinitionNode;
-use GraphQL\Language\AST\ObjectTypeExtensionNode;
-use GraphQL\Language\AST\SchemaDefinitionNode;
-use GraphQL\Language\AST\SchemaExtensionNode;
-use GraphQL\Language\AST\TypeNode;
-use GraphQL\Language\AST\UnionTypeDefinitionNode;
-use GraphQL\Language\AST\UnionTypeExtensionNode;
-use GraphQL\Language\DirectiveLocation;
-use GraphQL\Type\Definition\Argument;
-use GraphQL\Type\Definition\Directive;
-use GraphQL\Type\Definition\EnumType;
-use GraphQL\Type\Definition\EnumValueDefinition;
-use GraphQL\Type\Definition\FieldDefinition;
-use GraphQL\Type\Definition\ImplementingType;
-use GraphQL\Type\Definition\InputObjectField;
-use GraphQL\Type\Definition\InputObjectType;
-use GraphQL\Type\Definition\InterfaceType;
-use GraphQL\Type\Definition\NamedType;
-use GraphQL\Type\Definition\ObjectType;
-use GraphQL\Type\Definition\ScalarType;
-use GraphQL\Type\Definition\Type;
-use GraphQL\Type\Definition\UnionType;
-use GraphQL\Type\Validation\InputObjectCircularRefs;
-use GraphQL\Utils\TypeComparators;
-use GraphQL\Utils\Utils;
-
-class SchemaValidationContext
+use Graph_Ql\Error\Error;
+use Graph_Ql\Error\Invariant_Violation;
+use Graph_Ql\Language\AST\Directive_Definition_Node;
+use Graph_Ql\Language\AST\Directive_Node;
+use Graph_Ql\Language\AST\Enum_Type_Definition_Node;
+use Graph_Ql\Language\AST\Enum_Type_Extension_Node;
+use Graph_Ql\Language\AST\Field_Definition_Node;
+use Graph_Ql\Language\AST\Input_Object_Type_Definition_Node;
+use Graph_Ql\Language\AST\Input_Object_Type_Extension_Node;
+use Graph_Ql\Language\AST\Input_Value_Definition_Node;
+use Graph_Ql\Language\AST\Interface_Type_Definition_Node;
+use Graph_Ql\Language\AST\Interface_Type_Extension_Node;
+use Graph_Ql\Language\AST\List_Type_Node;
+use Graph_Ql\Language\AST\Named_Type_Node;
+use Graph_Ql\Language\AST\Node;
+use Graph_Ql\Language\AST\Node_List;
+use Graph_Ql\Language\AST\Non_Null_Type_Node;
+use Graph_Ql\Language\AST\Object_Type_Definition_Node;
+use Graph_Ql\Language\AST\Object_Type_Extension_Node;
+use Graph_Ql\Language\AST\Schema_Definition_Node;
+use Graph_Ql\Language\AST\Schema_Extension_Node;
+use Graph_Ql\Language\AST\Type_Node;
+use Graph_Ql\Language\AST\Union_Type_Definition_Node;
+use Graph_Ql\Language\AST\Union_Type_Extension_Node;
+use Graph_Ql\Language\Directive_Location;
+use Graph_Ql\Type\Definition\Argument;
+use Graph_Ql\Type\Definition\Directive;
+use Graph_Ql\Type\Definition\Enum_Type;
+use Graph_Ql\Type\Definition\Enum_Value_Definition;
+use Graph_Ql\Type\Definition\Field_Definition;
+use Graph_Ql\Type\Definition\Implementing_Type;
+use Graph_Ql\Type\Definition\Input_Object_Field;
+use Graph_Ql\Type\Definition\Input_Object_Type;
+use Graph_Ql\Type\Definition\Interface_Type;
+use Graph_Ql\Type\Definition\Named_Type;
+use Graph_Ql\Type\Definition\Object_Type;
+use Graph_Ql\Type\Definition\Scalar_Type;
+use Graph_Ql\Type\Definition\Type;
+use Graph_Ql\Type\Definition\Union_Type;
+use Graph_Ql\Type\Validation\Input_Object_Circular_Refs;
+use Graph_Ql\Utils\Type_Comparators;
+use Graph_Ql\Utils\Utils;
+class Schema_Validation_Context
 {
     /** @var list<Error> */
     private array $errors = [];
-
     private Schema $schema;
-
-    private InputObjectCircularRefs $inputObjectCircularRefs;
-
+    private Input_Object_Circular_Refs $input_object_circular_refs;
     public function __construct(Schema $schema)
     {
         $this->schema = $schema;
-        $this->inputObjectCircularRefs = new InputObjectCircularRefs($this);
+        $this->input_object_circular_refs = new Input_Object_Circular_Refs($this);
     }
-
     /** @return list<Error> */
-    public function getErrors(): array
+    public function get_errors(): array
     {
         return $this->errors;
     }
-
-    public function validateRootTypes(): void
+    public function validate_root_types(): void
     {
-        if ($this->schema->getQueryType() === null) {
-            $this->reportError('Query root type must be provided.', $this->schema->astNode);
+        if ($this->schema->get_query_type() === null) {
+            $this->report_error('Query root type must be provided.', $this->schema->ast_node);
         }
-
         // Triggers a type error if wrong
-        $this->schema->getMutationType();
-        $this->schema->getSubscriptionType();
+        $this->schema->get_mutation_type();
+        $this->schema->get_subscription_type();
     }
-
     /** @param array<Node|null>|Node|null $nodes */
-    public function reportError(string $message, $nodes = null): void
+    public function report_error(string $message, $nodes = null): void
     {
         $nodes = array_filter(is_array($nodes) ? $nodes : [$nodes]);
-        $this->addError(new Error($message, $nodes));
+        $this->add_error(new Error($message, $nodes));
     }
-
-    private function addError(Error $error): void
+    private function add_error(Error $error): void
     {
         $this->errors[] = $error;
     }
-
     /** @throws InvariantViolation */
-    public function validateDirectives(): void
+    public function validate_directives(): void
     {
-        $this->validateDirectiveDefinitions();
-
+        $this->validate_directive_definitions();
         // Validate directives that are used on the schema
-        $this->validateDirectivesAtLocation(
-            $this->getDirectives($this->schema),
-            DirectiveLocation::SCHEMA
-        );
+        $this->validate_directives_at_location($this->get_directives($this->schema), Directive_Location::SCHEMA);
     }
-
     /** @throws InvariantViolation */
-    public function validateDirectiveDefinitions(): void
+    public function validate_directive_definitions(): void
     {
-        $directiveDefinitions = [];
-
-        $directives = $this->schema->getDirectives();
+        $directive_definitions = [];
+        $directives = $this->schema->get_directives();
         foreach ($directives as $directive) {
             // Ensure all directives are in fact GraphQL directives.
             // @phpstan-ignore-next-line The generic type says this should not happen, but a user may use it wrong nonetheless
-            if (! $directive instanceof Directive) {
-                $notDirective = Utils::printSafe($directive);
+            if (!$directive instanceof Directive) {
+                $not_directive = Utils::print_safe($directive);
                 // @phpstan-ignore-next-line The generic type says this should not happen, but a user may use it wrong nonetheless
-                $nodes = is_object($directive) && property_exists($directive, 'astNode')
-                    ? $directive->astNode
-                    : null;
-
-                $this->reportError(
-                    "Expected directive but got: {$notDirective}.",
-                    $nodes
-                );
+                $nodes = is_object($directive) && property_exists($directive, 'astNode') ? $directive->ast_node : null;
+                $this->report_error("Expected directive but got: {$not_directive}.", $nodes);
                 continue;
             }
-
-            $existingDefinitions = $directiveDefinitions[$directive->name] ?? [];
-            $existingDefinitions[] = $directive;
-            $directiveDefinitions[$directive->name] = $existingDefinitions;
-
+            $existing_definitions = $directive_definitions[$directive->name] ?? [];
+            $existing_definitions[] = $directive;
+            $directive_definitions[$directive->name] = $existing_definitions;
             // Ensure they are named correctly.
-            $this->validateName($directive);
-
+            $this->validate_name($directive);
             // TODO: Ensure proper locations.
-
-            $argNames = [];
+            $arg_names = [];
             foreach ($directive->args as $arg) {
                 // Ensure they are named correctly.
-                $this->validateName($arg);
-
-                $argName = $arg->name;
-
-                if (isset($argNames[$argName])) {
-                    $this->reportError(
-                        "Argument @{$directive->name}({$argName}:) can only be defined once.",
-                        $this->getAllDirectiveArgNodes($directive, $argName)
-                    );
+                $this->validate_name($arg);
+                $arg_name = $arg->name;
+                if (isset($arg_names[$arg_name])) {
+                    $this->report_error("Argument @{$directive->name}({$arg_name}:) can only be defined once.", $this->get_all_directive_arg_nodes($directive, $arg_name));
                     continue;
                 }
-
-                $argNames[$argName] = true;
-
+                $arg_names[$arg_name] = true;
                 // Ensure the type is an input type.
                 // @phpstan-ignore-next-line necessary until PHP supports union types
-                if (! Type::isInputType($arg->getType())) {
-                    $type = Utils::printSafe($arg->getType());
-                    $this->reportError(
-                        "The type of @{$directive->name}({$argName}:) must be Input Type but got: {$type}.",
-                        $this->getDirectiveArgTypeNode($directive, $argName)
-                    );
+                if (!Type::is_input_type($arg->get_type())) {
+                    $type = Utils::print_safe($arg->get_type());
+                    $this->report_error("The type of @{$directive->name}({$arg_name}:) must be Input Type but got: {$type}.", $this->get_directive_arg_type_node($directive, $arg_name));
                 }
             }
         }
-
-        foreach ($directiveDefinitions as $directiveName => $directiveList) {
-            if (count($directiveList) > 1) {
+        foreach ($directive_definitions as $directive_name => $directive_list) {
+            if (count($directive_list) > 1) {
                 $nodes = [];
-                foreach ($directiveList as $dir) {
-                    if (isset($dir->astNode)) {
-                        $nodes[] = $dir->astNode;
+                foreach ($directive_list as $dir) {
+                    if (isset($dir->ast_node)) {
+                        $nodes[] = $dir->ast_node;
                     }
                 }
-
-                $this->reportError(
-                    "Directive @{$directiveName} defined multiple times.",
-                    $nodes
-                );
+                $this->report_error("Directive @{$directive_name} defined multiple times.", $nodes);
             }
         }
     }
-
     /** @param (Type&NamedType)|Directive|FieldDefinition|EnumValueDefinition|InputObjectField|Argument $object */
-    private function validateName(object $object): void
+    private function validate_name(object $object): void
     {
         // Ensure names are valid, however introspection types opt out.
-        $error = Utils::isValidNameError($object->name, $object->astNode);
-        if (
-            $error === null
-            || ($object instanceof Type && Introspection::isIntrospectionType($object))
-        ) {
+        $error = Utils::is_valid_name_error($object->name, $object->ast_node);
+        if ($error === null || $object instanceof Type && Introspection::is_introspection_type($object)) {
             return;
         }
-
-        $this->addError($error);
+        $this->add_error($error);
     }
-
     /** @return array<int, InputValueDefinitionNode> */
-    private function getAllDirectiveArgNodes(Directive $directive, string $argName): array
+    private function get_all_directive_arg_nodes(Directive $directive, string $arg_name): array
     {
-        $astNode = $directive->astNode;
-        if ($astNode === null) {
+        $ast_node = $directive->ast_node;
+        if ($ast_node === null) {
             return [];
         }
-
-        $matchingSubnodes = [];
-        foreach ($astNode->arguments as $subNode) {
-            if ($subNode->name->value === $argName) {
-                $matchingSubnodes[] = $subNode;
+        $matching_subnodes = [];
+        foreach ($ast_node->arguments as $sub_node) {
+            if ($sub_node->name->value === $arg_name) {
+                $matching_subnodes[] = $sub_node;
             }
         }
-
-        return $matchingSubnodes;
+        return $matching_subnodes;
     }
-
     /** @return NamedTypeNode|ListTypeNode|NonNullTypeNode|null */
-    private function getDirectiveArgTypeNode(Directive $directive, string $argName): ?TypeNode
+    private function get_directive_arg_type_node(Directive $directive, string $arg_name): ?Type_Node
     {
-        $argNode = $this->getAllDirectiveArgNodes($directive, $argName)[0] ?? null;
-
-        return $argNode === null
-            ? null
-            : $argNode->type;
+        $arg_node = $this->get_all_directive_arg_nodes($directive, $arg_name)[0] ?? null;
+        return $arg_node === null ? null : $arg_node->type;
     }
-
     /** @throws InvariantViolation */
-    public function validateTypes(): void
+    public function validate_types(): void
     {
-        $typeMap = $this->schema->getTypeMap();
-        foreach ($typeMap as $type) {
+        $type_map = $this->schema->get_type_map();
+        foreach ($type_map as $type) {
             // Ensure all provided types are in fact GraphQL type.
             // @phpstan-ignore-next-line The generic type says this should not happen, but a user may use it wrong nonetheless
-            if (! $type instanceof NamedType) {
-                $notNamedType = Utils::printSafe($type);
+            if (!$type instanceof Named_Type) {
+                $not_named_type = Utils::print_safe($type);
                 // @phpstan-ignore-next-line The generic type says this should not happen, but a user may use it wrong nonetheless
-                $node = $type instanceof Type
-                    ? $type->astNode
-                    : null;
-
-                $this->reportError("Expected GraphQL named type but got: {$notNamedType}.", $node);
+                $node = $type instanceof Type ? $type->ast_node : null;
+                $this->report_error("Expected GraphQL named type but got: {$not_named_type}.", $node);
                 continue;
             }
-
-            $this->validateName($type);
-
-            if ($type instanceof ObjectType) {
-                $this->validateFields($type);
-                $this->validateInterfaces($type);
-                $this->validateDirectivesAtLocation($this->getDirectives($type), DirectiveLocation::OBJECT);
-            } elseif ($type instanceof InterfaceType) {
-                $this->validateFields($type);
-                $this->validateInterfaces($type);
-                $this->validateDirectivesAtLocation($this->getDirectives($type), DirectiveLocation::IFACE);
-            } elseif ($type instanceof UnionType) {
-                $this->validateUnionMembers($type);
-                $this->validateDirectivesAtLocation($this->getDirectives($type), DirectiveLocation::UNION);
-            } elseif ($type instanceof EnumType) {
-                $this->validateEnumValues($type);
-                $this->validateDirectivesAtLocation($this->getDirectives($type), DirectiveLocation::ENUM);
-            } elseif ($type instanceof InputObjectType) {
-                $this->validateInputFields($type);
-                $this->validateDirectivesAtLocation($this->getDirectives($type), DirectiveLocation::INPUT_OBJECT);
-                $this->inputObjectCircularRefs->validate($type);
+            $this->validate_name($type);
+            if ($type instanceof Object_Type) {
+                $this->validate_fields($type);
+                $this->validate_interfaces($type);
+                $this->validate_directives_at_location($this->get_directives($type), Directive_Location::OBJECT);
+            } elseif ($type instanceof Interface_Type) {
+                $this->validate_fields($type);
+                $this->validate_interfaces($type);
+                $this->validate_directives_at_location($this->get_directives($type), Directive_Location::IFACE);
+            } elseif ($type instanceof Union_Type) {
+                $this->validate_union_members($type);
+                $this->validate_directives_at_location($this->get_directives($type), Directive_Location::UNION);
+            } elseif ($type instanceof Enum_Type) {
+                $this->validate_enum_values($type);
+                $this->validate_directives_at_location($this->get_directives($type), Directive_Location::ENUM);
+            } elseif ($type instanceof Input_Object_Type) {
+                $this->validate_input_fields($type);
+                $this->validate_directives_at_location($this->get_directives($type), Directive_Location::INPUT_OBJECT);
+                $this->input_object_circular_refs->validate($type);
             } else {
-                assert($type instanceof ScalarType, 'only remaining option');
-                $this->validateDirectivesAtLocation($this->getDirectives($type), DirectiveLocation::SCALAR);
+                assert($type instanceof Scalar_Type, 'only remaining option');
+                $this->validate_directives_at_location($this->get_directives($type), Directive_Location::SCALAR);
             }
         }
     }
-
     /**
      * @param NodeList<DirectiveNode> $directives
      *
      * @throws InvariantViolation
      */
-    private function validateDirectivesAtLocation(NodeList $directives, string $location): void
+    private function validate_directives_at_location(Node_List $directives, string $location): void
     {
         /** @var array<string, array<int, DirectiveNode>> $potentiallyDuplicateDirectives */
-        $potentiallyDuplicateDirectives = [];
+        $potentially_duplicate_directives = [];
         $schema = $this->schema;
-        foreach ($directives as $directiveNode) {
-            $directiveName = $directiveNode->name->value;
-
+        foreach ($directives as $directive_node) {
+            $directive_name = $directive_node->name->value;
             // Ensure directive used is also defined
-            $schemaDirective = $schema->getDirective($directiveName);
-            if ($schemaDirective === null) {
-                $this->reportError("No directive @{$directiveName} defined.", $directiveNode);
+            $schema_directive = $schema->get_directive($directive_name);
+            if ($schema_directive === null) {
+                $this->report_error("No directive @{$directive_name} defined.", $directive_node);
                 continue;
             }
-
-            if (! in_array($location, $schemaDirective->locations, true)) {
-                $this->reportError(
-                    "Directive @{$directiveName} not allowed at {$location} location.",
-                    array_filter([$directiveNode, $schemaDirective->astNode])
-                );
+            if (!in_array($location, $schema_directive->locations, true)) {
+                $this->report_error("Directive @{$directive_name} not allowed at {$location} location.", array_filter([$directive_node, $schema_directive->ast_node]));
             }
-
-            if (! $schemaDirective->isRepeatable) {
-                $potentiallyDuplicateDirectives[$directiveName][] = $directiveNode;
+            if (!$schema_directive->is_repeatable) {
+                $potentially_duplicate_directives[$directive_name][] = $directive_node;
             }
         }
-
-        foreach ($potentiallyDuplicateDirectives as $directiveName => $directiveList) {
-            if (count($directiveList) > 1) {
-                $this->reportError("Non-repeatable directive @{$directiveName} used more than once at the same location.", $directiveList);
+        foreach ($potentially_duplicate_directives as $directive_name => $directive_list) {
+            if (count($directive_list) > 1) {
+                $this->report_error("Non-repeatable directive @{$directive_name} used more than once at the same location.", $directive_list);
             }
         }
     }
-
     /**
      * @param ObjectType|InterfaceType $type
      *
      * @throws InvariantViolation
      */
-    private function validateFields(Type $type): void
+    private function validate_fields(Type $type): void
     {
-        $fieldMap = $type->getFields();
-
-        if ($fieldMap === []) {
-            $this->reportError(
-                "Type {$type->name} must define one or more fields.",
-                $this->getAllNodes($type)
-            );
+        $field_map = $type->get_fields();
+        if ($field_map === []) {
+            $this->report_error("Type {$type->name} must define one or more fields.", $this->get_all_nodes($type));
         }
-
-        foreach ($fieldMap as $fieldName => $field) {
-            $this->validateName($field);
-
-            $fieldNodes = $this->getAllFieldNodes($type, $fieldName);
-            if (count($fieldNodes) > 1) {
-                $this->reportError("Field {$type->name}.{$fieldName} can only be defined once.", $fieldNodes);
+        foreach ($field_map as $field_name => $field) {
+            $this->validate_name($field);
+            $field_nodes = $this->get_all_field_nodes($type, $field_name);
+            if (count($field_nodes) > 1) {
+                $this->report_error("Field {$type->name}.{$field_name} can only be defined once.", $field_nodes);
                 continue;
             }
-
-            $fieldType = $field->getType();
+            $field_type = $field->get_type();
             // @phpstan-ignore-next-line not statically provable until we can use union types
-            if (! Type::isOutputType($fieldType)) {
-                $safeFieldType = Utils::printSafe($fieldType);
-                $this->reportError(
-                    "The type of {$type->name}.{$fieldName} must be Output Type but got: {$safeFieldType}.",
-                    $this->getFieldTypeNode($type, $fieldName)
-                );
+            if (!Type::is_output_type($field_type)) {
+                $safe_field_type = Utils::print_safe($field_type);
+                $this->report_error("The type of {$type->name}.{$field_name} must be Output Type but got: {$safe_field_type}.", $this->get_field_type_node($type, $field_name));
             }
-
-            $this->validateTypeIsSingleton($fieldType, "{$type->name}.{$fieldName}");
-
-            $argNames = [];
+            $this->validate_type_is_singleton($field_type, "{$type->name}.{$field_name}");
+            $arg_names = [];
             foreach ($field->args as $arg) {
-                $argName = $arg->name;
-                $argPath = "{$type->name}.{$fieldName}({$argName}:)";
-
-                $this->validateName($arg);
-
-                if (isset($argNames[$argName])) {
-                    $this->reportError(
-                        "Field argument {$argPath} can only be defined once.",
-                        $this->getAllFieldArgNodes($type, $fieldName, $argName)
-                    );
+                $arg_name = $arg->name;
+                $arg_path = "{$type->name}.{$field_name}({$arg_name}:)";
+                $this->validate_name($arg);
+                if (isset($arg_names[$arg_name])) {
+                    $this->report_error("Field argument {$arg_path} can only be defined once.", $this->get_all_field_arg_nodes($type, $field_name, $arg_name));
                 }
-
-                $argNames[$argName] = true;
-
-                $argType = $arg->getType();
-
+                $arg_names[$arg_name] = true;
+                $arg_type = $arg->get_type();
                 // @phpstan-ignore-next-line the type of $arg->getType() says it is an input type, but it might not always be true
-                if (! Type::isInputType($argType)) {
-                    $safeType = Utils::printSafe($argType);
-                    $this->reportError(
-                        "The type of {$argPath} must be Input Type but got: {$safeType}.",
-                        $this->getFieldArgTypeNode($type, $fieldName, $argName)
-                    );
+                if (!Type::is_input_type($arg_type)) {
+                    $safe_type = Utils::print_safe($arg_type);
+                    $this->report_error("The type of {$arg_path} must be Input Type but got: {$safe_type}.", $this->get_field_arg_type_node($type, $field_name, $arg_name));
                 }
-
-                $this->validateTypeIsSingleton($argType, $argPath);
-
-                if (isset($arg->astNode->directives)) {
-                    $this->validateDirectivesAtLocation($arg->astNode->directives, DirectiveLocation::ARGUMENT_DEFINITION);
+                $this->validate_type_is_singleton($arg_type, $arg_path);
+                if (isset($arg->ast_node->directives)) {
+                    $this->validate_directives_at_location($arg->ast_node->directives, Directive_Location::ARGUMENT_DEFINITION);
                 }
             }
-
-            if (isset($field->astNode->directives)) {
-                $this->validateDirectivesAtLocation($field->astNode->directives, DirectiveLocation::FIELD_DEFINITION);
+            if (isset($field->ast_node->directives)) {
+                $this->validate_directives_at_location($field->ast_node->directives, Directive_Location::FIELD_DEFINITION);
             }
         }
     }
-
     /**
      * @param Schema|ObjectType|InterfaceType|UnionType|EnumType|InputObjectType|Directive $obj
      *
      * @return list<SchemaDefinitionNode|SchemaExtensionNode>|list<ObjectTypeDefinitionNode|ObjectTypeExtensionNode>|list<InterfaceTypeDefinitionNode|InterfaceTypeExtensionNode>|list<UnionTypeDefinitionNode|UnionTypeExtensionNode>|list< EnumTypeDefinitionNode|EnumTypeExtensionNode>|list<InputObjectTypeDefinitionNode|InputObjectTypeExtensionNode>|list<DirectiveDefinitionNode>
      */
-    private function getAllNodes(object $obj): array
+    private function get_all_nodes(object $obj): array
     {
-        $astNode = $obj->astNode;
-
+        $ast_node = $obj->ast_node;
         if ($obj instanceof Schema) {
-            $extensionNodes = $obj->extensionASTNodes;
+            $extension_nodes = $obj->extension_ast_nodes;
         } elseif ($obj instanceof Directive) {
-            $extensionNodes = [];
+            $extension_nodes = [];
         } else {
-            $extensionNodes = $obj->extensionASTNodes;
+            $extension_nodes = $obj->extension_ast_nodes;
         }
-
-        $allNodes = $astNode === null
-            ? []
-            : [$astNode];
-        foreach ($extensionNodes as $extensionNode) {
-            $allNodes[] = $extensionNode;
+        $all_nodes = $ast_node === null ? [] : [$ast_node];
+        foreach ($extension_nodes as $extension_node) {
+            $all_nodes[] = $extension_node;
         }
-
-        return $allNodes;
+        return $all_nodes;
     }
-
     /**
      * @param ObjectType|InterfaceType $type
      *
      * @return list<FieldDefinitionNode>
      */
-    private function getAllFieldNodes(Type $type, string $fieldName): array
+    private function get_all_field_nodes(Type $type, string $field_name): array
     {
-        $allNodes = array_filter([$type->astNode, ...$type->extensionASTNodes]);
-
-        $matchingFieldNodes = [];
-
-        foreach ($allNodes as $node) {
+        $all_nodes = array_filter([$type->ast_node, ...$type->extension_ast_nodes]);
+        $matching_field_nodes = [];
+        foreach ($all_nodes as $node) {
             foreach ($node->fields as $field) {
-                if ($field->name->value === $fieldName) {
-                    $matchingFieldNodes[] = $field;
+                if ($field->name->value === $field_name) {
+                    $matching_field_nodes[] = $field;
                 }
             }
         }
-
-        return $matchingFieldNodes;
+        return $matching_field_nodes;
     }
-
     /**
      * @param ObjectType|InterfaceType $type
      *
      * @return NamedTypeNode|ListTypeNode|NonNullTypeNode|null
      */
-    private function getFieldTypeNode(Type $type, string $fieldName): ?TypeNode
+    private function get_field_type_node(Type $type, string $field_name): ?Type_Node
     {
-        $fieldNode = $this->getFieldNode($type, $fieldName);
-
-        return $fieldNode === null
-            ? null
-            : $fieldNode->type;
+        $field_node = $this->get_field_node($type, $field_name);
+        return $field_node === null ? null : $field_node->type;
     }
-
     /** @param ObjectType|InterfaceType $type */
-    private function getFieldNode(Type $type, string $fieldName): ?FieldDefinitionNode
+    private function get_field_node(Type $type, string $field_name): ?Field_Definition_Node
     {
-        $nodes = $this->getAllFieldNodes($type, $fieldName);
-
+        $nodes = $this->get_all_field_nodes($type, $field_name);
         return $nodes[0] ?? null;
     }
-
     /**
      * @param ObjectType|InterfaceType $type
      *
      * @return array<int, InputValueDefinitionNode>
      */
-    private function getAllFieldArgNodes(Type $type, string $fieldName, string $argName): array
+    private function get_all_field_arg_nodes(Type $type, string $field_name, string $arg_name): array
     {
-        $argNodes = [];
-        $fieldNode = $this->getFieldNode($type, $fieldName);
-        if ($fieldNode !== null) {
-            foreach ($fieldNode->arguments as $node) {
-                if ($node->name->value === $argName) {
-                    $argNodes[] = $node;
+        $arg_nodes = [];
+        $field_node = $this->get_field_node($type, $field_name);
+        if ($field_node !== null) {
+            foreach ($field_node->arguments as $node) {
+                if ($node->name->value === $arg_name) {
+                    $arg_nodes[] = $node;
                 }
             }
         }
-
-        return $argNodes;
+        return $arg_nodes;
     }
-
     /**
      * @param ObjectType|InterfaceType $type
      *
      * @return NamedTypeNode|ListTypeNode|NonNullTypeNode|null
      */
-    private function getFieldArgTypeNode(Type $type, string $fieldName, string $argName): ?TypeNode
+    private function get_field_arg_type_node(Type $type, string $field_name, string $arg_name): ?Type_Node
     {
-        $fieldArgNode = $this->getFieldArgNode($type, $fieldName, $argName);
-
-        return $fieldArgNode === null
-            ? null
-            : $fieldArgNode->type;
+        $field_arg_node = $this->get_field_arg_node($type, $field_name, $arg_name);
+        return $field_arg_node === null ? null : $field_arg_node->type;
     }
-
     /** @param ObjectType|InterfaceType $type */
-    private function getFieldArgNode(Type $type, string $fieldName, string $argName): ?InputValueDefinitionNode
+    private function get_field_arg_node(Type $type, string $field_name, string $arg_name): ?Input_Value_Definition_Node
     {
-        $nodes = $this->getAllFieldArgNodes($type, $fieldName, $argName);
-
+        $nodes = $this->get_all_field_arg_nodes($type, $field_name, $arg_name);
         return $nodes[0] ?? null;
     }
-
     /**
      * @param ObjectType|InterfaceType $type
      *
      * @throws InvariantViolation
      */
-    private function validateInterfaces(ImplementingType $type): void
+    private function validate_interfaces(Implementing_Type $type): void
     {
-        $ifaceTypeNames = [];
-        foreach ($type->getInterfaces() as $interface) {
+        $iface_type_names = [];
+        foreach ($type->get_interfaces() as $interface) {
             // @phpstan-ignore-next-line The generic type says this should not happen, but a user may use it wrong nonetheless
-            if (! $interface instanceof InterfaceType) {
-                $notInterface = Utils::printSafe($interface);
-                $this->reportError(
-                    "Type {$type->name} must only implement Interface types, it cannot implement {$notInterface}.",
-                    $this->getImplementsInterfaceNode($type, $interface)
-                );
+            if (!$interface instanceof Interface_Type) {
+                $not_interface = Utils::print_safe($interface);
+                $this->report_error("Type {$type->name} must only implement Interface types, it cannot implement {$not_interface}.", $this->get_implements_interface_node($type, $interface));
                 continue;
             }
-
             if ($type === $interface) {
-                $this->reportError(
-                    "Type {$type->name} cannot implement itself because it would create a circular reference.",
-                    $this->getImplementsInterfaceNode($type, $interface)
-                );
+                $this->report_error("Type {$type->name} cannot implement itself because it would create a circular reference.", $this->get_implements_interface_node($type, $interface));
                 continue;
             }
-
-            if (isset($ifaceTypeNames[$interface->name])) {
-                $this->reportError(
-                    "Type {$type->name} can only implement {$interface->name} once.",
-                    $this->getAllImplementsInterfaceNodes($type, $interface)
-                );
+            if (isset($iface_type_names[$interface->name])) {
+                $this->report_error("Type {$type->name} can only implement {$interface->name} once.", $this->get_all_implements_interface_nodes($type, $interface));
                 continue;
             }
-
-            $ifaceTypeNames[$interface->name] = true;
-
-            $this->validateTypeImplementsAncestors($type, $interface);
-            $this->validateTypeImplementsInterface($type, $interface);
+            $iface_type_names[$interface->name] = true;
+            $this->validate_type_implements_ancestors($type, $interface);
+            $this->validate_type_implements_interface($type, $interface);
         }
     }
-
     /**
      * @param Schema|(Type&NamedType) $object
      *
      * @return NodeList<DirectiveNode>
      */
-    private function getDirectives(object $object): NodeList
+    private function get_directives(object $object): Node_List
     {
         $directives = [];
         /**
@@ -554,305 +420,195 @@ class SchemaValidationContext
          * @var SchemaDefinitionNode|SchemaExtensionNode|ObjectTypeDefinitionNode|ObjectTypeExtensionNode|InterfaceTypeDefinitionNode|InterfaceTypeExtensionNode|UnionTypeDefinitionNode|UnionTypeExtensionNode|EnumTypeDefinitionNode|EnumTypeExtensionNode|InputObjectTypeDefinitionNode|InputObjectTypeExtensionNode $node
          */
         // @phpstan-ignore-next-line union types are not pervasive
-        foreach ($this->getAllNodes($object) as $node) {
+        foreach ($this->get_all_nodes($object) as $node) {
             foreach ($node->directives as $directive) {
                 $directives[] = $directive;
             }
         }
-
-        return new NodeList($directives);
+        return new Node_List($directives);
     }
-
     /**
      * @param ObjectType|InterfaceType $type
      * @param Type&NamedType $shouldBeInterface
      */
-    private function getImplementsInterfaceNode(ImplementingType $type, NamedType $shouldBeInterface): ?NamedTypeNode
+    private function get_implements_interface_node(Implementing_Type $type, Named_Type $should_be_interface): ?Named_Type_Node
     {
-        $nodes = $this->getAllImplementsInterfaceNodes($type, $shouldBeInterface);
-
+        $nodes = $this->get_all_implements_interface_nodes($type, $should_be_interface);
         return $nodes[0] ?? null;
     }
-
     /**
      * @param ObjectType|InterfaceType $type
      * @param Type&NamedType $shouldBeInterface
      *
      * @return list<NamedTypeNode>
      */
-    private function getAllImplementsInterfaceNodes(ImplementingType $type, NamedType $shouldBeInterface): array
+    private function get_all_implements_interface_nodes(Implementing_Type $type, Named_Type $should_be_interface): array
     {
-        $allNodes = array_filter([$type->astNode, ...$type->extensionASTNodes]);
-
-        $shouldBeInterfaceName = $shouldBeInterface->name;
-        $matchingInterfaceNodes = [];
-
-        foreach ($allNodes as $node) {
+        $all_nodes = array_filter([$type->ast_node, ...$type->extension_ast_nodes]);
+        $should_be_interface_name = $should_be_interface->name;
+        $matching_interface_nodes = [];
+        foreach ($all_nodes as $node) {
             foreach ($node->interfaces as $interface) {
-                if ($interface->name->value === $shouldBeInterfaceName) {
-                    $matchingInterfaceNodes[] = $interface;
+                if ($interface->name->value === $should_be_interface_name) {
+                    $matching_interface_nodes[] = $interface;
                 }
             }
         }
-
-        return $matchingInterfaceNodes;
+        return $matching_interface_nodes;
     }
-
     /**
      * @param ObjectType|InterfaceType $type
      *
      * @throws InvariantViolation
      */
-    private function validateTypeImplementsInterface(ImplementingType $type, InterfaceType $iface): void
+    private function validate_type_implements_interface(Implementing_Type $type, Interface_Type $iface): void
     {
-        $typeFieldMap = $type->getFields();
-        $ifaceFieldMap = $iface->getFields();
-
-        foreach ($ifaceFieldMap as $fieldName => $ifaceField) {
-            $typeField = $typeFieldMap[$fieldName] ?? null;
-
-            if ($typeField === null) {
-                $this->reportError(
-                    "Interface field {$iface->name}.{$fieldName} expected but {$type->name} does not provide it.",
-                    array_merge(
-                        [$this->getFieldNode($iface, $fieldName)],
-                        $this->getAllNodes($type)
-                    )
-                );
+        $type_field_map = $type->get_fields();
+        $iface_field_map = $iface->get_fields();
+        foreach ($iface_field_map as $field_name => $iface_field) {
+            $type_field = $type_field_map[$field_name] ?? null;
+            if ($type_field === null) {
+                $this->report_error("Interface field {$iface->name}.{$field_name} expected but {$type->name} does not provide it.", array_merge([$this->get_field_node($iface, $field_name)], $this->get_all_nodes($type)));
                 continue;
             }
-
-            $typeFieldType = $typeField->getType();
-            $ifaceFieldType = $ifaceField->getType();
-            if (! TypeComparators::isTypeSubTypeOf($this->schema, $typeFieldType, $ifaceFieldType)) {
-                $this->reportError(
-                    "Interface field {$iface->name}.{$fieldName} expects type {$ifaceFieldType} but {$type->name}.{$fieldName} is type {$typeFieldType}.",
-                    [
-                        $this->getFieldTypeNode($iface, $fieldName),
-                        $this->getFieldTypeNode($type, $fieldName),
-                    ]
-                );
+            $type_field_type = $type_field->get_type();
+            $iface_field_type = $iface_field->get_type();
+            if (!Type_Comparators::is_type_sub_type_of($this->schema, $type_field_type, $iface_field_type)) {
+                $this->report_error("Interface field {$iface->name}.{$field_name} expects type {$iface_field_type} but {$type->name}.{$field_name} is type {$type_field_type}.", [$this->get_field_type_node($iface, $field_name), $this->get_field_type_node($type, $field_name)]);
             }
-
-            foreach ($ifaceField->args as $ifaceArg) {
-                $argName = $ifaceArg->name;
-                $typeArg = $typeField->getArg($argName);
-
-                if ($typeArg === null) {
-                    $this->reportError(
-                        "Interface field argument {$iface->name}.{$fieldName}({$argName}:) expected but {$type->name}.{$fieldName} does not provide it.",
-                        [
-                            $this->getFieldArgNode($iface, $fieldName, $argName),
-                            $this->getFieldNode($type, $fieldName),
-                        ]
-                    );
+            foreach ($iface_field->args as $iface_arg) {
+                $arg_name = $iface_arg->name;
+                $type_arg = $type_field->get_arg($arg_name);
+                if ($type_arg === null) {
+                    $this->report_error("Interface field argument {$iface->name}.{$field_name}({$arg_name}:) expected but {$type->name}.{$field_name} does not provide it.", [$this->get_field_arg_node($iface, $field_name, $arg_name), $this->get_field_node($type, $field_name)]);
                     continue;
                 }
-
-                $ifaceArgType = $ifaceArg->getType();
-                $typeArgType = $typeArg->getType();
-                if (! TypeComparators::isEqualType($ifaceArgType, $typeArgType)) {
-                    $this->reportError(
-                        "Interface field argument {$iface->name}.{$fieldName}({$argName}:) expects type {$ifaceArgType} but {$type->name}.{$fieldName}({$argName}:) is type {$typeArgType}.",
-                        [
-                            $this->getFieldArgTypeNode($iface, $fieldName, $argName),
-                            $this->getFieldArgTypeNode($type, $fieldName, $argName),
-                        ]
-                    );
+                $iface_arg_type = $iface_arg->get_type();
+                $type_arg_type = $type_arg->get_type();
+                if (!Type_Comparators::is_equal_type($iface_arg_type, $type_arg_type)) {
+                    $this->report_error("Interface field argument {$iface->name}.{$field_name}({$arg_name}:) expects type {$iface_arg_type} but {$type->name}.{$field_name}({$arg_name}:) is type {$type_arg_type}.", [$this->get_field_arg_type_node($iface, $field_name, $arg_name), $this->get_field_arg_type_node($type, $field_name, $arg_name)]);
                 }
-
                 // TODO: validate default values?
             }
-
-            foreach ($typeField->args as $typeArg) {
-                $argName = $typeArg->name;
-                $ifaceArg = $ifaceField->getArg($argName);
-
-                if ($typeArg->isRequired() && $ifaceArg === null) {
-                    $this->reportError(
-                        "Object field {$type->name}.{$fieldName} includes required argument {$argName} that is missing from the Interface field {$iface->name}.{$fieldName}.",
-                        [
-                            $this->getFieldArgNode($type, $fieldName, $argName),
-                            $this->getFieldNode($iface, $fieldName),
-                        ]
-                    );
+            foreach ($type_field->args as $type_arg) {
+                $arg_name = $type_arg->name;
+                $iface_arg = $iface_field->get_arg($arg_name);
+                if ($type_arg->is_required() && $iface_arg === null) {
+                    $this->report_error("Object field {$type->name}.{$field_name} includes required argument {$arg_name} that is missing from the Interface field {$iface->name}.{$field_name}.", [$this->get_field_arg_node($type, $field_name, $arg_name), $this->get_field_node($iface, $field_name)]);
                 }
             }
         }
     }
-
     /** @param ObjectType|InterfaceType $type */
-    private function validateTypeImplementsAncestors(ImplementingType $type, InterfaceType $iface): void
+    private function validate_type_implements_ancestors(Implementing_Type $type, Interface_Type $iface): void
     {
-        $typeInterfaces = $type->getInterfaces();
-        foreach ($iface->getInterfaces() as $transitive) {
-            if (! in_array($transitive, $typeInterfaces, true)) {
-                $this->reportError(
-                    $transitive === $type
-                        ? "Type {$type->name} cannot implement {$iface->name} because it would create a circular reference."
-                        : "Type {$type->name} must implement {$transitive->name} because it is implemented by {$iface->name}.",
-                    array_merge(
-                        $this->getAllImplementsInterfaceNodes($iface, $transitive),
-                        $this->getAllImplementsInterfaceNodes($type, $iface)
-                    )
-                );
+        $type_interfaces = $type->get_interfaces();
+        foreach ($iface->get_interfaces() as $transitive) {
+            if (!in_array($transitive, $type_interfaces, true)) {
+                $this->report_error($transitive === $type ? "Type {$type->name} cannot implement {$iface->name} because it would create a circular reference." : "Type {$type->name} must implement {$transitive->name} because it is implemented by {$iface->name}.", array_merge($this->get_all_implements_interface_nodes($iface, $transitive), $this->get_all_implements_interface_nodes($type, $iface)));
             }
         }
     }
-
     /** @throws InvariantViolation */
-    private function validateUnionMembers(UnionType $union): void
+    private function validate_union_members(Union_Type $union): void
     {
-        $memberTypes = $union->getTypes();
-
-        if ($memberTypes === []) {
-            $this->reportError(
-                "Union type {$union->name} must define one or more member types.",
-                $this->getAllNodes($union)
-            );
+        $member_types = $union->get_types();
+        if ($member_types === []) {
+            $this->report_error("Union type {$union->name} must define one or more member types.", $this->get_all_nodes($union));
         }
-
-        $includedTypeNames = [];
-
-        foreach ($memberTypes as $memberType) {
+        $included_type_names = [];
+        foreach ($member_types as $member_type) {
             // @phpstan-ignore-next-line The generic type says this should not happen, but a user may use it wrong nonetheless
-            if (! $memberType instanceof ObjectType) {
-                $notObjectType = Utils::printSafe($memberType);
-                $this->reportError(
-                    "Union type {$union->name} can only include Object types, it cannot include {$notObjectType}.",
-                    $this->getUnionMemberTypeNodes($union, $notObjectType)
-                );
+            if (!$member_type instanceof Object_Type) {
+                $not_object_type = Utils::print_safe($member_type);
+                $this->report_error("Union type {$union->name} can only include Object types, it cannot include {$not_object_type}.", $this->get_union_member_type_nodes($union, $not_object_type));
                 continue;
             }
-
-            if (isset($includedTypeNames[$memberType->name])) {
-                $this->reportError(
-                    "Union type {$union->name} can only include type {$memberType->name} once.",
-                    $this->getUnionMemberTypeNodes($union, $memberType->name)
-                );
+            if (isset($included_type_names[$member_type->name])) {
+                $this->report_error("Union type {$union->name} can only include type {$member_type->name} once.", $this->get_union_member_type_nodes($union, $member_type->name));
                 continue;
             }
-
-            $includedTypeNames[$memberType->name] = true;
+            $included_type_names[$member_type->name] = true;
         }
     }
-
     /** @return list<NamedTypeNode> */
-    private function getUnionMemberTypeNodes(UnionType $union, string $typeName): array
+    private function get_union_member_type_nodes(Union_Type $union, string $type_name): array
     {
-        $allNodes = array_filter([$union->astNode, ...$union->extensionASTNodes]);
-
+        $all_nodes = array_filter([$union->ast_node, ...$union->extension_ast_nodes]);
         $types = [];
-        foreach ($allNodes as $node) {
+        foreach ($all_nodes as $node) {
             foreach ($node->types as $type) {
-                if ($type->name->value === $typeName) {
+                if ($type->name->value === $type_name) {
                     $types[] = $type;
                 }
             }
         }
-
         return $types;
     }
-
     /** @throws InvariantViolation */
-    private function validateEnumValues(EnumType $enumType): void
+    private function validate_enum_values(Enum_Type $enum_type): void
     {
-        $enumValues = $enumType->getValues();
-
-        if ($enumValues === []) {
-            $this->reportError(
-                "Enum type {$enumType->name} must define one or more values.",
-                $this->getAllNodes($enumType)
-            );
+        $enum_values = $enum_type->get_values();
+        if ($enum_values === []) {
+            $this->report_error("Enum type {$enum_type->name} must define one or more values.", $this->get_all_nodes($enum_type));
         }
-
-        foreach ($enumValues as $enumValue) {
-            $valueName = $enumValue->name;
-
+        foreach ($enum_values as $enum_value) {
+            $value_name = $enum_value->name;
             // Ensure valid name.
-            $this->validateName($enumValue);
-            if (in_array($valueName, ['true', 'false', 'null'], true)) {
-                $this->reportError(
-                    "Enum type {$enumType->name} cannot include value: {$valueName}.",
-                    $enumValue->astNode
-                );
+            $this->validate_name($enum_value);
+            if (in_array($value_name, ['true', 'false', 'null'], true)) {
+                $this->report_error("Enum type {$enum_type->name} cannot include value: {$value_name}.", $enum_value->ast_node);
             }
-
             // Ensure valid directives
-            if (isset($enumValue->astNode, $enumValue->astNode->directives)) {
-                $this->validateDirectivesAtLocation(
-                    $enumValue->astNode->directives,
-                    DirectiveLocation::ENUM_VALUE
-                );
+            if (isset($enum_value->ast_node, $enum_value->ast_node->directives)) {
+                $this->validate_directives_at_location($enum_value->ast_node->directives, Directive_Location::ENUM_VALUE);
             }
         }
     }
-
     /** @throws InvariantViolation */
-    private function validateInputFields(InputObjectType $inputObj): void
+    private function validate_input_fields(Input_Object_Type $input_obj): void
     {
-        $fieldMap = $inputObj->getFields();
-
-        if ($fieldMap === []) {
-            $this->reportError(
-                "Input Object type {$inputObj->name} must define one or more fields.",
-                $this->getAllNodes($inputObj)
-            );
+        $field_map = $input_obj->get_fields();
+        if ($field_map === []) {
+            $this->report_error("Input Object type {$input_obj->name} must define one or more fields.", $this->get_all_nodes($input_obj));
         }
-
         // Ensure the arguments are valid
-        foreach ($fieldMap as $fieldName => $field) {
+        foreach ($field_map as $field_name => $field) {
             // Ensure they are named correctly.
-            $this->validateName($field);
-
+            $this->validate_name($field);
             // TODO: Ensure they are unique per field.
-
             // Ensure the type is an input type.
-            $type = $field->getType();
+            $type = $field->get_type();
             // @phpstan-ignore-next-line The generic type says this should not happen, but a user may use it wrong nonetheless
-            if (! Type::isInputType($type)) {
-                $notInputType = Utils::printSafe($type);
-                $this->reportError(
-                    "The type of {$inputObj->name}.{$fieldName} must be Input Type but got: {$notInputType}.",
-                    $field->astNode->type ?? null
-                );
+            if (!Type::is_input_type($type)) {
+                $not_input_type = Utils::print_safe($type);
+                $this->report_error("The type of {$input_obj->name}.{$field_name} must be Input Type but got: {$not_input_type}.", $field->ast_node->type ?? null);
             }
-
             // Ensure valid directives
-            if (isset($field->astNode, $field->astNode->directives)) {
-                $this->validateDirectivesAtLocation(
-                    $field->astNode->directives,
-                    DirectiveLocation::INPUT_FIELD_DEFINITION
-                );
+            if (isset($field->ast_node, $field->ast_node->directives)) {
+                $this->validate_directives_at_location($field->ast_node->directives, Directive_Location::INPUT_FIELD_DEFINITION);
             }
         }
     }
-
     /** @throws InvariantViolation */
-    private function validateTypeIsSingleton(Type $type, string $path): void
+    private function validate_type_is_singleton(Type $type, string $path): void
     {
-        $schemaConfig = $this->schema->getConfig();
-        if (! isset($schemaConfig->typeLoader)) {
+        $schema_config = $this->schema->get_config();
+        if (!isset($schema_config->type_loader)) {
             return;
         }
-
-        $namedType = Type::getNamedType($type);
-        if ($namedType->isBuiltInType()) {
+        $named_type = Type::get_named_type($type);
+        if ($named_type->is_built_in_type()) {
             return;
         }
-
-        $name = $namedType->name;
-        if ($namedType !== ($schemaConfig->typeLoader)($name)) {
-            throw new InvariantViolation(static::duplicateType($this->schema, $path, $name));
+        $name = $named_type->name;
+        if ($named_type !== ($schema_config->type_loader)($name)) {
+            throw new Invariant_Violation(static::duplicate_type($this->schema, $path, $name));
         }
     }
-
-    public static function duplicateType(Schema $schema, string $path, string $name): string
+    public static function duplicate_type(Schema $schema, string $path, string $name): string
     {
-        $hint = isset($schema->getConfig()->typeLoader)
-            ? 'Ensure the type loader returns the same instance. '
-            : '';
-
+        $hint = isset($schema->get_config()->type_loader) ? 'Ensure the type loader returns the same instance. ' : '';
         return "Found duplicate type in schema at {$path}: {$name}. {$hint}See https://webonyx.github.io/graphql-php/type-definitions/#type-registry.";
     }
 }

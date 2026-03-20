@@ -1,165 +1,126 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Validator\Rules;
 
-namespace GraphQL\Validator\Rules;
-
-use GraphQL\Error\Error;
-use GraphQL\Error\InvariantViolation;
-use GraphQL\Language\AST\Node;
-use GraphQL\Language\AST\NodeKind;
-use GraphQL\Language\AST\TypeDefinitionNode;
-use GraphQL\Language\VisitorOperation;
-use GraphQL\Type\Definition\EnumType;
-use GraphQL\Type\Definition\InputObjectType;
-use GraphQL\Type\Definition\InterfaceType;
-use GraphQL\Type\Definition\NamedType;
-use GraphQL\Type\Definition\ObjectType;
-use GraphQL\Type\Definition\ScalarType;
-use GraphQL\Type\Definition\UnionType;
-use GraphQL\Utils\Utils;
-use GraphQL\Validator\SDLValidationContext;
-
+use Graph_Ql\Error\Error;
+use Graph_Ql\Error\Invariant_Violation;
+use Graph_Ql\Language\AST\Node;
+use Graph_Ql\Language\AST\Node_Kind;
+use Graph_Ql\Language\AST\Type_Definition_Node;
+use Graph_Ql\Language\Visitor_Operation;
+use Graph_Ql\Type\Definition\Enum_Type;
+use Graph_Ql\Type\Definition\Input_Object_Type;
+use Graph_Ql\Type\Definition\Interface_Type;
+use Graph_Ql\Type\Definition\Named_Type;
+use Graph_Ql\Type\Definition\Object_Type;
+use Graph_Ql\Type\Definition\Scalar_Type;
+use Graph_Ql\Type\Definition\Union_Type;
+use Graph_Ql\Utils\Utils;
+use Graph_Ql\Validator\Sdl_Validation_Context;
 /**
  * Possible type extensions.
  *
  * A type extension is only valid if the type is defined and has the same kind.
  */
-class PossibleTypeExtensions extends ValidationRule
+class Possible_Type_Extensions extends Validation_Rule
 {
-    public function getSDLVisitor(SDLValidationContext $context): array
+    public function get_sdl_visitor(Sdl_Validation_Context $context): array
     {
-        $schema = $context->getSchema();
-
+        $schema = $context->get_schema();
         /** @var array<string, TypeDefinitionNode&Node> $definedTypes */
-        $definedTypes = [];
-        foreach ($context->getDocument()->definitions as $def) {
-            if ($def instanceof TypeDefinitionNode) {
-                $name = $def->getName()->value;
-                $definedTypes[$name] = $def;
+        $defined_types = [];
+        foreach ($context->get_document()->definitions as $def) {
+            if ($def instanceof Type_Definition_Node) {
+                $name = $def->get_name()->value;
+                $defined_types[$name] = $def;
             }
         }
-
-        $checkTypeExtension = static function ($node) use ($context, $schema, &$definedTypes): ?VisitorOperation {
-            $typeName = $node->name->value;
-            $defNode = $definedTypes[$typeName] ?? null;
-            $existingType = $schema !== null
-                ? $schema->getType($typeName)
-                : null;
-
-            $expectedKind = null;
-            if ($defNode !== null) {
-                $expectedKind = self::defKindToExtKind($defNode->kind);
-            } elseif ($existingType !== null) {
-                $expectedKind = self::typeToExtKind($existingType);
+        $check_type_extension = static function ($node) use ($context, $schema, &$defined_types): ?Visitor_Operation {
+            $type_name = $node->name->value;
+            $def_node = $defined_types[$type_name] ?? null;
+            $existing_type = $schema !== null ? $schema->get_type($type_name) : null;
+            $expected_kind = null;
+            if ($def_node !== null) {
+                $expected_kind = self::def_kind_to_ext_kind($def_node->kind);
+            } elseif ($existing_type !== null) {
+                $expected_kind = self::type_to_ext_kind($existing_type);
             }
-
-            if ($expectedKind !== null) {
-                if ($expectedKind !== $node->kind) {
-                    $kindStr = self::extensionKindToTypeName($node->kind);
-                    $context->reportError(
-                        new Error(
-                            "Cannot extend non-{$kindStr} type \"{$typeName}\".",
-                            $defNode !== null
-                                ? [$defNode, $node]
-                                : $node,
-                        ),
-                    );
+            if ($expected_kind !== null) {
+                if ($expected_kind !== $node->kind) {
+                    $kind_str = self::extension_kind_to_type_name($node->kind);
+                    $context->report_error(new Error("Cannot extend non-{$kind_str} type \"{$type_name}\".", $def_node !== null ? [$def_node, $node] : $node));
                 }
             } else {
-                $existingTypesMap = $schema !== null
-                    ? $schema->getTypeMap()
-                    : [];
-                $allTypeNames = [
-                    ...array_keys($definedTypes),
-                    ...array_keys($existingTypesMap),
-                ];
-                $suggestedTypes = Utils::suggestionList($typeName, $allTypeNames);
-                $didYouMean = $suggestedTypes === []
-                    ? ''
-                    : ' Did you mean ' . Utils::quotedOrList($suggestedTypes) . '?';
-                $context->reportError(
-                    new Error(
-                        "Cannot extend type \"{$typeName}\" because it is not defined.{$didYouMean}",
-                        $node->name,
-                    ),
-                );
+                $existing_types_map = $schema !== null ? $schema->get_type_map() : [];
+                $all_type_names = [...array_keys($defined_types), ...array_keys($existing_types_map)];
+                $suggested_types = Utils::suggestion_list($type_name, $all_type_names);
+                $did_you_mean = $suggested_types === [] ? '' : ' Did you mean ' . Utils::quoted_or_list($suggested_types) . '?';
+                $context->report_error(new Error("Cannot extend type \"{$type_name}\" because it is not defined.{$did_you_mean}", $node->name));
             }
-
             return null;
         };
-
-        return [
-            NodeKind::SCALAR_TYPE_EXTENSION => $checkTypeExtension,
-            NodeKind::OBJECT_TYPE_EXTENSION => $checkTypeExtension,
-            NodeKind::INTERFACE_TYPE_EXTENSION => $checkTypeExtension,
-            NodeKind::UNION_TYPE_EXTENSION => $checkTypeExtension,
-            NodeKind::ENUM_TYPE_EXTENSION => $checkTypeExtension,
-            NodeKind::INPUT_OBJECT_TYPE_EXTENSION => $checkTypeExtension,
-        ];
+        return [Node_Kind::SCALAR_TYPE_EXTENSION => $check_type_extension, Node_Kind::OBJECT_TYPE_EXTENSION => $check_type_extension, Node_Kind::INTERFACE_TYPE_EXTENSION => $check_type_extension, Node_Kind::UNION_TYPE_EXTENSION => $check_type_extension, Node_Kind::ENUM_TYPE_EXTENSION => $check_type_extension, Node_Kind::INPUT_OBJECT_TYPE_EXTENSION => $check_type_extension];
     }
-
     /** @throws InvariantViolation */
-    private static function defKindToExtKind(string $kind): string
+    private static function def_kind_to_ext_kind(string $kind): string
     {
         switch ($kind) {
-            case NodeKind::SCALAR_TYPE_DEFINITION:
-                return NodeKind::SCALAR_TYPE_EXTENSION;
-            case NodeKind::OBJECT_TYPE_DEFINITION:
-                return NodeKind::OBJECT_TYPE_EXTENSION;
-            case NodeKind::INTERFACE_TYPE_DEFINITION:
-                return NodeKind::INTERFACE_TYPE_EXTENSION;
-            case NodeKind::UNION_TYPE_DEFINITION:
-                return NodeKind::UNION_TYPE_EXTENSION;
-            case NodeKind::ENUM_TYPE_DEFINITION:
-                return NodeKind::ENUM_TYPE_EXTENSION;
-            case NodeKind::INPUT_OBJECT_TYPE_DEFINITION:
-                return NodeKind::INPUT_OBJECT_TYPE_EXTENSION;
+            case Node_Kind::SCALAR_TYPE_DEFINITION:
+                return Node_Kind::SCALAR_TYPE_EXTENSION;
+            case Node_Kind::OBJECT_TYPE_DEFINITION:
+                return Node_Kind::OBJECT_TYPE_EXTENSION;
+            case Node_Kind::INTERFACE_TYPE_DEFINITION:
+                return Node_Kind::INTERFACE_TYPE_EXTENSION;
+            case Node_Kind::UNION_TYPE_DEFINITION:
+                return Node_Kind::UNION_TYPE_EXTENSION;
+            case Node_Kind::ENUM_TYPE_DEFINITION:
+                return Node_Kind::ENUM_TYPE_EXTENSION;
+            case Node_Kind::INPUT_OBJECT_TYPE_DEFINITION:
+                return Node_Kind::INPUT_OBJECT_TYPE_EXTENSION;
             default:
-                throw new InvariantViolation("Unexpected definition kind: {$kind}.");
+                throw new Invariant_Violation("Unexpected definition kind: {$kind}.");
         }
     }
-
     /** @throws InvariantViolation */
-    private static function typeToExtKind(NamedType $type): string
+    private static function type_to_ext_kind(Named_Type $type): string
     {
         switch (true) {
-            case $type instanceof ScalarType:
-                return NodeKind::SCALAR_TYPE_EXTENSION;
-            case $type instanceof ObjectType:
-                return NodeKind::OBJECT_TYPE_EXTENSION;
-            case $type instanceof InterfaceType:
-                return NodeKind::INTERFACE_TYPE_EXTENSION;
-            case $type instanceof UnionType:
-                return NodeKind::UNION_TYPE_EXTENSION;
-            case $type instanceof EnumType:
-                return NodeKind::ENUM_TYPE_EXTENSION;
-            case $type instanceof InputObjectType:
-                return NodeKind::INPUT_OBJECT_TYPE_EXTENSION;
+            case $type instanceof Scalar_Type:
+                return Node_Kind::SCALAR_TYPE_EXTENSION;
+            case $type instanceof Object_Type:
+                return Node_Kind::OBJECT_TYPE_EXTENSION;
+            case $type instanceof Interface_Type:
+                return Node_Kind::INTERFACE_TYPE_EXTENSION;
+            case $type instanceof Union_Type:
+                return Node_Kind::UNION_TYPE_EXTENSION;
+            case $type instanceof Enum_Type:
+                return Node_Kind::ENUM_TYPE_EXTENSION;
+            case $type instanceof Input_Object_Type:
+                return Node_Kind::INPUT_OBJECT_TYPE_EXTENSION;
             default:
-                $unexpectedType = Utils::printSafe($type);
-                throw new InvariantViolation("Unexpected type: {$unexpectedType}.");
+                $unexpected_type = Utils::print_safe($type);
+                throw new Invariant_Violation("Unexpected type: {$unexpected_type}.");
         }
     }
-
     /** @throws InvariantViolation */
-    private static function extensionKindToTypeName(string $kind): string
+    private static function extension_kind_to_type_name(string $kind): string
     {
         switch ($kind) {
-            case NodeKind::SCALAR_TYPE_EXTENSION:
+            case Node_Kind::SCALAR_TYPE_EXTENSION:
                 return 'scalar';
-            case NodeKind::OBJECT_TYPE_EXTENSION:
+            case Node_Kind::OBJECT_TYPE_EXTENSION:
                 return 'object';
-            case NodeKind::INTERFACE_TYPE_EXTENSION:
+            case Node_Kind::INTERFACE_TYPE_EXTENSION:
                 return 'interface';
-            case NodeKind::UNION_TYPE_EXTENSION:
+            case Node_Kind::UNION_TYPE_EXTENSION:
                 return 'union';
-            case NodeKind::ENUM_TYPE_EXTENSION:
+            case Node_Kind::ENUM_TYPE_EXTENSION:
                 return 'enum';
-            case NodeKind::INPUT_OBJECT_TYPE_EXTENSION:
+            case Node_Kind::INPUT_OBJECT_TYPE_EXTENSION:
                 return 'input object';
             default:
-                throw new InvariantViolation("Unexpected extension kind: {$kind}.");
+                throw new Invariant_Violation("Unexpected extension kind: {$kind}.");
         }
     }
 }

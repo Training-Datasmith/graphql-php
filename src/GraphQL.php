@@ -1,27 +1,25 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql;
 
-namespace GraphQL;
-
-use GraphQL\Error\Error;
-use GraphQL\Error\InvariantViolation;
-use GraphQL\Executor\ExecutionResult;
-use GraphQL\Executor\Executor;
-use GraphQL\Executor\Promise\Adapter\SyncPromiseAdapter;
-use GraphQL\Executor\Promise\Promise;
-use GraphQL\Executor\Promise\PromiseAdapter;
-use GraphQL\Language\AST\DocumentNode;
-use GraphQL\Language\Parser;
-use GraphQL\Language\Source;
-use GraphQL\Type\Definition\Directive;
-use GraphQL\Type\Definition\ScalarType;
-use GraphQL\Type\Definition\Type;
-use GraphQL\Type\Schema as SchemaType;
-use GraphQL\Validator\DocumentValidator;
-use GraphQL\Validator\Rules\QueryComplexity;
-use GraphQL\Validator\Rules\ValidationRule;
-
+use Graph_Ql\Error\Error;
+use Graph_Ql\Error\Invariant_Violation;
+use Graph_Ql\Executor\Execution_Result;
+use Graph_Ql\Executor\Executor;
+use Graph_Ql\Executor\Promise\Adapter\Sync_Promise_Adapter;
+use Graph_Ql\Executor\Promise\Promise;
+use Graph_Ql\Executor\Promise\Promise_Adapter;
+use Graph_Ql\Language\AST\Document_Node;
+use Graph_Ql\Language\Parser;
+use Graph_Ql\Language\Source;
+use Graph_Ql\Type\Definition\Directive;
+use Graph_Ql\Type\Definition\Scalar_Type;
+use Graph_Ql\Type\Definition\Type;
+use Graph_Ql\Type\Schema as SchemaType;
+use Graph_Ql\Validator\Document_Validator;
+use Graph_Ql\Validator\Rules\Query_Complexity;
+use Graph_Ql\Validator\Rules\Validation_Rule;
 /**
  * This is the primary facade for fulfilling GraphQL operations.
  * See [related documentation](executing-queries.md).
@@ -31,7 +29,7 @@ use GraphQL\Validator\Rules\ValidationRule;
  *
  * @see \GraphQL\Tests\GraphQLTest
  */
-class GraphQL
+class Graph_Ql
 {
     /**
      * Executes graphql query.
@@ -84,33 +82,12 @@ class GraphQL
      * @throws \Exception
      * @throws InvariantViolation
      */
-    public static function executeQuery(
-        SchemaType $schema,
-        $source,
-        $rootValue = null,
-        $contextValue = null,
-        ?array $variableValues = null,
-        ?string $operationName = null,
-        ?callable $fieldResolver = null,
-        ?array $validationRules = null
-    ): ExecutionResult {
-        $promiseAdapter = new SyncPromiseAdapter();
-
-        $promise = self::promiseToExecute(
-            $promiseAdapter,
-            $schema,
-            $source,
-            $rootValue,
-            $contextValue,
-            $variableValues,
-            $operationName,
-            $fieldResolver,
-            $validationRules
-        );
-
-        return $promiseAdapter->wait($promise);
+    public static function execute_query(Schema_Type $schema, $source, $root_value = null, $context_value = null, ?array $variable_values = null, ?string $operation_name = null, ?callable $field_resolver = null, ?array $validation_rules = null): Execution_Result
+    {
+        $promise_adapter = new Sync_Promise_Adapter();
+        $promise = self::promise_to_execute($promise_adapter, $schema, $source, $root_value, $context_value, $variable_values, $operation_name, $field_resolver, $validation_rules);
+        return $promise_adapter->wait($promise);
     }
-
     /**
      * Same as executeQuery(), but requires PromiseAdapter and always returns a Promise.
      * Useful for Async PHP platforms.
@@ -125,60 +102,30 @@ class GraphQL
      *
      * @throws \Exception
      */
-    public static function promiseToExecute(
-        PromiseAdapter $promiseAdapter,
-        SchemaType $schema,
-        $source,
-        $rootValue = null,
-        $context = null,
-        ?array $variableValues = null,
-        ?string $operationName = null,
-        ?callable $fieldResolver = null,
-        ?array $validationRules = null
-    ): Promise {
+    public static function promise_to_execute(Promise_Adapter $promise_adapter, Schema_Type $schema, $source, $root_value = null, $context = null, ?array $variable_values = null, ?string $operation_name = null, ?callable $field_resolver = null, ?array $validation_rules = null): Promise
+    {
         try {
-            $documentNode = $source instanceof DocumentNode
-                ? $source
-                : Parser::parse(new Source($source, 'GraphQL'));
-
-            if ($validationRules === null) {
-                $queryComplexity = DocumentValidator::getRule(QueryComplexity::class);
-                assert($queryComplexity instanceof QueryComplexity, 'should not register a different rule for QueryComplexity');
-
-                $queryComplexity->setRawVariableValues($variableValues);
+            $document_node = $source instanceof Document_Node ? $source : Parser::parse(new Source($source, 'GraphQL'));
+            if ($validation_rules === null) {
+                $query_complexity = Document_Validator::get_rule(Query_Complexity::class);
+                assert($query_complexity instanceof Query_Complexity, 'should not register a different rule for QueryComplexity');
+                $query_complexity->set_raw_variable_values($variable_values);
             } else {
-                foreach ($validationRules as $rule) {
-                    if ($rule instanceof QueryComplexity) {
-                        $rule->setRawVariableValues($variableValues);
+                foreach ($validation_rules as $rule) {
+                    if ($rule instanceof Query_Complexity) {
+                        $rule->set_raw_variable_values($variable_values);
                     }
                 }
             }
-
-            $validationErrors = DocumentValidator::validate($schema, $documentNode, $validationRules);
-
-            if ($validationErrors !== []) {
-                return $promiseAdapter->createFulfilled(
-                    new ExecutionResult(null, $validationErrors)
-                );
+            $validation_errors = Document_Validator::validate($schema, $document_node, $validation_rules);
+            if ($validation_errors !== []) {
+                return $promise_adapter->create_fulfilled(new Execution_Result(null, $validation_errors));
             }
-
-            return Executor::promiseToExecute(
-                $promiseAdapter,
-                $schema,
-                $documentNode,
-                $rootValue,
-                $context,
-                $variableValues,
-                $operationName,
-                $fieldResolver
-            );
+            return Executor::promise_to_execute($promise_adapter, $schema, $document_node, $root_value, $context, $variable_values, $operation_name, $field_resolver);
         } catch (Error $e) {
-            return $promiseAdapter->createFulfilled(
-                new ExecutionResult(null, [$e])
-            );
+            return $promise_adapter->create_fulfilled(new Execution_Result(null, [$e]));
         }
     }
-
     /**
      * Returns directives defined in GraphQL spec.
      *
@@ -190,11 +137,10 @@ class GraphQL
      *
      * @api
      */
-    public static function getStandardDirectives(): array
+    public static function get_standard_directives(): array
     {
-        return Directive::builtInDirectives();
+        return Directive::built_in_directives();
     }
-
     /**
      * Returns built-in scalar types defined in GraphQL spec.
      *
@@ -206,11 +152,10 @@ class GraphQL
      *
      * @api
      */
-    public static function getStandardTypes(): array
+    public static function get_standard_types(): array
     {
-        return Type::builtInScalars();
+        return Type::built_in_scalars();
     }
-
     /**
      * Replaces standard types with types from this list (matching by name).
      *
@@ -224,11 +169,10 @@ class GraphQL
      *
      * @throws InvariantViolation
      */
-    public static function overrideStandardTypes(array $types): void
+    public static function override_standard_types(array $types): void
     {
-        Type::overrideStandardTypes($types);
+        Type::override_standard_types($types);
     }
-
     /**
      * Returns standard validation rules implementing GraphQL spec.
      *
@@ -236,11 +180,10 @@ class GraphQL
      *
      * @api
      */
-    public static function getStandardValidationRules(): array
+    public static function get_standard_validation_rules(): array
     {
-        return DocumentValidator::defaultRules();
+        return Document_Validator::default_rules();
     }
-
     /**
      * Set default resolver implementation.
      *
@@ -248,11 +191,10 @@ class GraphQL
      *
      * @api
      */
-    public static function setDefaultFieldResolver(callable $fn): void
+    public static function set_default_field_resolver(callable $fn): void
     {
-        Executor::setDefaultFieldResolver($fn);
+        Executor::set_default_field_resolver($fn);
     }
-
     /**
      * Set default args mapper implementation.
      *
@@ -260,8 +202,8 @@ class GraphQL
      *
      * @api
      */
-    public static function setDefaultArgsMapper(callable $fn): void
+    public static function set_default_args_mapper(callable $fn): void
     {
-        Executor::setDefaultArgsMapper($fn);
+        Executor::set_default_args_mapper($fn);
     }
 }

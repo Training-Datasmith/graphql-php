@@ -1,69 +1,44 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Validator\Rules;
 
-namespace GraphQL\Validator\Rules;
-
-use GraphQL\Error\Error;
-use GraphQL\Language\AST\NodeKind;
-use GraphQL\Language\AST\SchemaDefinitionNode;
-use GraphQL\Language\AST\SchemaExtensionNode;
-use GraphQL\Language\Visitor;
-use GraphQL\Language\VisitorOperation;
-use GraphQL\Validator\SDLValidationContext;
-
+use Graph_Ql\Error\Error;
+use Graph_Ql\Language\AST\Node_Kind;
+use Graph_Ql\Language\AST\Schema_Definition_Node;
+use Graph_Ql\Language\AST\Schema_Extension_Node;
+use Graph_Ql\Language\Visitor;
+use Graph_Ql\Language\Visitor_Operation;
+use Graph_Ql\Validator\Sdl_Validation_Context;
 /**
  * Unique operation types.
  *
  * A GraphQL document is only valid if it has only one type per operation.
  */
-class UniqueOperationTypes extends ValidationRule
+class Unique_Operation_Types extends Validation_Rule
 {
-    public function getSDLVisitor(SDLValidationContext $context): array
+    public function get_sdl_visitor(Sdl_Validation_Context $context): array
     {
-        $schema = $context->getSchema();
-        $definedOperationTypes = [];
-        $existingOperationTypes = $schema !== null
-            ? [
-                'query' => $schema->getQueryType(),
-                'mutation' => $schema->getMutationType(),
-                'subscription' => $schema->getSubscriptionType(),
-            ]
-            : [];
-
+        $schema = $context->get_schema();
+        $defined_operation_types = [];
+        $existing_operation_types = $schema !== null ? ['query' => $schema->get_query_type(), 'mutation' => $schema->get_mutation_type(), 'subscription' => $schema->get_subscription_type()] : [];
         /**
          * @param SchemaDefinitionNode|SchemaExtensionNode $node
          */
-        $checkOperationTypes = static function ($node) use ($context, &$definedOperationTypes, $existingOperationTypes): VisitorOperation {
-            foreach ($node->operationTypes as $operationType) {
-                $operation = $operationType->operation;
-                $alreadyDefinedOperationType = $definedOperationTypes[$operation] ?? null;
-
-                if (isset($existingOperationTypes[$operation])) {
-                    $context->reportError(
-                        new Error(
-                            "Type for {$operation} already defined in the schema. It cannot be redefined.",
-                            $operationType,
-                        ),
-                    );
-                } elseif ($alreadyDefinedOperationType !== null) {
-                    $context->reportError(
-                        new Error(
-                            "There can be only one {$operation} type in schema.",
-                            [$alreadyDefinedOperationType, $operationType],
-                        ),
-                    );
+        $check_operation_types = static function ($node) use ($context, &$defined_operation_types, $existing_operation_types): Visitor_Operation {
+            foreach ($node->operation_types as $operation_type) {
+                $operation = $operation_type->operation;
+                $already_defined_operation_type = $defined_operation_types[$operation] ?? null;
+                if (isset($existing_operation_types[$operation])) {
+                    $context->report_error(new Error("Type for {$operation} already defined in the schema. It cannot be redefined.", $operation_type));
+                } elseif ($already_defined_operation_type !== null) {
+                    $context->report_error(new Error("There can be only one {$operation} type in schema.", [$already_defined_operation_type, $operation_type]));
                 } else {
-                    $definedOperationTypes[$operation] = $operationType;
+                    $defined_operation_types[$operation] = $operation_type;
                 }
             }
-
-            return Visitor::skipNode();
+            return Visitor::skip_node();
         };
-
-        return [
-            NodeKind::SCHEMA_DEFINITION => $checkOperationTypes,
-            NodeKind::SCHEMA_EXTENSION => $checkOperationTypes,
-        ];
+        return [Node_Kind::SCHEMA_DEFINITION => $check_operation_types, Node_Kind::SCHEMA_EXTENSION => $check_operation_types];
     }
 }

@@ -1,15 +1,13 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Type\Definition;
 
-namespace GraphQL\Type\Definition;
-
-use GraphQL\Error\InvariantViolation;
-
+use Graph_Ql\Error\Invariant_Violation;
 /**
  * @see HasFieldsType
  */
-trait HasFieldsTypeImplementation
+trait Has_Fields_Type_Implementation
 {
     /**
      * Lazily initialized.
@@ -17,92 +15,68 @@ trait HasFieldsTypeImplementation
      * @var array<string, FieldDefinition|UnresolvedFieldDefinition>
      */
     private array $fields;
-
     /** @throws InvariantViolation */
-    private function initializeFields(): void
+    private function initialize_fields(): void
     {
         if (isset($this->fields)) {
             return;
         }
-
-        $this->fields = FieldDefinition::defineFieldMap($this, $this->config['fields']);
+        $this->fields = Field_Definition::define_field_map($this, $this->config['fields']);
     }
-
     /** @throws InvariantViolation */
-    public function getField(string $name): FieldDefinition
+    public function get_field(string $name): Field_Definition
     {
-        $field = $this->findField($name);
-
+        $field = $this->find_field($name);
         if ($field === null) {
-            throw new InvariantViolation("Field \"{$name}\" is not defined for type \"{$this->name}\"");
+            throw new Invariant_Violation("Field \"{$name}\" is not defined for type \"{$this->name}\"");
         }
-
         return $field;
     }
-
     /** @throws InvariantViolation */
-    public function findField(string $name): ?FieldDefinition
+    public function find_field(string $name): ?Field_Definition
     {
-        $this->initializeFields();
-
-        if (! isset($this->fields[$name])) {
+        $this->initialize_fields();
+        if (!isset($this->fields[$name])) {
             return null;
         }
-
         $field = $this->fields[$name];
-        if ($field instanceof UnresolvedFieldDefinition) {
+        if ($field instanceof Unresolved_Field_Definition) {
             return $this->fields[$name] = $field->resolve();
         }
-
         return $field;
     }
-
     /** @throws InvariantViolation */
-    public function hasField(string $name): bool
+    public function has_field(string $name): bool
     {
-        $this->initializeFields();
-
+        $this->initialize_fields();
         return isset($this->fields[$name]);
     }
-
     /**
      * @throws InvariantViolation
      *
      * @return array<string, FieldDefinition>
      */
-    public function getFields(): array
+    public function get_fields(): array
     {
-        $this->initializeFields();
-
+        $this->initialize_fields();
         foreach ($this->fields as $name => $field) {
-            if ($field instanceof UnresolvedFieldDefinition) {
+            if ($field instanceof Unresolved_Field_Definition) {
                 $this->fields[$name] = $field->resolve();
             }
         }
-
         // @phpstan-ignore-next-line all field definitions are now resolved
         return $this->fields;
     }
-
     /** @return array<string, FieldDefinition> */
-    public function getVisibleFields(): array
+    public function get_visible_fields(): array
     {
-        return array_filter(
-            $this->getFields(),
-            fn (FieldDefinition $fieldDefinition): bool => $fieldDefinition->isVisible()
-        );
+        return array_filter($this->get_fields(), fn(Field_Definition $field_definition): bool => $field_definition->is_visible());
     }
-
     /** @throws InvariantViolation */
-    public function getFieldNames(): array
+    public function get_field_names(): array
     {
-        $this->initializeFields();
-
-        $visibleFieldNames = array_map(
-            fn (FieldDefinition $fieldDefinition): string => $fieldDefinition->getName(),
-            $this->getVisibleFields()
-        );
-
-        return array_values($visibleFieldNames);
+        $this->initialize_fields();
+        $visible_field_names = array_map(fn(Field_Definition $field_definition): string => $field_definition->get_name(), $this->get_visible_fields());
+        return array_values($visible_field_names);
     }
 }

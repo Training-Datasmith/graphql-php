@@ -1,15 +1,14 @@
 <?php
 
-declare(strict_types=1);
-
-namespace GraphQL\Error;
+declare (strict_types=1);
+namespace Graph_Ql\Error;
 
 /**
  * Caused by GraphQL clients and can safely be displayed.
  */
-class UserError extends \RuntimeException implements ClientAware
+class User_Error extends \RuntimeException implements Client_Aware
 {
-    public function isClientSafe(): bool
+    public function is_client_safe(): bool
     {
         return true;
     }

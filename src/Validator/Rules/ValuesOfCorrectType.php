@@ -1,193 +1,130 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Validator\Rules;
 
-namespace GraphQL\Validator\Rules;
-
-use GraphQL\Error\Error;
-use GraphQL\Language\AST\BooleanValueNode;
-use GraphQL\Language\AST\EnumValueNode;
-use GraphQL\Language\AST\FloatValueNode;
-use GraphQL\Language\AST\IntValueNode;
-use GraphQL\Language\AST\ListValueNode;
-use GraphQL\Language\AST\NodeKind;
-use GraphQL\Language\AST\NullValueNode;
-use GraphQL\Language\AST\ObjectFieldNode;
-use GraphQL\Language\AST\ObjectValueNode;
-use GraphQL\Language\AST\StringValueNode;
-use GraphQL\Language\AST\ValueNode;
-use GraphQL\Language\AST\VariableNode;
-use GraphQL\Language\Printer;
-use GraphQL\Language\Visitor;
-use GraphQL\Language\VisitorOperation;
-use GraphQL\Type\Definition\InputObjectType;
-use GraphQL\Type\Definition\LeafType;
-use GraphQL\Type\Definition\ListOfType;
-use GraphQL\Type\Definition\NonNull;
-use GraphQL\Type\Definition\Type;
-use GraphQL\Utils\Utils;
-use GraphQL\Validator\QueryValidationContext;
-
+use Graph_Ql\Error\Error;
+use Graph_Ql\Language\AST\Boolean_Value_Node;
+use Graph_Ql\Language\AST\Enum_Value_Node;
+use Graph_Ql\Language\AST\Float_Value_Node;
+use Graph_Ql\Language\AST\Int_Value_Node;
+use Graph_Ql\Language\AST\List_Value_Node;
+use Graph_Ql\Language\AST\Node_Kind;
+use Graph_Ql\Language\AST\Null_Value_Node;
+use Graph_Ql\Language\AST\Object_Field_Node;
+use Graph_Ql\Language\AST\Object_Value_Node;
+use Graph_Ql\Language\AST\String_Value_Node;
+use Graph_Ql\Language\AST\Value_Node;
+use Graph_Ql\Language\AST\Variable_Node;
+use Graph_Ql\Language\Printer;
+use Graph_Ql\Language\Visitor;
+use Graph_Ql\Language\Visitor_Operation;
+use Graph_Ql\Type\Definition\Input_Object_Type;
+use Graph_Ql\Type\Definition\Leaf_Type;
+use Graph_Ql\Type\Definition\List_Of_Type;
+use Graph_Ql\Type\Definition\Non_Null;
+use Graph_Ql\Type\Definition\Type;
+use Graph_Ql\Utils\Utils;
+use Graph_Ql\Validator\Query_Validation_Context;
 /**
  * Value literals of correct type.
  *
  * A GraphQL document is only valid if all value literals are of the type
  * expected at their position.
  */
-class ValuesOfCorrectType extends ValidationRule
+class Values_Of_Correct_Type extends Validation_Rule
 {
-    public function getVisitor(QueryValidationContext $context): array
+    public function get_visitor(Query_Validation_Context $context): array
     {
-        return [
-            NodeKind::NULL => static function (NullValueNode $node) use ($context): void {
-                $type = $context->getInputType();
-                if ($type instanceof NonNull) {
-                    $typeStr = Utils::printSafe($type);
-                    $nodeStr = Printer::doPrint($node);
-                    $context->reportError(
-                        new Error(
-                            "Expected value of type \"{$typeStr}\", found {$nodeStr}.",
-                            $node
-                        )
-                    );
+        return [Node_Kind::NULL => static function (Null_Value_Node $node) use ($context): void {
+            $type = $context->get_input_type();
+            if ($type instanceof Non_Null) {
+                $type_str = Utils::print_safe($type);
+                $node_str = Printer::do_print($node);
+                $context->report_error(new Error("Expected value of type \"{$type_str}\", found {$node_str}.", $node));
+            }
+        }, Node_Kind::LST => function (List_Value_Node $node) use ($context): ?Visitor_Operation {
+            // Note: TypeInfo will traverse into a list's item type, so look to the
+            // parent input type to check if it is a list.
+            $parent_type = $context->get_parent_input_type();
+            $type = $parent_type === null ? null : Type::get_nullable_type($parent_type);
+            if (!$type instanceof List_Of_Type) {
+                $this->is_valid_value_node($context, $node);
+                return Visitor::skip_node();
+            }
+            return null;
+        }, Node_Kind::OBJECT => function (Object_Value_Node $node) use ($context): ?Visitor_Operation {
+            $type = Type::get_named_type($context->get_input_type());
+            if (!$type instanceof Input_Object_Type) {
+                $this->is_valid_value_node($context, $node);
+                return Visitor::skip_node();
+            }
+            // Ensure every required field exists.
+            $input_fields = $type->get_fields();
+            $field_node_map = [];
+            foreach ($node->fields as $field) {
+                $field_node_map[$field->name->value] = $field;
+            }
+            foreach ($input_fields as $input_field_name => $field_def) {
+                if (!isset($field_node_map[$input_field_name]) && $field_def->is_required()) {
+                    $field_type = Utils::print_safe($field_def->get_type());
+                    $context->report_error(new Error("Field {$type->name}.{$input_field_name} of required type {$field_type} was not provided.", $node));
                 }
-            },
-            NodeKind::LST => function (ListValueNode $node) use ($context): ?VisitorOperation {
-                // Note: TypeInfo will traverse into a list's item type, so look to the
-                // parent input type to check if it is a list.
-                $parentType = $context->getParentInputType();
-                $type = $parentType === null
-                    ? null
-                    : Type::getNullableType($parentType);
-                if (! $type instanceof ListOfType) {
-                    $this->isValidValueNode($context, $node);
-
-                    return Visitor::skipNode();
-                }
-
-                return null;
-            },
-            NodeKind::OBJECT => function (ObjectValueNode $node) use ($context): ?VisitorOperation {
-                $type = Type::getNamedType($context->getInputType());
-                if (! $type instanceof InputObjectType) {
-                    $this->isValidValueNode($context, $node);
-
-                    return Visitor::skipNode();
-                }
-
-                // Ensure every required field exists.
-                $inputFields = $type->getFields();
-
-                $fieldNodeMap = [];
-                foreach ($node->fields as $field) {
-                    $fieldNodeMap[$field->name->value] = $field;
-                }
-
-                foreach ($inputFields as $inputFieldName => $fieldDef) {
-                    if (! isset($fieldNodeMap[$inputFieldName]) && $fieldDef->isRequired()) {
-                        $fieldType = Utils::printSafe($fieldDef->getType());
-                        $context->reportError(
-                            new Error(
-                                "Field {$type->name}.{$inputFieldName} of required type {$fieldType} was not provided.",
-                                $node
-                            )
-                        );
-                    }
-                }
-
-                return null;
-            },
-            NodeKind::OBJECT_FIELD => static function (ObjectFieldNode $node) use ($context): void {
-                $parentType = Type::getNamedType($context->getParentInputType());
-                if (! $parentType instanceof InputObjectType) {
-                    return;
-                }
-
-                if ($context->getInputType() !== null) {
-                    return;
-                }
-
-                $suggestions = Utils::suggestionList(
-                    $node->name->value,
-                    array_keys($parentType->getFields())
-                );
-                $didYouMean = $suggestions === []
-                    ? null
-                    : ' Did you mean ' . Utils::quotedOrList($suggestions) . '?';
-
-                $context->reportError(
-                    new Error(
-                        "Field \"{$node->name->value}\" is not defined by type \"{$parentType->name}\".{$didYouMean}",
-                        $node
-                    )
-                );
-            },
-            NodeKind::ENUM => function (EnumValueNode $node) use ($context): void {
-                $this->isValidValueNode($context, $node);
-            },
-            NodeKind::INT => function (IntValueNode $node) use ($context): void {
-                $this->isValidValueNode($context, $node);
-            },
-            NodeKind::FLOAT => function (FloatValueNode $node) use ($context): void {
-                $this->isValidValueNode($context, $node);
-            },
-            NodeKind::STRING => function (StringValueNode $node) use ($context): void {
-                $this->isValidValueNode($context, $node);
-            },
-            NodeKind::BOOLEAN => function (BooleanValueNode $node) use ($context): void {
-                $this->isValidValueNode($context, $node);
-            },
-        ];
+            }
+            return null;
+        }, Node_Kind::OBJECT_FIELD => static function (Object_Field_Node $node) use ($context): void {
+            $parent_type = Type::get_named_type($context->get_parent_input_type());
+            if (!$parent_type instanceof Input_Object_Type) {
+                return;
+            }
+            if ($context->get_input_type() !== null) {
+                return;
+            }
+            $suggestions = Utils::suggestion_list($node->name->value, array_keys($parent_type->get_fields()));
+            $did_you_mean = $suggestions === [] ? null : ' Did you mean ' . Utils::quoted_or_list($suggestions) . '?';
+            $context->report_error(new Error("Field \"{$node->name->value}\" is not defined by type \"{$parent_type->name}\".{$did_you_mean}", $node));
+        }, Node_Kind::ENUM => function (Enum_Value_Node $node) use ($context): void {
+            $this->is_valid_value_node($context, $node);
+        }, Node_Kind::INT => function (Int_Value_Node $node) use ($context): void {
+            $this->is_valid_value_node($context, $node);
+        }, Node_Kind::FLOAT => function (Float_Value_Node $node) use ($context): void {
+            $this->is_valid_value_node($context, $node);
+        }, Node_Kind::STRING => function (String_Value_Node $node) use ($context): void {
+            $this->is_valid_value_node($context, $node);
+        }, Node_Kind::BOOLEAN => function (Boolean_Value_Node $node) use ($context): void {
+            $this->is_valid_value_node($context, $node);
+        }];
     }
-
     /**
      * @param VariableNode|NullValueNode|IntValueNode|FloatValueNode|StringValueNode|BooleanValueNode|EnumValueNode|ListValueNode|ObjectValueNode $node
      *
      * @throws \JsonException
      */
-    protected function isValidValueNode(QueryValidationContext $context, ValueNode $node): void
+    protected function is_valid_value_node(Query_Validation_Context $context, Value_Node $node): void
     {
         // Report any error at the full type expected by the location.
-        $locationType = $context->getInputType();
-        if ($locationType === null) {
+        $location_type = $context->get_input_type();
+        if ($location_type === null) {
             return;
         }
-
-        $type = Type::getNamedType($locationType);
-
-        if (! $type instanceof LeafType) {
-            $typeStr = Utils::printSafe($type);
-            $nodeStr = Printer::doPrint($node);
-            $context->reportError(
-                new Error(
-                    "Expected value of type \"{$typeStr}\", found {$nodeStr}.",
-                    $node
-                )
-            );
-
+        $type = Type::get_named_type($location_type);
+        if (!$type instanceof Leaf_Type) {
+            $type_str = Utils::print_safe($type);
+            $node_str = Printer::do_print($node);
+            $context->report_error(new Error("Expected value of type \"{$type_str}\", found {$node_str}.", $node));
             return;
         }
-
         // Scalars determine if a literal value is valid via parseLiteral() which
         // may throw to indicate failure.
         try {
-            $type->parseLiteral($node);
+            $type->parse_literal($node);
         } catch (\Throwable $error) {
             if ($error instanceof Error) {
-                $context->reportError($error);
+                $context->report_error($error);
             } else {
-                $typeStr = Utils::printSafe($type);
-                $nodeStr = Printer::doPrint($node);
-                $context->reportError(
-                    new Error(
-                        "Expected value of type \"{$typeStr}\", found {$nodeStr}; {$error->getMessage()}",
-                        $node,
-                        null,
-                        [],
-                        null,
-                        $error // Ensure a reference to the original error is maintained.
-                    )
-                );
+                $type_str = Utils::print_safe($type);
+                $node_str = Printer::do_print($node);
+                $context->report_error(new Error("Expected value of type \"{$type_str}\", found {$node_str}; {$error->get_message()}", $node, null, [], null, $error));
             }
         }
     }

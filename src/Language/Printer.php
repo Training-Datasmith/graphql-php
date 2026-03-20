@@ -1,55 +1,53 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Language;
 
-namespace GraphQL\Language;
-
-use GraphQL\Language\AST\ArgumentNode;
-use GraphQL\Language\AST\BooleanValueNode;
-use GraphQL\Language\AST\DirectiveDefinitionNode;
-use GraphQL\Language\AST\DirectiveNode;
-use GraphQL\Language\AST\DocumentNode;
-use GraphQL\Language\AST\EnumTypeDefinitionNode;
-use GraphQL\Language\AST\EnumTypeExtensionNode;
-use GraphQL\Language\AST\EnumValueDefinitionNode;
-use GraphQL\Language\AST\EnumValueNode;
-use GraphQL\Language\AST\FieldDefinitionNode;
-use GraphQL\Language\AST\FieldNode;
-use GraphQL\Language\AST\FloatValueNode;
-use GraphQL\Language\AST\FragmentDefinitionNode;
-use GraphQL\Language\AST\FragmentSpreadNode;
-use GraphQL\Language\AST\InlineFragmentNode;
-use GraphQL\Language\AST\InputObjectTypeDefinitionNode;
-use GraphQL\Language\AST\InputObjectTypeExtensionNode;
-use GraphQL\Language\AST\InputValueDefinitionNode;
-use GraphQL\Language\AST\InterfaceTypeDefinitionNode;
-use GraphQL\Language\AST\InterfaceTypeExtensionNode;
-use GraphQL\Language\AST\IntValueNode;
-use GraphQL\Language\AST\ListTypeNode;
-use GraphQL\Language\AST\ListValueNode;
-use GraphQL\Language\AST\NamedTypeNode;
-use GraphQL\Language\AST\NameNode;
-use GraphQL\Language\AST\Node;
-use GraphQL\Language\AST\NodeList;
-use GraphQL\Language\AST\NonNullTypeNode;
-use GraphQL\Language\AST\NullValueNode;
-use GraphQL\Language\AST\ObjectFieldNode;
-use GraphQL\Language\AST\ObjectTypeDefinitionNode;
-use GraphQL\Language\AST\ObjectTypeExtensionNode;
-use GraphQL\Language\AST\ObjectValueNode;
-use GraphQL\Language\AST\OperationDefinitionNode;
-use GraphQL\Language\AST\OperationTypeDefinitionNode;
-use GraphQL\Language\AST\ScalarTypeDefinitionNode;
-use GraphQL\Language\AST\ScalarTypeExtensionNode;
-use GraphQL\Language\AST\SchemaDefinitionNode;
-use GraphQL\Language\AST\SchemaExtensionNode;
-use GraphQL\Language\AST\SelectionSetNode;
-use GraphQL\Language\AST\StringValueNode;
-use GraphQL\Language\AST\UnionTypeDefinitionNode;
-use GraphQL\Language\AST\UnionTypeExtensionNode;
-use GraphQL\Language\AST\VariableDefinitionNode;
-use GraphQL\Language\AST\VariableNode;
-
+use Graph_Ql\Language\AST\Argument_Node;
+use Graph_Ql\Language\AST\Boolean_Value_Node;
+use Graph_Ql\Language\AST\Directive_Definition_Node;
+use Graph_Ql\Language\AST\Directive_Node;
+use Graph_Ql\Language\AST\Document_Node;
+use Graph_Ql\Language\AST\Enum_Type_Definition_Node;
+use Graph_Ql\Language\AST\Enum_Type_Extension_Node;
+use Graph_Ql\Language\AST\Enum_Value_Definition_Node;
+use Graph_Ql\Language\AST\Enum_Value_Node;
+use Graph_Ql\Language\AST\Field_Definition_Node;
+use Graph_Ql\Language\AST\Field_Node;
+use Graph_Ql\Language\AST\Float_Value_Node;
+use Graph_Ql\Language\AST\Fragment_Definition_Node;
+use Graph_Ql\Language\AST\Fragment_Spread_Node;
+use Graph_Ql\Language\AST\Inline_Fragment_Node;
+use Graph_Ql\Language\AST\Input_Object_Type_Definition_Node;
+use Graph_Ql\Language\AST\Input_Object_Type_Extension_Node;
+use Graph_Ql\Language\AST\Input_Value_Definition_Node;
+use Graph_Ql\Language\AST\Interface_Type_Definition_Node;
+use Graph_Ql\Language\AST\Interface_Type_Extension_Node;
+use Graph_Ql\Language\AST\Int_Value_Node;
+use Graph_Ql\Language\AST\List_Type_Node;
+use Graph_Ql\Language\AST\List_Value_Node;
+use Graph_Ql\Language\AST\Named_Type_Node;
+use Graph_Ql\Language\AST\Name_Node;
+use Graph_Ql\Language\AST\Node;
+use Graph_Ql\Language\AST\Node_List;
+use Graph_Ql\Language\AST\Non_Null_Type_Node;
+use Graph_Ql\Language\AST\Null_Value_Node;
+use Graph_Ql\Language\AST\Object_Field_Node;
+use Graph_Ql\Language\AST\Object_Type_Definition_Node;
+use Graph_Ql\Language\AST\Object_Type_Extension_Node;
+use Graph_Ql\Language\AST\Object_Value_Node;
+use Graph_Ql\Language\AST\Operation_Definition_Node;
+use Graph_Ql\Language\AST\Operation_Type_Definition_Node;
+use Graph_Ql\Language\AST\Scalar_Type_Definition_Node;
+use Graph_Ql\Language\AST\Scalar_Type_Extension_Node;
+use Graph_Ql\Language\AST\Schema_Definition_Node;
+use Graph_Ql\Language\AST\Schema_Extension_Node;
+use Graph_Ql\Language\AST\Selection_Set_Node;
+use Graph_Ql\Language\AST\String_Value_Node;
+use Graph_Ql\Language\AST\Union_Type_Definition_Node;
+use Graph_Ql\Language\AST\Union_Type_Extension_Node;
+use Graph_Ql\Language\AST\Variable_Definition_Node;
+use Graph_Ql\Language\AST\Variable_Node;
 /**
  * Prints AST to string. Capable of printing GraphQL queries and Type definition language.
  * Useful for pretty-printing queries or printing back AST for logging, documentation, etc.
@@ -75,382 +73,142 @@ class Printer
      *
      * @api
      */
-    public static function doPrint(Node $ast): string
+    public static function do_print(Node $ast): string
     {
         return static::p($ast);
     }
-
     /** @throws \JsonException */
     protected static function p(?Node $node): string
     {
         if ($node === null) {
             return '';
         }
-
         switch (true) {
-            case $node instanceof ArgumentNode:
-            case $node instanceof ObjectFieldNode:
+            case $node instanceof Argument_Node:
+            case $node instanceof Object_Field_Node:
                 return static::p($node->name) . ': ' . static::p($node->value);
-
-            case $node instanceof BooleanValueNode:
-                return $node->value
-                    ? 'true'
-                    : 'false';
-
-            case $node instanceof DirectiveDefinitionNode:
-                $argStrings = [];
+            case $node instanceof Boolean_Value_Node:
+                return $node->value ? 'true' : 'false';
+            case $node instanceof Directive_Definition_Node:
+                $arg_strings = [];
                 foreach ($node->arguments as $arg) {
-                    $argStrings[] = static::p($arg);
+                    $arg_strings[] = static::p($arg);
                 }
-
-                $noIndent = true;
-                foreach ($argStrings as $argString) {
-                    if (strpos($argString, "\n") !== false) {
-                        $noIndent = false;
+                $no_indent = true;
+                foreach ($arg_strings as $arg_string) {
+                    if (strpos($arg_string, "\n") !== false) {
+                        $no_indent = false;
                         break;
                     }
                 }
-
-                return static::addDescription($node->description, 'directive @'
-                    . static::p($node->name)
-                    . ($noIndent
-                        ? static::wrap('(', static::join($argStrings, ', '), ')')
-                        : static::wrap("(\n", static::indent(static::join($argStrings, "\n")), "\n"))
-                    . ($node->repeatable
-                        ? ' repeatable'
-                        : '')
-                    . ' on ' . static::printList($node->locations, ' | '));
-
-            case $node instanceof DirectiveNode:
-                return '@' . static::p($node->name) . static::wrap('(', static::printList($node->arguments, ', '), ')');
-
-            case $node instanceof DocumentNode:
-                return static::printList($node->definitions, "\n\n") . "\n";
-
-            case $node instanceof EnumTypeDefinitionNode:
-                return static::addDescription($node->description, static::join(
-                    [
-                        'enum',
-                        static::p($node->name),
-                        static::printList($node->directives, ' '),
-                        static::printListBlock($node->values),
-                    ],
-                    ' '
-                ));
-
-            case $node instanceof EnumTypeExtensionNode:
-                return static::join(
-                    [
-                        'extend enum',
-                        static::p($node->name),
-                        static::printList($node->directives, ' '),
-                        static::printListBlock($node->values),
-                    ],
-                    ' '
-                );
-
-            case $node instanceof EnumValueDefinitionNode:
-                return static::addDescription(
-                    $node->description,
-                    static::join([static::p($node->name), static::printList($node->directives, ' ')], ' ')
-                );
-
-            case $node instanceof EnumValueNode:
-            case $node instanceof FloatValueNode:
-            case $node instanceof IntValueNode:
-            case $node instanceof NameNode:
+                return static::add_description($node->description, 'directive @' . static::p($node->name) . ($no_indent ? static::wrap('(', static::join($arg_strings, ', '), ')') : static::wrap("(\n", static::indent(static::join($arg_strings, "\n")), "\n")) . ($node->repeatable ? ' repeatable' : '') . ' on ' . static::print_list($node->locations, ' | '));
+            case $node instanceof Directive_Node:
+                return '@' . static::p($node->name) . static::wrap('(', static::print_list($node->arguments, ', '), ')');
+            case $node instanceof Document_Node:
+                return static::print_list($node->definitions, "\n\n") . "\n";
+            case $node instanceof Enum_Type_Definition_Node:
+                return static::add_description($node->description, static::join(['enum', static::p($node->name), static::print_list($node->directives, ' '), static::print_list_block($node->values)], ' '));
+            case $node instanceof Enum_Type_Extension_Node:
+                return static::join(['extend enum', static::p($node->name), static::print_list($node->directives, ' '), static::print_list_block($node->values)], ' ');
+            case $node instanceof Enum_Value_Definition_Node:
+                return static::add_description($node->description, static::join([static::p($node->name), static::print_list($node->directives, ' ')], ' '));
+            case $node instanceof Enum_Value_Node:
+            case $node instanceof Float_Value_Node:
+            case $node instanceof Int_Value_Node:
+            case $node instanceof Name_Node:
                 return $node->value;
-
-            case $node instanceof FieldDefinitionNode:
-                $argStrings = [];
+            case $node instanceof Field_Definition_Node:
+                $arg_strings = [];
                 foreach ($node->arguments as $item) {
-                    $argStrings[] = static::p($item);
+                    $arg_strings[] = static::p($item);
                 }
-
-                $noIndent = true;
-                foreach ($argStrings as $argString) {
-                    if (strpos($argString, "\n") !== false) {
-                        $noIndent = false;
+                $no_indent = true;
+                foreach ($arg_strings as $arg_string) {
+                    if (strpos($arg_string, "\n") !== false) {
+                        $no_indent = false;
                         break;
                     }
                 }
-
-                return static::addDescription(
-                    $node->description,
-                    static::p($node->name)
-                    . ($noIndent
-                        ? static::wrap('(', static::join($argStrings, ', '), ')')
-                        : static::wrap("(\n", static::indent(static::join($argStrings, "\n")), "\n)"))
-                    . ': ' . static::p($node->type)
-                    . static::wrap(' ', static::printList($node->directives, ' '))
-                );
-
-            case $node instanceof FieldNode:
+                return static::add_description($node->description, static::p($node->name) . ($no_indent ? static::wrap('(', static::join($arg_strings, ', '), ')') : static::wrap("(\n", static::indent(static::join($arg_strings, "\n")), "\n)")) . ': ' . static::p($node->type) . static::wrap(' ', static::print_list($node->directives, ' ')));
+            case $node instanceof Field_Node:
                 $prefix = static::wrap('', $node->alias->value ?? null, ': ') . static::p($node->name);
-
-                $argsLine = $prefix . static::wrap(
-                    '(',
-                    static::printList($node->arguments, ', '),
-                    ')'
-                );
-                if (strlen($argsLine) > 80) {
-                    $argsLine = $prefix . static::wrap(
-                        "(\n",
-                        static::indent(
-                            static::printList($node->arguments, "\n")
-                        ),
-                        "\n)"
-                    );
+                $args_line = $prefix . static::wrap('(', static::print_list($node->arguments, ', '), ')');
+                if (strlen($args_line) > 80) {
+                    $args_line = $prefix . static::wrap("(\n", static::indent(static::print_list($node->arguments, "\n")), "\n)");
                 }
-
-                return static::join(
-                    [
-                        $argsLine,
-                        static::printList($node->directives, ' '),
-                        static::p($node->selectionSet),
-                    ],
-                    ' '
-                );
-
-            case $node instanceof FragmentDefinitionNode:
+                return static::join([$args_line, static::print_list($node->directives, ' '), static::p($node->selection_set)], ' ');
+            case $node instanceof Fragment_Definition_Node:
                 // Note: fragment variable definitions are experimental and may be changed or removed in the future.
-                return 'fragment ' . static::p($node->name)
-                    . static::wrap(
-                        '(',
-                        static::printList($node->variableDefinitions ?? new NodeList([]), ', '),
-                        ')'
-                    )
-                    . ' on ' . static::p($node->typeCondition->name) . ' '
-                    . static::wrap(
-                        '',
-                        static::printList($node->directives, ' '),
-                        ' '
-                    )
-                    . static::p($node->selectionSet);
-
-            case $node instanceof FragmentSpreadNode:
-                return '...'
-                    . static::p($node->name)
-                    . static::wrap(' ', static::printList($node->directives, ' '));
-
-            case $node instanceof InlineFragmentNode:
-                return static::join(
-                    [
-                        '...',
-                        static::wrap('on ', static::p($node->typeCondition->name ?? null)),
-                        static::printList($node->directives, ' '),
-                        static::p($node->selectionSet),
-                    ],
-                    ' '
-                );
-
-            case $node instanceof InputObjectTypeDefinitionNode:
-                return static::addDescription($node->description, static::join(
-                    [
-                        'input',
-                        static::p($node->name),
-                        static::printList($node->directives, ' '),
-                        static::printListBlock($node->fields),
-                    ],
-                    ' '
-                ));
-
-            case $node instanceof InputObjectTypeExtensionNode:
-                return static::join(
-                    [
-                        'extend input',
-                        static::p($node->name),
-                        static::printList($node->directives, ' '),
-                        static::printListBlock($node->fields),
-                    ],
-                    ' '
-                );
-
-            case $node instanceof InputValueDefinitionNode:
-                return static::addDescription($node->description, static::join(
-                    [
-                        static::p($node->name) . ': ' . static::p($node->type),
-                        static::wrap('= ', static::p($node->defaultValue)),
-                        static::printList($node->directives, ' '),
-                    ],
-                    ' '
-                ));
-
-            case $node instanceof InterfaceTypeDefinitionNode:
-                return static::addDescription($node->description, static::join(
-                    [
-                        'interface',
-                        static::p($node->name),
-                        static::wrap('implements ', static::printList($node->interfaces, ' & ')),
-                        static::printList($node->directives, ' '),
-                        static::printListBlock($node->fields),
-                    ],
-                    ' '
-                ));
-
-            case $node instanceof InterfaceTypeExtensionNode:
-                return static::join(
-                    [
-                        'extend interface',
-                        static::p($node->name),
-                        static::wrap('implements ', static::printList($node->interfaces, ' & ')),
-                        static::printList($node->directives, ' '),
-                        static::printListBlock($node->fields),
-                    ],
-                    ' '
-                );
-
-            case $node instanceof ListTypeNode:
+                return 'fragment ' . static::p($node->name) . static::wrap('(', static::print_list($node->variable_definitions ?? new Node_List([]), ', '), ')') . ' on ' . static::p($node->type_condition->name) . ' ' . static::wrap('', static::print_list($node->directives, ' '), ' ') . static::p($node->selection_set);
+            case $node instanceof Fragment_Spread_Node:
+                return '...' . static::p($node->name) . static::wrap(' ', static::print_list($node->directives, ' '));
+            case $node instanceof Inline_Fragment_Node:
+                return static::join(['...', static::wrap('on ', static::p($node->type_condition->name ?? null)), static::print_list($node->directives, ' '), static::p($node->selection_set)], ' ');
+            case $node instanceof Input_Object_Type_Definition_Node:
+                return static::add_description($node->description, static::join(['input', static::p($node->name), static::print_list($node->directives, ' '), static::print_list_block($node->fields)], ' '));
+            case $node instanceof Input_Object_Type_Extension_Node:
+                return static::join(['extend input', static::p($node->name), static::print_list($node->directives, ' '), static::print_list_block($node->fields)], ' ');
+            case $node instanceof Input_Value_Definition_Node:
+                return static::add_description($node->description, static::join([static::p($node->name) . ': ' . static::p($node->type), static::wrap('= ', static::p($node->default_value)), static::print_list($node->directives, ' ')], ' '));
+            case $node instanceof Interface_Type_Definition_Node:
+                return static::add_description($node->description, static::join(['interface', static::p($node->name), static::wrap('implements ', static::print_list($node->interfaces, ' & ')), static::print_list($node->directives, ' '), static::print_list_block($node->fields)], ' '));
+            case $node instanceof Interface_Type_Extension_Node:
+                return static::join(['extend interface', static::p($node->name), static::wrap('implements ', static::print_list($node->interfaces, ' & ')), static::print_list($node->directives, ' '), static::print_list_block($node->fields)], ' ');
+            case $node instanceof List_Type_Node:
                 return '[' . static::p($node->type) . ']';
-
-            case $node instanceof ListValueNode:
-                return '[' . static::printList($node->values, ', ') . ']';
-
-            case $node instanceof NamedTypeNode:
+            case $node instanceof List_Value_Node:
+                return '[' . static::print_list($node->values, ', ') . ']';
+            case $node instanceof Named_Type_Node:
                 return static::p($node->name);
-
-            case $node instanceof NonNullTypeNode:
+            case $node instanceof Non_Null_Type_Node:
                 return static::p($node->type) . '!';
-
-            case $node instanceof NullValueNode:
+            case $node instanceof Null_Value_Node:
                 return 'null';
-
-            case $node instanceof ObjectTypeDefinitionNode:
-                return static::addDescription($node->description, static::join(
-                    [
-                        'type',
-                        static::p($node->name),
-                        static::wrap('implements ', static::printList($node->interfaces, ' & ')),
-                        static::printList($node->directives, ' '),
-                        static::printListBlock($node->fields),
-                    ],
-                    ' '
-                ));
-
-            case $node instanceof ObjectTypeExtensionNode:
-                return static::join(
-                    [
-                        'extend type',
-                        static::p($node->name),
-                        static::wrap('implements ', static::printList($node->interfaces, ' & ')),
-                        static::printList($node->directives, ' '),
-                        static::printListBlock($node->fields),
-                    ],
-                    ' '
-                );
-
-            case $node instanceof ObjectValueNode:
-                return '{ '
-                    . static::printList($node->fields, ', ')
-                    . ' }';
-
-            case $node instanceof OperationDefinitionNode:
+            case $node instanceof Object_Type_Definition_Node:
+                return static::add_description($node->description, static::join(['type', static::p($node->name), static::wrap('implements ', static::print_list($node->interfaces, ' & ')), static::print_list($node->directives, ' '), static::print_list_block($node->fields)], ' '));
+            case $node instanceof Object_Type_Extension_Node:
+                return static::join(['extend type', static::p($node->name), static::wrap('implements ', static::print_list($node->interfaces, ' & ')), static::print_list($node->directives, ' '), static::print_list_block($node->fields)], ' ');
+            case $node instanceof Object_Value_Node:
+                return '{ ' . static::print_list($node->fields, ', ') . ' }';
+            case $node instanceof Operation_Definition_Node:
                 $op = $node->operation;
                 $name = static::p($node->name);
-                $varDefs = static::wrap('(', static::printList($node->variableDefinitions, ', '), ')');
-                $directives = static::printList($node->directives, ' ');
-                $selectionSet = static::p($node->selectionSet);
-
+                $var_defs = static::wrap('(', static::print_list($node->variable_definitions, ', '), ')');
+                $directives = static::print_list($node->directives, ' ');
+                $selection_set = static::p($node->selection_set);
                 // Anonymous queries with no directives or variable definitions can use
                 // the query short form.
-                return $name === '' && $directives === '' && $varDefs === '' && $op === 'query'
-                    ? $selectionSet
-                    : static::join([$op, static::join([$name, $varDefs]), $directives, $selectionSet], ' ');
-
-            case $node instanceof OperationTypeDefinitionNode:
+                return $name === '' && $directives === '' && $var_defs === '' && $op === 'query' ? $selection_set : static::join([$op, static::join([$name, $var_defs]), $directives, $selection_set], ' ');
+            case $node instanceof Operation_Type_Definition_Node:
                 return $node->operation . ': ' . static::p($node->type);
-
-            case $node instanceof ScalarTypeDefinitionNode:
-                return static::addDescription($node->description, static::join([
-                    'scalar',
-                    static::p($node->name),
-                    static::printList($node->directives, ' '),
-                ], ' '));
-
-            case $node instanceof ScalarTypeExtensionNode:
-                return static::join(
-                    [
-                        'extend scalar',
-                        static::p($node->name),
-                        static::printList($node->directives, ' '),
-                    ],
-                    ' '
-                );
-
-            case $node instanceof SchemaDefinitionNode:
-                return static::addDescription($node->description, static::join(
-                    [
-                        'schema',
-                        static::printList($node->directives, ' '),
-                        static::printListBlock($node->operationTypes),
-                    ],
-                    ' '
-                ));
-
-            case $node instanceof SchemaExtensionNode:
-                return static::join(
-                    [
-                        'extend schema',
-                        static::printList($node->directives, ' '),
-                        static::printListBlock($node->operationTypes),
-                    ],
-                    ' '
-                );
-
-            case $node instanceof SelectionSetNode:
-                return static::printListBlock($node->selections);
-
-            case $node instanceof StringValueNode:
+            case $node instanceof Scalar_Type_Definition_Node:
+                return static::add_description($node->description, static::join(['scalar', static::p($node->name), static::print_list($node->directives, ' ')], ' '));
+            case $node instanceof Scalar_Type_Extension_Node:
+                return static::join(['extend scalar', static::p($node->name), static::print_list($node->directives, ' ')], ' ');
+            case $node instanceof Schema_Definition_Node:
+                return static::add_description($node->description, static::join(['schema', static::print_list($node->directives, ' '), static::print_list_block($node->operation_types)], ' '));
+            case $node instanceof Schema_Extension_Node:
+                return static::join(['extend schema', static::print_list($node->directives, ' '), static::print_list_block($node->operation_types)], ' ');
+            case $node instanceof Selection_Set_Node:
+                return static::print_list_block($node->selections);
+            case $node instanceof String_Value_Node:
                 if ($node->block) {
-                    return BlockString::print($node->value);
+                    return Block_String::print($node->value);
                 }
-
                 return json_encode($node->value, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
-
-            case $node instanceof UnionTypeDefinitionNode:
-                $typesStr = static::printList($node->types, ' | ');
-
-                return static::addDescription($node->description, static::join(
-                    [
-                        'union',
-                        static::p($node->name),
-                        static::printList($node->directives, ' '),
-                        $typesStr !== ''
-                            ? "= {$typesStr}"
-                            : '',
-                    ],
-                    ' '
-                ));
-
-            case $node instanceof UnionTypeExtensionNode:
-                $typesStr = static::printList($node->types, ' | ');
-
-                return static::join(
-                    [
-                        'extend union',
-                        static::p($node->name),
-                        static::printList($node->directives, ' '),
-                        $typesStr !== ''
-                            ? "= {$typesStr}"
-                            : '',
-                    ],
-                    ' '
-                );
-
-            case $node instanceof VariableDefinitionNode:
-                return '$' . static::p($node->variable->name)
-                    . ': '
-                    . static::p($node->type)
-                    . static::wrap(' = ', static::p($node->defaultValue))
-                    . static::wrap(' ', static::printList($node->directives, ' '));
-
-            case $node instanceof VariableNode:
+            case $node instanceof Union_Type_Definition_Node:
+                $types_str = static::print_list($node->types, ' | ');
+                return static::add_description($node->description, static::join(['union', static::p($node->name), static::print_list($node->directives, ' '), $types_str !== '' ? "= {$types_str}" : ''], ' '));
+            case $node instanceof Union_Type_Extension_Node:
+                $types_str = static::print_list($node->types, ' | ');
+                return static::join(['extend union', static::p($node->name), static::print_list($node->directives, ' '), $types_str !== '' ? "= {$types_str}" : ''], ' ');
+            case $node instanceof Variable_Definition_Node:
+                return '$' . static::p($node->variable->name) . ': ' . static::p($node->type) . static::wrap(' = ', static::p($node->default_value)) . static::wrap(' ', static::print_list($node->directives, ' '));
+            case $node instanceof Variable_Node:
                 return '$' . static::p($node->name);
         }
-
         return '';
     }
-
     /**
      * @template TNode of Node
      *
@@ -458,16 +216,14 @@ class Printer
      *
      * @throws \JsonException
      */
-    protected static function printList(NodeList $list, string $separator = ''): string
+    protected static function print_list(Node_List $list, string $separator = ''): string
     {
         $parts = [];
         foreach ($list as $item) {
             $parts[] = static::p($item);
         }
-
         return static::join($parts, $separator);
     }
-
     /**
      * Print each item on its own line, wrapped in an indented "{ }" block.
      *
@@ -477,51 +233,43 @@ class Printer
      *
      * @throws \JsonException
      */
-    protected static function printListBlock(NodeList $list): string
+    protected static function print_list_block(Node_List $list): string
     {
         if (count($list) === 0) {
             return '';
         }
-
         $parts = [];
         foreach ($list as $item) {
             $parts[] = static::p($item);
         }
-
         return "{\n" . static::indent(static::join($parts, "\n")) . "\n}";
     }
-
     /** @throws \JsonException */
-    protected static function addDescription(?StringValueNode $description, string $body): string
+    protected static function add_description(?String_Value_Node $description, string $body): string
     {
         return static::join([static::p($description), $body], "\n");
     }
-
     /**
      * If maybeString is not null or empty, then wrap with start and end, otherwise
      * print an empty string.
      */
-    protected static function wrap(string $start, ?string $maybeString, string $end = ''): string
+    protected static function wrap(string $start, ?string $maybe_string, string $end = ''): string
     {
-        if ($maybeString === null || $maybeString === '') {
+        if ($maybe_string === null || $maybe_string === '') {
             return '';
         }
-
-        return $start . $maybeString . $end;
+        return $start . $maybe_string . $end;
     }
-
     protected static function indent(string $string): string
     {
         if ($string === '') {
             return '';
         }
-
         return '  ' . str_replace("\n", "\n  ", $string);
     }
-
     /** @param array<string|null> $parts */
     protected static function join(array $parts, string $separator = ''): string
     {
-        return implode($separator, array_filter($parts, static fn (?string $part): bool => $part !== '' && $part !== null));
+        return implode($separator, array_filter($parts, static fn(?string $part): bool => $part !== '' && $part !== null));
     }
 }

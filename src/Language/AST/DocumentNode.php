@@ -1,13 +1,11 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Language\AST;
 
-namespace GraphQL\Language\AST;
-
-class DocumentNode extends Node
+class Document_Node extends Node
 {
-    public string $kind = NodeKind::DOCUMENT;
-
+    public string $kind = Node_Kind::DOCUMENT;
     /** @var NodeList<DefinitionNode&Node> */
-    public NodeList $definitions;
+    public Node_List $definitions;
 }

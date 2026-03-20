@@ -1,41 +1,36 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Validator\Rules;
 
-namespace GraphQL\Validator\Rules;
-
-use GraphQL\Language\Visitor;
-use GraphQL\Validator\QueryValidationContext;
-use GraphQL\Validator\SDLValidationContext;
-
+use Graph_Ql\Language\Visitor;
+use Graph_Ql\Validator\Query_Validation_Context;
+use Graph_Ql\Validator\Sdl_Validation_Context;
 /**
  * @phpstan-import-type VisitorArray from Visitor
  */
-abstract class ValidationRule
+abstract class Validation_Rule
 {
     protected string $name;
-
-    public function getName(): string
+    public function get_name(): string
     {
         return $this->name ?? static::class;
     }
-
     /**
      * Returns structure suitable for @see \GraphQL\Language\Visitor.
      *
      * @phpstan-return VisitorArray
      */
-    public function getVisitor(QueryValidationContext $context): array
+    public function get_visitor(Query_Validation_Context $context): array
     {
         return [];
     }
-
     /**
      * Returns structure suitable for @see \GraphQL\Language\Visitor.
      *
      * @phpstan-return VisitorArray
      */
-    public function getSDLVisitor(SDLValidationContext $context): array
+    public function get_sdl_visitor(Sdl_Validation_Context $context): array
     {
         return [];
     }

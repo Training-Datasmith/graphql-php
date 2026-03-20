@@ -1,21 +1,18 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Type\Definition;
 
-namespace GraphQL\Type\Definition;
-
-use GraphQL\Error\Error;
-use GraphQL\Error\SerializationError;
-use GraphQL\Language\AST\Node;
-use GraphQL\Language\AST\ValueNode;
-
+use Graph_Ql\Error\Error;
+use Graph_Ql\Error\Serialization_Error;
+use Graph_Ql\Language\AST\Node;
+use Graph_Ql\Language\AST\Value_Node;
 /*
 export type GraphQLLeafType =
 GraphQLScalarType |
 GraphQLEnumType;
 */
-
-interface LeafType
+interface Leaf_Type
 {
     /**
      * Serializes an internal value to include in a response.
@@ -29,7 +26,6 @@ interface LeafType
      * @return mixed
      */
     public function serialize($value);
-
     /**
      * Parses an externally provided value (query variable) to use as an input.
      *
@@ -41,8 +37,7 @@ interface LeafType
      *
      * @return mixed
      */
-    public function parseValue($value);
-
+    public function parse_value($value);
     /**
      * Parses an externally provided literal value (hardcoded in GraphQL query) to use as an input.
      *
@@ -55,5 +50,5 @@ interface LeafType
      *
      * @return mixed
      */
-    public function parseLiteral(Node $valueNode, ?array $variables = null);
+    public function parse_literal(Node $value_node, ?array $variables = null);
 }

@@ -1,8 +1,7 @@
 <?php
 
-declare(strict_types=1);
-
-namespace GraphQL\Executor\Promise\Adapter;
+declare (strict_types=1);
+namespace Graph_Ql\Executor\Promise\Adapter;
 
 /**
  * Queue for deferred execution of SyncPromise tasks.
@@ -13,7 +12,7 @@ namespace GraphQL\Executor\Promise\Adapter;
  *
  * @phpstan-type Task callable(): void
  */
-class SyncPromiseQueue
+class Sync_Promise_Queue
 {
     /**
      * Adds a task to the queue.
@@ -26,7 +25,6 @@ class SyncPromiseQueue
     {
         self::queue()->enqueue($task);
     }
-
     /**
      * Process all queued promises until the queue is empty.
      *
@@ -35,22 +33,20 @@ class SyncPromiseQueue
     public static function run(): void
     {
         $queue = self::queue();
-        while (! $queue->isEmpty()) {
+        while (!$queue->is_empty()) {
             $task = $queue->dequeue();
             $task();
         }
     }
-
     /**
      * Check if the queue is empty.
      *
      * @api
      */
-    public static function isEmpty(): bool
+    public static function is_empty(): bool
     {
-        return self::queue()->isEmpty();
+        return self::queue()->is_empty();
     }
-
     /**
      * Return the number of tasks in the queue.
      *
@@ -60,7 +56,6 @@ class SyncPromiseQueue
     {
         return self::queue()->count();
     }
-
     /**
      * TODO change to protected in next major version.
      *
@@ -70,7 +65,6 @@ class SyncPromiseQueue
     {
         /** @var \SplQueue<Task>|null $queue */
         static $queue;
-
         return $queue ??= new \SplQueue();
     }
 }

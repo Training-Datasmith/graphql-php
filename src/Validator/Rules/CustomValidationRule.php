@@ -1,13 +1,11 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Validator\Rules;
 
-namespace GraphQL\Validator\Rules;
-
-use GraphQL\Language\AST\Node;
-use GraphQL\Language\VisitorOperation;
-use GraphQL\Validator\ValidationContext;
-
+use Graph_Ql\Language\AST\Node;
+use Graph_Ql\Language\Visitor_Operation;
+use Graph_Ql\Validator\Validation_Context;
 /**
  * @see Node, VisitorOperation
  *
@@ -15,24 +13,22 @@ use GraphQL\Validator\ValidationContext;
  * @phpstan-type VisitorFnResult array<string, callable(Node): NodeVisitorFnResult>|array<string, array<string, callable(Node): NodeVisitorFnResult>>
  * @phpstan-type VisitorFn callable(ValidationContext): VisitorFnResult
  */
-class CustomValidationRule extends ValidationRule
+class Custom_Validation_Rule extends Validation_Rule
 {
     /**
      * @var callable
      *
      * @phpstan-var VisitorFn
      */
-    protected $visitorFn;
-
+    protected $visitor_fn;
     /** @phpstan-param VisitorFn $visitorFn */
-    public function __construct(string $name, callable $visitorFn)
+    public function __construct(string $name, callable $visitor_fn)
     {
         $this->name = $name;
-        $this->visitorFn = $visitorFn;
+        $this->visitor_fn = $visitor_fn;
     }
-
-    public function getVisitor(ValidationContext $context): array
+    public function get_visitor(Validation_Context $context): array
     {
-        return ($this->visitorFn)($context);
+        return ($this->visitor_fn)($context);
     }
 }

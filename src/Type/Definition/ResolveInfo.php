@@ -1,21 +1,19 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Type\Definition;
 
-namespace GraphQL\Type\Definition;
-
-use GraphQL\Error\Error;
-use GraphQL\Error\InvariantViolation;
-use GraphQL\Executor\Values;
-use GraphQL\Language\AST\FieldNode;
-use GraphQL\Language\AST\FragmentDefinitionNode;
-use GraphQL\Language\AST\FragmentSpreadNode;
-use GraphQL\Language\AST\InlineFragmentNode;
-use GraphQL\Language\AST\OperationDefinitionNode;
-use GraphQL\Language\AST\SelectionSetNode;
-use GraphQL\Type\Introspection;
-use GraphQL\Type\Schema;
-
+use Graph_Ql\Error\Error;
+use Graph_Ql\Error\Invariant_Violation;
+use Graph_Ql\Executor\Values;
+use Graph_Ql\Language\AST\Field_Node;
+use Graph_Ql\Language\AST\Fragment_Definition_Node;
+use Graph_Ql\Language\AST\Fragment_Spread_Node;
+use Graph_Ql\Language\AST\Inline_Fragment_Node;
+use Graph_Ql\Language\AST\Operation_Definition_Node;
+use Graph_Ql\Language\AST\Selection_Set_Node;
+use Graph_Ql\Type\Introspection;
+use Graph_Ql\Type\Schema;
 /**
  * Structure containing information useful for field resolution process.
  *
@@ -25,29 +23,26 @@ use GraphQL\Type\Schema;
  *
  * @phpstan-type Path list<string|int>
  */
-class ResolveInfo
+class Resolve_Info
 {
     /**
      * The definition of the field being resolved.
      *
      * @api
      */
-    public FieldDefinition $fieldDefinition;
-
+    public Field_Definition $field_definition;
     /**
      * The name of the field being resolved.
      *
      * @api
      */
-    public string $fieldName;
-
+    public string $field_name;
     /**
      * Expected return type of the field being resolved.
      *
      * @api
      */
-    public Type $returnType;
-
+    public Type $return_type;
     /**
      * AST of all nodes referencing this field in the query.
      *
@@ -55,15 +50,13 @@ class ResolveInfo
      *
      * @var \ArrayObject<int, FieldNode>
      */
-    public \ArrayObject $fieldNodes;
-
+    public \ArrayObject $field_nodes;
     /**
      * Parent type of the field being resolved.
      *
      * @api
      */
-    public ObjectType $parentType;
-
+    public Object_Type $parent_type;
     /**
      * Path to this field from the very root value. When fields are aliased, the path includes aliases.
      *
@@ -74,7 +67,6 @@ class ResolveInfo
      * @phpstan-var Path
      */
     public array $path;
-
     /**
      * Path to this field from the very root value. This will never include aliases.
      *
@@ -84,15 +76,13 @@ class ResolveInfo
      *
      * @phpstan-var Path
      */
-    public array $unaliasedPath;
-
+    public array $unaliased_path;
     /**
      * Instance of a schema used for execution.
      *
      * @api
      */
     public Schema $schema;
-
     /**
      * AST of all fragments defined in query.
      *
@@ -101,7 +91,6 @@ class ResolveInfo
      * @var array<string, FragmentDefinitionNode>
      */
     public array $fragments = [];
-
     /**
      * Root value passed to query execution.
      *
@@ -109,15 +98,13 @@ class ResolveInfo
      *
      * @var mixed
      */
-    public $rootValue;
-
+    public $root_value;
     /**
      * AST of operation definition node (query, mutation).
      *
      * @api
      */
-    public OperationDefinitionNode $operation;
-
+    public Operation_Definition_Node $operation;
     /**
      * Array of variables passed to query execution.
      *
@@ -125,8 +112,7 @@ class ResolveInfo
      *
      * @var array<string, mixed>
      */
-    public array $variableValues = [];
-
+    public array $variable_values = [];
     /**
      * @param \ArrayObject<int, FieldNode> $fieldNodes
      * @param list<string|int> $path
@@ -138,32 +124,21 @@ class ResolveInfo
      * @phpstan-param Path $path
      * @phpstan-param Path $unaliasedPath
      */
-    public function __construct(
-        FieldDefinition $fieldDefinition,
-        \ArrayObject $fieldNodes,
-        ObjectType $parentType,
-        array $path,
-        Schema $schema,
-        array $fragments,
-        $rootValue,
-        OperationDefinitionNode $operation,
-        array $variableValues,
-        array $unaliasedPath = []
-    ) {
-        $this->fieldDefinition = $fieldDefinition;
-        $this->fieldName = $fieldDefinition->name;
-        $this->returnType = $fieldDefinition->getType();
-        $this->fieldNodes = $fieldNodes;
-        $this->parentType = $parentType;
+    public function __construct(Field_Definition $field_definition, \ArrayObject $field_nodes, Object_Type $parent_type, array $path, Schema $schema, array $fragments, $root_value, Operation_Definition_Node $operation, array $variable_values, array $unaliased_path = [])
+    {
+        $this->field_definition = $field_definition;
+        $this->field_name = $field_definition->name;
+        $this->return_type = $field_definition->get_type();
+        $this->field_nodes = $field_nodes;
+        $this->parent_type = $parent_type;
         $this->path = $path;
-        $this->unaliasedPath = $unaliasedPath;
+        $this->unaliased_path = $unaliased_path;
         $this->schema = $schema;
         $this->fragments = $fragments;
-        $this->rootValue = $rootValue;
+        $this->root_value = $root_value;
         $this->operation = $operation;
-        $this->variableValues = $variableValues;
+        $this->variable_values = $variable_values;
     }
-
     /**
      * Returns names of all fields selected in query for `$this->fieldName` up to `$depth` levels.
      *
@@ -199,23 +174,17 @@ class ResolveInfo
      *
      * @api
      */
-    public function getFieldSelection(int $depth = 0): array
+    public function get_field_selection(int $depth = 0): array
     {
         $fields = [];
-
-        foreach ($this->fieldNodes as $fieldNode) {
-            $selectionSet = $fieldNode->selectionSet;
-            if ($selectionSet !== null) {
-                $fields = array_merge_recursive(
-                    $fields,
-                    $this->foldSelectionSet($selectionSet, $depth)
-                );
+        foreach ($this->field_nodes as $field_node) {
+            $selection_set = $field_node->selection_set;
+            if ($selection_set !== null) {
+                $fields = array_merge_recursive($fields, $this->fold_selection_set($selection_set, $depth));
             }
         }
-
         return $fields;
     }
-
     /**
      * Returns names and args of all fields selected in query for `$this->fieldName` up to `$depth` levels, including aliases.
      *
@@ -342,26 +311,19 @@ class ResolveInfo
      *
      * @api
      */
-    public function getFieldSelectionWithAliases(int $depth = 0): array
+    public function get_field_selection_with_aliases(int $depth = 0): array
     {
         $fields = [];
-
-        foreach ($this->fieldNodes as $fieldNode) {
-            $selectionSet = $fieldNode->selectionSet;
-            if ($selectionSet !== null) {
-                $field = $this->parentType->getField($fieldNode->name->value);
-                $fieldType = $field->getType();
-
-                $fields = array_merge_recursive(
-                    $fields,
-                    $this->foldSelectionWithAlias($selectionSet, $depth, $fieldType)
-                );
+        foreach ($this->field_nodes as $field_node) {
+            $selection_set = $field_node->selection_set;
+            if ($selection_set !== null) {
+                $field = $this->parent_type->get_field($field_node->name->value);
+                $field_type = $field->get_type();
+                $fields = array_merge_recursive($fields, $this->fold_selection_with_alias($selection_set, $depth, $field_type));
             }
         }
-
         return $fields;
     }
-
     /**
      * @param QueryPlanOptions $options
      *
@@ -369,54 +331,31 @@ class ResolveInfo
      * @throws Error
      * @throws InvariantViolation
      */
-    public function lookAhead(array $options = []): QueryPlan
+    public function look_ahead(array $options = []): Query_Plan
     {
-        return new QueryPlan(
-            $this->parentType,
-            $this->schema,
-            $this->fieldNodes,
-            $this->variableValues,
-            $this->fragments,
-            $options
-        );
+        return new Query_Plan($this->parent_type, $this->schema, $this->field_nodes, $this->variable_values, $this->fragments, $options);
     }
-
     /** @return array<string, bool> */
-    private function foldSelectionSet(SelectionSetNode $selectionSet, int $descend): array
+    private function fold_selection_set(Selection_Set_Node $selection_set, int $descend): array
     {
         /** @var array<string, bool> $fields */
         $fields = [];
-
-        foreach ($selectionSet->selections as $selection) {
-            if ($selection instanceof FieldNode) {
-                $fields[$selection->name->value] = $descend > 0 && $selection->selectionSet !== null
-                    ? array_merge_recursive(
-                        $fields[$selection->name->value] ?? [],
-                        $this->foldSelectionSet($selection->selectionSet, $descend - 1)
-                    )
-                    : true;
-            } elseif ($selection instanceof FragmentSpreadNode) {
-                $spreadName = $selection->name->value;
-                $fragment = $this->fragments[$spreadName] ?? null;
+        foreach ($selection_set->selections as $selection) {
+            if ($selection instanceof Field_Node) {
+                $fields[$selection->name->value] = $descend > 0 && $selection->selection_set !== null ? array_merge_recursive($fields[$selection->name->value] ?? [], $this->fold_selection_set($selection->selection_set, $descend - 1)) : true;
+            } elseif ($selection instanceof Fragment_Spread_Node) {
+                $spread_name = $selection->name->value;
+                $fragment = $this->fragments[$spread_name] ?? null;
                 if ($fragment === null) {
                     continue;
                 }
-
-                $fields = array_merge_recursive(
-                    $this->foldSelectionSet($fragment->selectionSet, $descend),
-                    $fields
-                );
-            } elseif ($selection instanceof InlineFragmentNode) {
-                $fields = array_merge_recursive(
-                    $this->foldSelectionSet($selection->selectionSet, $descend),
-                    $fields
-                );
+                $fields = array_merge_recursive($this->fold_selection_set($fragment->selection_set, $descend), $fields);
+            } elseif ($selection instanceof Inline_Fragment_Node) {
+                $fields = array_merge_recursive($this->fold_selection_set($selection->selection_set, $descend), $fields);
             }
         }
-
         return $fields;
     }
-
     /**
      * @throws \Exception
      * @throws Error
@@ -424,91 +363,65 @@ class ResolveInfo
      *
      * @return array<string>
      */
-    private function foldSelectionWithAlias(SelectionSetNode $selectionSet, int $descend, Type $parentType): array
+    private function fold_selection_with_alias(Selection_Set_Node $selection_set, int $descend, Type $parent_type): array
     {
         /** @var array<string, bool> $fields */
         $fields = [];
-
-        if ($parentType instanceof WrappingType) {
-            $parentType = $parentType->getInnermostType();
+        if ($parent_type instanceof Wrapping_Type) {
+            $parent_type = $parent_type->get_innermost_type();
         }
-
-        foreach ($selectionSet->selections as $selection) {
-            if ($selection instanceof FieldNode) {
-                $fieldName = $selection->name->value;
-                $aliasName = $selection->alias->value ?? $fieldName;
-
-                if ($fieldName === Introspection::TYPE_NAME_FIELD_NAME) {
+        foreach ($selection_set->selections as $selection) {
+            if ($selection instanceof Field_Node) {
+                $field_name = $selection->name->value;
+                $alias_name = $selection->alias->value ?? $field_name;
+                if ($field_name === Introspection::TYPE_NAME_FIELD_NAME) {
                     continue;
                 }
-                assert($parentType instanceof HasFieldsType, 'ensured by query validation');
-
-                $aliasInfo = &$fields[$fieldName][$aliasName];
-
-                $fieldDef = $parentType->getField($fieldName);
-
-                $aliasInfo['args'] = Values::getArgumentValues($fieldDef, $selection, $this->variableValues);
-
-                $fieldType = $fieldDef->getType();
-
-                $namedFieldType = $fieldType;
-                if ($namedFieldType instanceof WrappingType) {
-                    $namedFieldType = $namedFieldType->getInnermostType();
+                assert($parent_type instanceof Has_Fields_Type, 'ensured by query validation');
+                $alias_info =& $fields[$field_name][$alias_name];
+                $field_def = $parent_type->get_field($field_name);
+                $alias_info['args'] = Values::get_argument_values($field_def, $selection, $this->variable_values);
+                $field_type = $field_def->get_type();
+                $named_field_type = $field_type;
+                if ($named_field_type instanceof Wrapping_Type) {
+                    $named_field_type = $named_field_type->get_innermost_type();
                 }
-
-                $aliasInfo['type'] = $namedFieldType;
-
+                $alias_info['type'] = $named_field_type;
                 if ($descend <= 0) {
                     continue;
                 }
-
-                $nestedSelectionSet = $selection->selectionSet;
-                if ($nestedSelectionSet === null) {
+                $nested_selection_set = $selection->selection_set;
+                if ($nested_selection_set === null) {
                     continue;
                 }
-
-                if ($namedFieldType instanceof UnionType) {
-                    $aliasInfo['unions'] = $this->foldSelectionWithAlias($nestedSelectionSet, $descend, $fieldType);
+                if ($named_field_type instanceof Union_Type) {
+                    $alias_info['unions'] = $this->fold_selection_with_alias($nested_selection_set, $descend, $field_type);
                     continue;
                 }
-
-                $aliasInfo['selectionSet'] = $this->foldSelectionWithAlias($nestedSelectionSet, $descend - 1, $fieldType);
-            } elseif ($selection instanceof FragmentSpreadNode) {
-                $spreadName = $selection->name->value;
-                $fragment = $this->fragments[$spreadName] ?? null;
+                $alias_info['selectionSet'] = $this->fold_selection_with_alias($nested_selection_set, $descend - 1, $field_type);
+            } elseif ($selection instanceof Fragment_Spread_Node) {
+                $spread_name = $selection->name->value;
+                $fragment = $this->fragments[$spread_name] ?? null;
                 if ($fragment === null) {
                     continue;
                 }
-
-                $fieldType = $this->schema->getType($fragment->typeCondition->name->value);
-                assert($fieldType instanceof Type, 'ensured by query validation');
-
-                $fields = array_merge_recursive(
-                    $this->foldSelectionWithAlias($fragment->selectionSet, $descend, $fieldType),
-                    $fields
-                );
-            } elseif ($selection instanceof InlineFragmentNode) {
-                $typeCondition = $selection->typeCondition;
-                $fieldType = $typeCondition === null
-                    ? $parentType
-                    : $this->schema->getType($typeCondition->name->value);
-                assert($fieldType instanceof Type, 'ensured by query validation');
-
-                if ($parentType instanceof UnionType) {
-                    assert($fieldType instanceof NamedType, 'ensured by query validation');
-                    $fieldTypeInfo = &$fields[$fieldType->name()];
-                    $fieldTypeInfo['type'] = $fieldType;
-                    $fieldTypeInfo['selectionSet'] = $this->foldSelectionWithAlias($selection->selectionSet, $descend, $fieldType);
+                $field_type = $this->schema->get_type($fragment->type_condition->name->value);
+                assert($field_type instanceof Type, 'ensured by query validation');
+                $fields = array_merge_recursive($this->fold_selection_with_alias($fragment->selection_set, $descend, $field_type), $fields);
+            } elseif ($selection instanceof Inline_Fragment_Node) {
+                $type_condition = $selection->type_condition;
+                $field_type = $type_condition === null ? $parent_type : $this->schema->get_type($type_condition->name->value);
+                assert($field_type instanceof Type, 'ensured by query validation');
+                if ($parent_type instanceof Union_Type) {
+                    assert($field_type instanceof Named_Type, 'ensured by query validation');
+                    $field_type_info =& $fields[$field_type->name()];
+                    $field_type_info['type'] = $field_type;
+                    $field_type_info['selectionSet'] = $this->fold_selection_with_alias($selection->selection_set, $descend, $field_type);
                     continue;
                 }
-
-                $fields = array_merge_recursive(
-                    $this->foldSelectionWithAlias($selection->selectionSet, $descend, $fieldType),
-                    $fields
-                );
+                $fields = array_merge_recursive($this->fold_selection_with_alias($selection->selection_set, $descend, $field_type), $fields);
             }
         }
-
         return $fields;
     }
 }

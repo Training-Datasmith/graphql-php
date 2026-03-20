@@ -1,8 +1,7 @@
 <?php
 
-declare(strict_types=1);
-
-namespace GraphQL\Type\Definition;
+declare (strict_types=1);
+namespace Graph_Ql\Type\Definition;
 
 /**
  * export type InputType =
@@ -17,6 +16,6 @@ namespace GraphQL\Type\Definition;
  * | ListOfType<InputType>,
  * >;.
  */
-interface InputType
+interface Input_Type
 {
 }

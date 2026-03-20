@@ -1,63 +1,42 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Validator\Rules;
 
-namespace GraphQL\Validator\Rules;
-
-use GraphQL\Error\Error;
-use GraphQL\Language\AST\NodeKind;
-use GraphQL\Language\AST\OperationDefinitionNode;
-use GraphQL\Language\AST\VariableDefinitionNode;
-use GraphQL\Validator\QueryValidationContext;
-
-class NoUnusedVariables extends ValidationRule
+use Graph_Ql\Error\Error;
+use Graph_Ql\Language\AST\Node_Kind;
+use Graph_Ql\Language\AST\Operation_Definition_Node;
+use Graph_Ql\Language\AST\Variable_Definition_Node;
+use Graph_Ql\Validator\Query_Validation_Context;
+class No_Unused_Variables extends Validation_Rule
 {
     /** @var array<int, VariableDefinitionNode> */
-    protected array $variableDefs;
-
-    public function getVisitor(QueryValidationContext $context): array
+    protected array $variable_defs;
+    public function get_visitor(Query_Validation_Context $context): array
     {
-        $this->variableDefs = [];
-
-        return [
-            NodeKind::OPERATION_DEFINITION => [
-                'enter' => function (): void {
-                    $this->variableDefs = [];
-                },
-                'leave' => function (OperationDefinitionNode $operation) use ($context): void {
-                    $variableNameUsed = [];
-                    $usages = $context->getRecursiveVariableUsages($operation);
-                    $opName = $operation->name !== null
-                        ? $operation->name->value
-                        : null;
-
-                    foreach ($usages as $usage) {
-                        $node = $usage['node'];
-                        $variableNameUsed[$node->name->value] = true;
-                    }
-
-                    foreach ($this->variableDefs as $variableDef) {
-                        $variableName = $variableDef->variable->name->value;
-
-                        if (! isset($variableNameUsed[$variableName])) {
-                            $context->reportError(new Error(
-                                static::unusedVariableMessage($variableName, $opName),
-                                [$variableDef]
-                            ));
-                        }
-                    }
-                },
-            ],
-            NodeKind::VARIABLE_DEFINITION => function ($def): void {
-                $this->variableDefs[] = $def;
-            },
-        ];
+        $this->variable_defs = [];
+        return [Node_Kind::OPERATION_DEFINITION => ['enter' => function (): void {
+            $this->variable_defs = [];
+        }, 'leave' => function (Operation_Definition_Node $operation) use ($context): void {
+            $variable_name_used = [];
+            $usages = $context->get_recursive_variable_usages($operation);
+            $op_name = $operation->name !== null ? $operation->name->value : null;
+            foreach ($usages as $usage) {
+                $node = $usage['node'];
+                $variable_name_used[$node->name->value] = true;
+            }
+            foreach ($this->variable_defs as $variable_def) {
+                $variable_name = $variable_def->variable->name->value;
+                if (!isset($variable_name_used[$variable_name])) {
+                    $context->report_error(new Error(static::unused_variable_message($variable_name, $op_name), [$variable_def]));
+                }
+            }
+        }], Node_Kind::VARIABLE_DEFINITION => function ($def): void {
+            $this->variable_defs[] = $def;
+        }];
     }
-
-    public static function unusedVariableMessage(string $varName, ?string $opName = null): string
+    public static function unused_variable_message(string $var_name, ?string $op_name = null): string
     {
-        return $opName !== null
-            ? "Variable \"\${$varName}\" is never used in operation \"{$opName}\"."
-            : "Variable \"\${$varName}\" is never used.";
+        return $op_name !== null ? "Variable \"\${$var_name}\" is never used in operation \"{$op_name}\"." : "Variable \"\${$var_name}\" is never used.";
     }
 }

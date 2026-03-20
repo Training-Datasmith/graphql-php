@@ -1,21 +1,16 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Validator;
 
-namespace GraphQL\Validator;
-
-use GraphQL\Error\Error;
-use GraphQL\Language\AST\DocumentNode;
-use GraphQL\Type\Schema;
-
-interface ValidationContext
+use Graph_Ql\Error\Error;
+use Graph_Ql\Language\AST\Document_Node;
+use Graph_Ql\Type\Schema;
+interface Validation_Context
 {
-    public function reportError(Error $error): void;
-
+    public function report_error(Error $error): void;
     /** @return list<Error> */
-    public function getErrors(): array;
-
-    public function getDocument(): DocumentNode;
-
-    public function getSchema(): ?Schema;
+    public function get_errors(): array;
+    public function get_document(): Document_Node;
+    public function get_schema(): ?Schema;
 }

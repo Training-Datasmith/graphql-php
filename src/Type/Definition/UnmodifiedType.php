@@ -1,8 +1,7 @@
 <?php
 
-declare(strict_types=1);
-
-namespace GraphQL\Type\Definition;
+declare (strict_types=1);
+namespace Graph_Ql\Type\Definition;
 
 /*
 export type GraphQLUnmodifiedType =
@@ -13,7 +12,6 @@ GraphQLUnionType |
 GraphQLEnumType |
 GraphQLInputObjectType;
 */
-
-interface UnmodifiedType
+interface Unmodified_Type
 {
 }

@@ -1,36 +1,27 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Validator\Rules;
 
-namespace GraphQL\Validator\Rules;
-
-use GraphQL\Error\Error;
-use GraphQL\Language\AST\FragmentSpreadNode;
-use GraphQL\Language\AST\NodeKind;
-use GraphQL\Validator\QueryValidationContext;
-
-class KnownFragmentNames extends ValidationRule
+use Graph_Ql\Error\Error;
+use Graph_Ql\Language\AST\Fragment_Spread_Node;
+use Graph_Ql\Language\AST\Node_Kind;
+use Graph_Ql\Validator\Query_Validation_Context;
+class Known_Fragment_Names extends Validation_Rule
 {
-    public function getVisitor(QueryValidationContext $context): array
+    public function get_visitor(Query_Validation_Context $context): array
     {
-        return [
-            NodeKind::FRAGMENT_SPREAD => static function (FragmentSpreadNode $node) use ($context): void {
-                $fragmentName = $node->name->value;
-                $fragment = $context->getFragment($fragmentName);
-                if ($fragment !== null) {
-                    return;
-                }
-
-                $context->reportError(new Error(
-                    static::unknownFragmentMessage($fragmentName),
-                    [$node->name]
-                ));
-            },
-        ];
+        return [Node_Kind::FRAGMENT_SPREAD => static function (Fragment_Spread_Node $node) use ($context): void {
+            $fragment_name = $node->name->value;
+            $fragment = $context->get_fragment($fragment_name);
+            if ($fragment !== null) {
+                return;
+            }
+            $context->report_error(new Error(static::unknown_fragment_message($fragment_name), [$node->name]));
+        }];
     }
-
-    public static function unknownFragmentMessage(string $fragName): string
+    public static function unknown_fragment_message(string $frag_name): string
     {
-        return "Unknown fragment \"{$fragName}\".";
+        return "Unknown fragment \"{$frag_name}\".";
     }
 }

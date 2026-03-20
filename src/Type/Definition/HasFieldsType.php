@@ -1,34 +1,27 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Type\Definition;
 
-namespace GraphQL\Type\Definition;
-
-use GraphQL\Error\InvariantViolation;
-
-interface HasFieldsType
+use Graph_Ql\Error\Invariant_Violation;
+interface Has_Fields_Type
 {
     /** @throws InvariantViolation */
-    public function getField(string $name): FieldDefinition;
-
-    public function hasField(string $name): bool;
-
-    public function findField(string $name): ?FieldDefinition;
-
+    public function get_field(string $name): Field_Definition;
+    public function has_field(string $name): bool;
+    public function find_field(string $name): ?Field_Definition;
     /**
      * @throws InvariantViolation
      *
      * @return array<string, FieldDefinition>
      */
-    public function getFields(): array;
-
+    public function get_fields(): array;
     /**
      * @throws InvariantViolation
      *
      * @return array<string, FieldDefinition>
      */
-    public function getVisibleFields(): array;
-
+    public function get_visible_fields(): array;
     /**
      * Get all field names, including only visible fields.
      *
@@ -36,5 +29,5 @@ interface HasFieldsType
      *
      * @return array<int, string>
      */
-    public function getFieldNames(): array;
+    public function get_field_names(): array;
 }

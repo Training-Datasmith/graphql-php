@@ -1,52 +1,41 @@
 <?php
 
-declare(strict_types=1);
-
-namespace GraphQL\Type\Definition;
+declare (strict_types=1);
+namespace Graph_Ql\Type\Definition;
 
 /**
  * @phpstan-import-type UnnamedFieldDefinitionConfig from FieldDefinition
  *
  * @phpstan-type DefinitionResolver callable(): (FieldDefinition|(Type&OutputType)|UnnamedFieldDefinitionConfig)
  */
-class UnresolvedFieldDefinition
+class Unresolved_Field_Definition
 {
     private string $name;
-
     /**
      * @var callable
      *
      * @phpstan-var DefinitionResolver
      */
-    private $definitionResolver;
-
+    private $definition_resolver;
     /** @param DefinitionResolver $definitionResolver */
-    public function __construct(string $name, callable $definitionResolver)
+    public function __construct(string $name, callable $definition_resolver)
     {
         $this->name = $name;
-        $this->definitionResolver = $definitionResolver;
+        $this->definition_resolver = $definition_resolver;
     }
-
-    public function getName(): string
+    public function get_name(): string
     {
         return $this->name;
     }
-
-    public function resolve(): FieldDefinition
+    public function resolve(): Field_Definition
     {
-        $field = ($this->definitionResolver)();
-
-        if ($field instanceof FieldDefinition) {
+        $field = ($this->definition_resolver)();
+        if ($field instanceof Field_Definition) {
             return $field;
         }
-
         if ($field instanceof Type) {
-            return new FieldDefinition([
-                'name' => $this->name,
-                'type' => $field,
-            ]);
+            return new Field_Definition(['name' => $this->name, 'type' => $field]);
         }
-
-        return new FieldDefinition($field + ['name' => $this->name]);
+        return new Field_Definition($field + ['name' => $this->name]);
     }
 }

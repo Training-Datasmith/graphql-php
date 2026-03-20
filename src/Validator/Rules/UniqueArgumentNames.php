@@ -1,67 +1,52 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Validator\Rules;
 
-namespace GraphQL\Validator\Rules;
-
-use GraphQL\Error\Error;
-use GraphQL\Language\AST\ArgumentNode;
-use GraphQL\Language\AST\NameNode;
-use GraphQL\Language\AST\NodeKind;
-use GraphQL\Language\Visitor;
-use GraphQL\Language\VisitorOperation;
-use GraphQL\Validator\QueryValidationContext;
-use GraphQL\Validator\SDLValidationContext;
-use GraphQL\Validator\ValidationContext;
-
+use Graph_Ql\Error\Error;
+use Graph_Ql\Language\AST\Argument_Node;
+use Graph_Ql\Language\AST\Name_Node;
+use Graph_Ql\Language\AST\Node_Kind;
+use Graph_Ql\Language\Visitor;
+use Graph_Ql\Language\Visitor_Operation;
+use Graph_Ql\Validator\Query_Validation_Context;
+use Graph_Ql\Validator\Sdl_Validation_Context;
+use Graph_Ql\Validator\Validation_Context;
 /**
  * @phpstan-import-type VisitorArray from Visitor
  */
-class UniqueArgumentNames extends ValidationRule
+class Unique_Argument_Names extends Validation_Rule
 {
     /** @var array<string, NameNode> */
-    protected array $knownArgNames;
-
-    public function getSDLVisitor(SDLValidationContext $context): array
+    protected array $known_arg_names;
+    public function get_sdl_visitor(Sdl_Validation_Context $context): array
     {
-        return $this->getASTVisitor($context);
+        return $this->get_ast_visitor($context);
     }
-
-    public function getVisitor(QueryValidationContext $context): array
+    public function get_visitor(Query_Validation_Context $context): array
     {
-        return $this->getASTVisitor($context);
+        return $this->get_ast_visitor($context);
     }
-
     /** @phpstan-return VisitorArray */
-    public function getASTVisitor(ValidationContext $context): array
+    public function get_ast_visitor(Validation_Context $context): array
     {
-        $this->knownArgNames = [];
-
-        return [
-            NodeKind::FIELD => function (): void {
-                $this->knownArgNames = [];
-            },
-            NodeKind::DIRECTIVE => function (): void {
-                $this->knownArgNames = [];
-            },
-            NodeKind::ARGUMENT => function (ArgumentNode $node) use ($context): VisitorOperation {
-                $argName = $node->name->value;
-                if (isset($this->knownArgNames[$argName])) {
-                    $context->reportError(new Error(
-                        static::duplicateArgMessage($argName),
-                        [$this->knownArgNames[$argName], $node->name]
-                    ));
-                } else {
-                    $this->knownArgNames[$argName] = $node->name;
-                }
-
-                return Visitor::skipNode();
-            },
-        ];
+        $this->known_arg_names = [];
+        return [Node_Kind::FIELD => function (): void {
+            $this->known_arg_names = [];
+        }, Node_Kind::DIRECTIVE => function (): void {
+            $this->known_arg_names = [];
+        }, Node_Kind::ARGUMENT => function (Argument_Node $node) use ($context): Visitor_Operation {
+            $arg_name = $node->name->value;
+            if (isset($this->known_arg_names[$arg_name])) {
+                $context->report_error(new Error(static::duplicate_arg_message($arg_name), [$this->known_arg_names[$arg_name], $node->name]));
+            } else {
+                $this->known_arg_names[$arg_name] = $node->name;
+            }
+            return Visitor::skip_node();
+        }];
     }
-
-    public static function duplicateArgMessage(string $argName): string
+    public static function duplicate_arg_message(string $arg_name): string
     {
-        return "There can be only one argument named \"{$argName}\".";
+        return "There can be only one argument named \"{$arg_name}\".";
     }
 }

@@ -1,17 +1,15 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Server;
 
-namespace GraphQL\Server;
-
-use GraphQL\Error\InvariantViolation;
-use GraphQL\Executor\ExecutionResult;
-use GraphQL\Executor\Promise\Promise;
-use GraphQL\Utils\Utils;
-use Psr\Http\Message\RequestInterface;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\StreamInterface;
-
+use Graph_Ql\Error\Invariant_Violation;
+use Graph_Ql\Executor\Execution_Result;
+use Graph_Ql\Executor\Promise\Promise;
+use Graph_Ql\Utils\Utils;
+use Psr\Http\Message\Request_Interface;
+use Psr\Http\Message\Response_Interface;
+use Psr\Http\Message\Stream_Interface;
 /**
  * GraphQL server compatible with both: [express-graphql](https://github.com/graphql/express-graphql)
  * and [Apollo Server](https://github.com/apollographql/graphql-server).
@@ -35,12 +33,10 @@ use Psr\Http\Message\StreamInterface;
  *
  * @see \GraphQL\Tests\Server\StandardServerTest
  */
-class StandardServer
+class Standard_Server
 {
-    protected ServerConfig $config;
-
+    protected Server_Config $config;
     protected Helper $helper;
-
     /**
      * @param ServerConfig|array<string, mixed> $config
      *
@@ -51,19 +47,16 @@ class StandardServer
     public function __construct($config)
     {
         if (is_array($config)) {
-            $config = ServerConfig::create($config);
+            $config = Server_Config::create($config);
         }
-
         // @phpstan-ignore-next-line necessary until we can use proper union types
-        if (! $config instanceof ServerConfig) {
-            $safeConfig = Utils::printSafe($config);
-            throw new InvariantViolation("Expecting valid server config, but got {$safeConfig}");
+        if (!$config instanceof Server_Config) {
+            $safe_config = Utils::print_safe($config);
+            throw new Invariant_Violation("Expecting valid server config, but got {$safe_config}");
         }
-
         $this->config = $config;
         $this->helper = new Helper();
     }
-
     /**
      * Parses HTTP request, executes and emits response (using standard PHP `header` function and `echo`).
      *
@@ -82,12 +75,11 @@ class StandardServer
      * @throws InvariantViolation
      * @throws RequestError
      */
-    public function handleRequest($parsedBody = null): void
+    public function handle_request($parsed_body = null): void
     {
-        $result = $this->executeRequest($parsedBody);
-        $this->helper->sendResponse($result);
+        $result = $this->execute_request($parsed_body);
+        $this->helper->send_response($result);
     }
-
     /**
      * Executes a GraphQL operation and returns an execution result
      * (or promise when promise adapter is different from SyncPromiseAdapter).
@@ -108,19 +100,16 @@ class StandardServer
      *
      * @api
      */
-    public function executeRequest($parsedBody = null)
+    public function execute_request($parsed_body = null)
     {
-        if ($parsedBody === null) {
-            $parsedBody = $this->helper->parseHttpRequest();
+        if ($parsed_body === null) {
+            $parsed_body = $this->helper->parse_http_request();
         }
-
-        if (is_array($parsedBody)) {
-            return $this->helper->executeBatch($this->config, $parsedBody);
+        if (is_array($parsed_body)) {
+            return $this->helper->execute_batch($this->config, $parsed_body);
         }
-
-        return $this->helper->executeOperation($this->config, $parsedBody);
+        return $this->helper->execute_operation($this->config, $parsed_body);
     }
-
     /**
      * Executes PSR-7 request and fulfills PSR-7 response.
      *
@@ -138,16 +127,11 @@ class StandardServer
      *
      * @api
      */
-    public function processPsrRequest(
-        RequestInterface $request,
-        ResponseInterface $response,
-        StreamInterface $writableBodyStream
-    ) {
-        $result = $this->executePsrRequest($request);
-
-        return $this->helper->toPsrResponse($result, $response, $writableBodyStream);
+    public function process_psr_request(Request_Interface $request, Response_Interface $response, Stream_Interface $writable_body_stream)
+    {
+        $result = $this->execute_psr_request($request);
+        return $this->helper->to_psr_response($result, $response, $writable_body_stream);
     }
-
     /**
      * Executes GraphQL operation and returns execution result
      * (or promise when promise adapter is different from SyncPromiseAdapter).
@@ -161,10 +145,9 @@ class StandardServer
      *
      * @api
      */
-    public function executePsrRequest(RequestInterface $request)
+    public function execute_psr_request(Request_Interface $request)
     {
-        $parsedBody = $this->helper->parsePsrRequest($request);
-
-        return $this->executeRequest($parsedBody);
+        $parsed_body = $this->helper->parse_psr_request($request);
+        return $this->execute_request($parsed_body);
     }
 }

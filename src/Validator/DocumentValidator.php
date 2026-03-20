@@ -1,57 +1,55 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Validator;
 
-namespace GraphQL\Validator;
-
-use GraphQL\Error\Error;
-use GraphQL\Language\AST\DocumentNode;
-use GraphQL\Language\Visitor;
-use GraphQL\Type\Schema;
-use GraphQL\Utils\TypeInfo;
-use GraphQL\Validator\Rules\DisableIntrospection;
-use GraphQL\Validator\Rules\ExecutableDefinitions;
-use GraphQL\Validator\Rules\FieldsOnCorrectType;
-use GraphQL\Validator\Rules\FragmentsOnCompositeTypes;
-use GraphQL\Validator\Rules\KnownArgumentNames;
-use GraphQL\Validator\Rules\KnownArgumentNamesOnDirectives;
-use GraphQL\Validator\Rules\KnownDirectives;
-use GraphQL\Validator\Rules\KnownFragmentNames;
-use GraphQL\Validator\Rules\KnownTypeNames;
-use GraphQL\Validator\Rules\LoneAnonymousOperation;
-use GraphQL\Validator\Rules\LoneSchemaDefinition;
-use GraphQL\Validator\Rules\NoFragmentCycles;
-use GraphQL\Validator\Rules\NoUndefinedVariables;
-use GraphQL\Validator\Rules\NoUnusedFragments;
-use GraphQL\Validator\Rules\NoUnusedVariables;
-use GraphQL\Validator\Rules\OneOfInputObjectsRule;
-use GraphQL\Validator\Rules\OverlappingFieldsCanBeMerged;
-use GraphQL\Validator\Rules\PossibleFragmentSpreads;
-use GraphQL\Validator\Rules\PossibleTypeExtensions;
-use GraphQL\Validator\Rules\ProvidedRequiredArguments;
-use GraphQL\Validator\Rules\ProvidedRequiredArgumentsOnDirectives;
-use GraphQL\Validator\Rules\QueryComplexity;
-use GraphQL\Validator\Rules\QueryDepth;
-use GraphQL\Validator\Rules\QuerySecurityRule;
-use GraphQL\Validator\Rules\ScalarLeafs;
-use GraphQL\Validator\Rules\SingleFieldSubscription;
-use GraphQL\Validator\Rules\UniqueArgumentDefinitionNames;
-use GraphQL\Validator\Rules\UniqueArgumentNames;
-use GraphQL\Validator\Rules\UniqueDirectiveNames;
-use GraphQL\Validator\Rules\UniqueDirectivesPerLocation;
-use GraphQL\Validator\Rules\UniqueEnumValueNames;
-use GraphQL\Validator\Rules\UniqueFieldDefinitionNames;
-use GraphQL\Validator\Rules\UniqueFragmentNames;
-use GraphQL\Validator\Rules\UniqueInputFieldNames;
-use GraphQL\Validator\Rules\UniqueOperationNames;
-use GraphQL\Validator\Rules\UniqueOperationTypes;
-use GraphQL\Validator\Rules\UniqueTypeNames;
-use GraphQL\Validator\Rules\UniqueVariableNames;
-use GraphQL\Validator\Rules\ValidationRule;
-use GraphQL\Validator\Rules\ValuesOfCorrectType;
-use GraphQL\Validator\Rules\VariablesAreInputTypes;
-use GraphQL\Validator\Rules\VariablesInAllowedPosition;
-
+use Graph_Ql\Error\Error;
+use Graph_Ql\Language\AST\Document_Node;
+use Graph_Ql\Language\Visitor;
+use Graph_Ql\Type\Schema;
+use Graph_Ql\Utils\Type_Info;
+use Graph_Ql\Validator\Rules\Disable_Introspection;
+use Graph_Ql\Validator\Rules\Executable_Definitions;
+use Graph_Ql\Validator\Rules\Fields_On_Correct_Type;
+use Graph_Ql\Validator\Rules\Fragments_On_Composite_Types;
+use Graph_Ql\Validator\Rules\Known_Argument_Names;
+use Graph_Ql\Validator\Rules\Known_Argument_Names_On_Directives;
+use Graph_Ql\Validator\Rules\Known_Directives;
+use Graph_Ql\Validator\Rules\Known_Fragment_Names;
+use Graph_Ql\Validator\Rules\Known_Type_Names;
+use Graph_Ql\Validator\Rules\Lone_Anonymous_Operation;
+use Graph_Ql\Validator\Rules\Lone_Schema_Definition;
+use Graph_Ql\Validator\Rules\No_Fragment_Cycles;
+use Graph_Ql\Validator\Rules\No_Undefined_Variables;
+use Graph_Ql\Validator\Rules\No_Unused_Fragments;
+use Graph_Ql\Validator\Rules\No_Unused_Variables;
+use Graph_Ql\Validator\Rules\One_Of_Input_Objects_Rule;
+use Graph_Ql\Validator\Rules\Overlapping_Fields_Can_Be_Merged;
+use Graph_Ql\Validator\Rules\Possible_Fragment_Spreads;
+use Graph_Ql\Validator\Rules\Possible_Type_Extensions;
+use Graph_Ql\Validator\Rules\Provided_Required_Arguments;
+use Graph_Ql\Validator\Rules\Provided_Required_Arguments_On_Directives;
+use Graph_Ql\Validator\Rules\Query_Complexity;
+use Graph_Ql\Validator\Rules\Query_Depth;
+use Graph_Ql\Validator\Rules\Query_Security_Rule;
+use Graph_Ql\Validator\Rules\Scalar_Leafs;
+use Graph_Ql\Validator\Rules\Single_Field_Subscription;
+use Graph_Ql\Validator\Rules\Unique_Argument_Definition_Names;
+use Graph_Ql\Validator\Rules\Unique_Argument_Names;
+use Graph_Ql\Validator\Rules\Unique_Directive_Names;
+use Graph_Ql\Validator\Rules\Unique_Directives_Per_Location;
+use Graph_Ql\Validator\Rules\Unique_Enum_Value_Names;
+use Graph_Ql\Validator\Rules\Unique_Field_Definition_Names;
+use Graph_Ql\Validator\Rules\Unique_Fragment_Names;
+use Graph_Ql\Validator\Rules\Unique_Input_Field_Names;
+use Graph_Ql\Validator\Rules\Unique_Operation_Names;
+use Graph_Ql\Validator\Rules\Unique_Operation_Types;
+use Graph_Ql\Validator\Rules\Unique_Type_Names;
+use Graph_Ql\Validator\Rules\Unique_Variable_Names;
+use Graph_Ql\Validator\Rules\Validation_Rule;
+use Graph_Ql\Validator\Rules\Values_Of_Correct_Type;
+use Graph_Ql\Validator\Rules\Variables_Are_Input_Types;
+use Graph_Ql\Validator\Rules\Variables_In_Allowed_Position;
 /**
  * Implements the "Validation" section of the spec.
  *
@@ -70,22 +68,17 @@ use GraphQL\Validator\Rules\VariablesInAllowedPosition;
  * Optionally a custom TypeInfo instance may be provided. If not provided, one
  * will be created from the provided schema.
  */
-class DocumentValidator
+class Document_Validator
 {
     /** @var array<string, ValidationRule> */
     private static array $rules = [];
-
     /** @var array<class-string<ValidationRule>, ValidationRule> */
-    private static array $defaultRules;
-
+    private static array $default_rules;
     /** @var array<class-string<QuerySecurityRule>, QuerySecurityRule> */
-    private static array $securityRules;
-
+    private static array $security_rules;
     /** @var array<class-string<ValidationRule>, ValidationRule> */
-    private static array $sdlRules;
-
-    private static bool $initRules = false;
-
+    private static array $sdl_rules;
+    private static bool $init_rules = false;
     /**
      * Validate a GraphQL query against a schema.
      *
@@ -97,38 +90,21 @@ class DocumentValidator
      *
      * @api
      */
-    public static function validate(
-        Schema $schema,
-        DocumentNode $ast,
-        ?array $rules = null,
-        ?TypeInfo $typeInfo = null
-    ): array {
-        $rules ??= static::allRules();
-
+    public static function validate(Schema $schema, Document_Node $ast, ?array $rules = null, ?Type_Info $type_info = null): array
+    {
+        $rules ??= static::all_rules();
         if ($rules === []) {
             return [];
         }
-
-        $typeInfo ??= new TypeInfo($schema);
-
-        $context = new QueryValidationContext($schema, $ast, $typeInfo);
-
+        $type_info ??= new Type_Info($schema);
+        $context = new Query_Validation_Context($schema, $ast, $type_info);
         $visitors = [];
         foreach ($rules as $rule) {
-            $visitors[] = $rule->getVisitor($context);
+            $visitors[] = $rule->get_visitor($context);
         }
-
-        Visitor::visit(
-            $ast,
-            Visitor::visitWithTypeInfo(
-                $typeInfo,
-                Visitor::visitInParallel($visitors)
-            )
-        );
-
-        return $context->getErrors();
+        Visitor::visit($ast, Visitor::visit_with_type_info($type_info, Visitor::visit_in_parallel($visitors)));
+        return $context->get_errors();
     }
-
     /**
      * Returns all global validation rules.
      *
@@ -138,54 +114,19 @@ class DocumentValidator
      *
      * @api
      */
-    public static function allRules(): array
+    public static function all_rules(): array
     {
-        if (! self::$initRules) {
-            self::$rules = array_merge(
-                static::defaultRules(),
-                self::securityRules(),
-                self::$rules
-            );
-            self::$initRules = true;
+        if (!self::$init_rules) {
+            self::$rules = array_merge(static::default_rules(), self::security_rules(), self::$rules);
+            self::$init_rules = true;
         }
-
         return self::$rules;
     }
-
     /** @return array<class-string<ValidationRule>, ValidationRule> */
-    public static function defaultRules(): array
+    public static function default_rules(): array
     {
-        return self::$defaultRules ??= [
-            ExecutableDefinitions::class => new ExecutableDefinitions(),
-            UniqueOperationNames::class => new UniqueOperationNames(),
-            LoneAnonymousOperation::class => new LoneAnonymousOperation(),
-            SingleFieldSubscription::class => new SingleFieldSubscription(),
-            KnownTypeNames::class => new KnownTypeNames(),
-            FragmentsOnCompositeTypes::class => new FragmentsOnCompositeTypes(),
-            VariablesAreInputTypes::class => new VariablesAreInputTypes(),
-            ScalarLeafs::class => new ScalarLeafs(),
-            FieldsOnCorrectType::class => new FieldsOnCorrectType(),
-            UniqueFragmentNames::class => new UniqueFragmentNames(),
-            KnownFragmentNames::class => new KnownFragmentNames(),
-            NoUnusedFragments::class => new NoUnusedFragments(),
-            PossibleFragmentSpreads::class => new PossibleFragmentSpreads(),
-            NoFragmentCycles::class => new NoFragmentCycles(),
-            UniqueVariableNames::class => new UniqueVariableNames(),
-            NoUndefinedVariables::class => new NoUndefinedVariables(),
-            NoUnusedVariables::class => new NoUnusedVariables(),
-            KnownDirectives::class => new KnownDirectives(),
-            UniqueDirectivesPerLocation::class => new UniqueDirectivesPerLocation(),
-            KnownArgumentNames::class => new KnownArgumentNames(),
-            UniqueArgumentNames::class => new UniqueArgumentNames(),
-            ValuesOfCorrectType::class => new ValuesOfCorrectType(),
-            ProvidedRequiredArguments::class => new ProvidedRequiredArguments(),
-            VariablesInAllowedPosition::class => new VariablesInAllowedPosition(),
-            OverlappingFieldsCanBeMerged::class => new OverlappingFieldsCanBeMerged(),
-            UniqueInputFieldNames::class => new UniqueInputFieldNames(),
-            OneOfInputObjectsRule::class => new OneOfInputObjectsRule(),
-        ];
+        return self::$default_rules ??= [Executable_Definitions::class => new Executable_Definitions(), Unique_Operation_Names::class => new Unique_Operation_Names(), Lone_Anonymous_Operation::class => new Lone_Anonymous_Operation(), Single_Field_Subscription::class => new Single_Field_Subscription(), Known_Type_Names::class => new Known_Type_Names(), Fragments_On_Composite_Types::class => new Fragments_On_Composite_Types(), Variables_Are_Input_Types::class => new Variables_Are_Input_Types(), Scalar_Leafs::class => new Scalar_Leafs(), Fields_On_Correct_Type::class => new Fields_On_Correct_Type(), Unique_Fragment_Names::class => new Unique_Fragment_Names(), Known_Fragment_Names::class => new Known_Fragment_Names(), No_Unused_Fragments::class => new No_Unused_Fragments(), Possible_Fragment_Spreads::class => new Possible_Fragment_Spreads(), No_Fragment_Cycles::class => new No_Fragment_Cycles(), Unique_Variable_Names::class => new Unique_Variable_Names(), No_Undefined_Variables::class => new No_Undefined_Variables(), No_Unused_Variables::class => new No_Unused_Variables(), Known_Directives::class => new Known_Directives(), Unique_Directives_Per_Location::class => new Unique_Directives_Per_Location(), Known_Argument_Names::class => new Known_Argument_Names(), Unique_Argument_Names::class => new Unique_Argument_Names(), Values_Of_Correct_Type::class => new Values_Of_Correct_Type(), Provided_Required_Arguments::class => new Provided_Required_Arguments(), Variables_In_Allowed_Position::class => new Variables_In_Allowed_Position(), Overlapping_Fields_Can_Be_Merged::class => new Overlapping_Fields_Can_Be_Merged(), Unique_Input_Field_Names::class => new Unique_Input_Field_Names(), One_Of_Input_Objects_Rule::class => new One_Of_Input_Objects_Rule()];
     }
-
     /**
      * @deprecated just add rules via @see DocumentValidator::addRule()
      *
@@ -193,37 +134,15 @@ class DocumentValidator
      *
      * @return array<class-string<QuerySecurityRule>, QuerySecurityRule>
      */
-    public static function securityRules(): array
+    public static function security_rules(): array
     {
-        return self::$securityRules ??= [
-            DisableIntrospection::class => new DisableIntrospection(DisableIntrospection::DISABLED),
-            QueryDepth::class => new QueryDepth(QueryDepth::DISABLED),
-            QueryComplexity::class => new QueryComplexity(QueryComplexity::DISABLED),
-        ];
+        return self::$security_rules ??= [Disable_Introspection::class => new Disable_Introspection(Disable_Introspection::DISABLED), Query_Depth::class => new Query_Depth(Query_Depth::DISABLED), Query_Complexity::class => new Query_Complexity(Query_Complexity::DISABLED)];
     }
-
     /** @return array<class-string<ValidationRule>, ValidationRule> */
-    public static function sdlRules(): array
+    public static function sdl_rules(): array
     {
-        return self::$sdlRules ??= [
-            LoneSchemaDefinition::class => new LoneSchemaDefinition(),
-            UniqueOperationTypes::class => new UniqueOperationTypes(),
-            UniqueTypeNames::class => new UniqueTypeNames(),
-            UniqueEnumValueNames::class => new UniqueEnumValueNames(),
-            UniqueFieldDefinitionNames::class => new UniqueFieldDefinitionNames(),
-            UniqueArgumentDefinitionNames::class => new UniqueArgumentDefinitionNames(),
-            UniqueDirectiveNames::class => new UniqueDirectiveNames(),
-            KnownTypeNames::class => new KnownTypeNames(),
-            KnownDirectives::class => new KnownDirectives(),
-            UniqueDirectivesPerLocation::class => new UniqueDirectivesPerLocation(),
-            PossibleTypeExtensions::class => new PossibleTypeExtensions(),
-            KnownArgumentNamesOnDirectives::class => new KnownArgumentNamesOnDirectives(),
-            UniqueArgumentNames::class => new UniqueArgumentNames(),
-            UniqueInputFieldNames::class => new UniqueInputFieldNames(),
-            ProvidedRequiredArgumentsOnDirectives::class => new ProvidedRequiredArgumentsOnDirectives(),
-        ];
+        return self::$sdl_rules ??= [Lone_Schema_Definition::class => new Lone_Schema_Definition(), Unique_Operation_Types::class => new Unique_Operation_Types(), Unique_Type_Names::class => new Unique_Type_Names(), Unique_Enum_Value_Names::class => new Unique_Enum_Value_Names(), Unique_Field_Definition_Names::class => new Unique_Field_Definition_Names(), Unique_Argument_Definition_Names::class => new Unique_Argument_Definition_Names(), Unique_Directive_Names::class => new Unique_Directive_Names(), Known_Type_Names::class => new Known_Type_Names(), Known_Directives::class => new Known_Directives(), Unique_Directives_Per_Location::class => new Unique_Directives_Per_Location(), Possible_Type_Extensions::class => new Possible_Type_Extensions(), Known_Argument_Names_On_Directives::class => new Known_Argument_Names_On_Directives(), Unique_Argument_Names::class => new Unique_Argument_Names(), Unique_Input_Field_Names::class => new Unique_Input_Field_Names(), Provided_Required_Arguments_On_Directives::class => new Provided_Required_Arguments_On_Directives()];
     }
-
     /**
      * Returns global validation rule by name.
      *
@@ -235,31 +154,28 @@ class DocumentValidator
      *
      * @throws \InvalidArgumentException
      */
-    public static function getRule(string $name): ?ValidationRule
+    public static function get_rule(string $name): ?Validation_Rule
     {
-        return static::allRules()[$name] ?? null;
+        return static::all_rules()[$name] ?? null;
     }
-
     /**
      * Add rule to list of global validation rules.
      *
      * @api
      */
-    public static function addRule(ValidationRule $rule): void
+    public static function add_rule(Validation_Rule $rule): void
     {
-        self::$rules[$rule->getName()] = $rule;
+        self::$rules[$rule->get_name()] = $rule;
     }
-
     /**
      * Remove rule from list of global validation rules.
      *
      * @api
      */
-    public static function removeRule(ValidationRule $rule): void
+    public static function remove_rule(Validation_Rule $rule): void
     {
-        unset(self::$rules[$rule->getName()]);
+        unset(self::$rules[$rule->get_name()]);
     }
-
     /**
      * Validate a GraphQL document defined through schema definition language.
      *
@@ -269,64 +185,49 @@ class DocumentValidator
      *
      * @return list<Error>
      */
-    public static function validateSDL(
-        DocumentNode $documentAST,
-        ?Schema $schemaToExtend = null,
-        ?array $rules = null
-    ): array {
-        $rules ??= self::sdlRules();
-
+    public static function validate_sdl(Document_Node $document_ast, ?Schema $schema_to_extend = null, ?array $rules = null): array
+    {
+        $rules ??= self::sdl_rules();
         if ($rules === []) {
             return [];
         }
-
-        $context = new SDLValidationContext($documentAST, $schemaToExtend);
-
+        $context = new Sdl_Validation_Context($document_ast, $schema_to_extend);
         $visitors = [];
         foreach ($rules as $rule) {
-            $visitors[] = $rule->getSDLVisitor($context);
+            $visitors[] = $rule->get_sdl_visitor($context);
         }
-
-        Visitor::visit(
-            $documentAST,
-            Visitor::visitInParallel($visitors)
-        );
-
-        return $context->getErrors();
+        Visitor::visit($document_ast, Visitor::visit_in_parallel($visitors));
+        return $context->get_errors();
     }
-
     /**
      * @throws \Exception
      * @throws Error
      */
-    public static function assertValidSDL(DocumentNode $documentAST): void
+    public static function assert_valid_sdl(Document_Node $document_ast): void
     {
-        $errors = self::validateSDL($documentAST);
+        $errors = self::validate_sdl($document_ast);
         if ($errors !== []) {
-            throw new Error(self::combineErrorMessages($errors));
+            throw new Error(self::combine_error_messages($errors));
         }
     }
-
     /**
      * @throws \Exception
      * @throws Error
      */
-    public static function assertValidSDLExtension(DocumentNode $documentAST, Schema $schema): void
+    public static function assert_valid_sdl_extension(Document_Node $document_ast, Schema $schema): void
     {
-        $errors = self::validateSDL($documentAST, $schema);
+        $errors = self::validate_sdl($document_ast, $schema);
         if ($errors !== []) {
-            throw new Error(self::combineErrorMessages($errors));
+            throw new Error(self::combine_error_messages($errors));
         }
     }
-
     /** @param array<Error> $errors */
-    private static function combineErrorMessages(array $errors): string
+    private static function combine_error_messages(array $errors): string
     {
         $messages = [];
         foreach ($errors as $error) {
-            $messages[] = $error->getMessage();
+            $messages[] = $error->get_message();
         }
-
         return implode("\n\n", $messages);
     }
 }

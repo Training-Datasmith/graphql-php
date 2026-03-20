@@ -1,40 +1,31 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Language;
 
-namespace GraphQL\Language;
-
-class SourceLocation implements \JsonSerializable
+class Source_Location implements \JsonSerializable
 {
     public int $line;
-
     public int $column;
-
     public function __construct(int $line, int $col)
     {
         $this->line = $line;
         $this->column = $col;
     }
-
     /** @return array{line: int, column: int} */
-    public function toArray(): array
+    public function to_array(): array
     {
-        return [
-            'line' => $this->line,
-            'column' => $this->column,
-        ];
+        return ['line' => $this->line, 'column' => $this->column];
     }
-
     /** @return array{line: int, column: int} */
-    public function toSerializableArray(): array
+    public function to_serializable_array(): array
     {
-        return $this->toArray();
+        return $this->to_array();
     }
-
     /** @return array{line: int, column: int} */
-    #[\ReturnTypeWillChange]
+    #[\Return_Type_Will_Change]
     public function jsonSerialize(): array
     {
-        return $this->toArray();
+        return $this->to_array();
     }
 }

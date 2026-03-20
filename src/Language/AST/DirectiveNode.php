@@ -1,21 +1,17 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Language\AST;
 
-namespace GraphQL\Language\AST;
-
-class DirectiveNode extends Node
+class Directive_Node extends Node
 {
-    public string $kind = NodeKind::DIRECTIVE;
-
-    public NameNode $name;
-
+    public string $kind = Node_Kind::DIRECTIVE;
+    public Name_Node $name;
     /** @var NodeList<ArgumentNode> */
-    public NodeList $arguments;
-
+    public Node_List $arguments;
     public function __construct(array $vars)
     {
         parent::__construct($vars);
-        $this->arguments ??= new NodeList([]);
+        $this->arguments ??= new Node_List([]);
     }
 }

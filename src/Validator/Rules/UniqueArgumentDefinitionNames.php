@@ -1,75 +1,51 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Validator\Rules;
 
-namespace GraphQL\Validator\Rules;
-
-use GraphQL\Error\Error;
-use GraphQL\Language\AST\DirectiveDefinitionNode;
-use GraphQL\Language\AST\InputValueDefinitionNode;
-use GraphQL\Language\AST\InterfaceTypeDefinitionNode;
-use GraphQL\Language\AST\InterfaceTypeExtensionNode;
-use GraphQL\Language\AST\NodeKind;
-use GraphQL\Language\AST\NodeList;
-use GraphQL\Language\AST\ObjectTypeDefinitionNode;
-use GraphQL\Language\AST\ObjectTypeExtensionNode;
-use GraphQL\Language\Visitor;
-use GraphQL\Language\VisitorOperation;
-use GraphQL\Validator\SDLValidationContext;
-
+use Graph_Ql\Error\Error;
+use Graph_Ql\Language\AST\Directive_Definition_Node;
+use Graph_Ql\Language\AST\Input_Value_Definition_Node;
+use Graph_Ql\Language\AST\Interface_Type_Definition_Node;
+use Graph_Ql\Language\AST\Interface_Type_Extension_Node;
+use Graph_Ql\Language\AST\Node_Kind;
+use Graph_Ql\Language\AST\Node_List;
+use Graph_Ql\Language\AST\Object_Type_Definition_Node;
+use Graph_Ql\Language\AST\Object_Type_Extension_Node;
+use Graph_Ql\Language\Visitor;
+use Graph_Ql\Language\Visitor_Operation;
+use Graph_Ql\Validator\Sdl_Validation_Context;
 /**
  * Unique argument definition names.
  *
  * A GraphQL Object or Interface type is only valid if all its fields have uniquely named arguments.
  * A GraphQL Directive is only valid if all its arguments are uniquely named.
  */
-class UniqueArgumentDefinitionNames extends ValidationRule
+class Unique_Argument_Definition_Names extends Validation_Rule
 {
-    public function getSDLVisitor(SDLValidationContext $context): array
+    public function get_sdl_visitor(Sdl_Validation_Context $context): array
     {
-        $checkArgUniquenessPerField = static function ($node) use ($context): VisitorOperation {
-            assert(
-                $node instanceof InterfaceTypeDefinitionNode
-                || $node instanceof InterfaceTypeExtensionNode
-                || $node instanceof ObjectTypeDefinitionNode
-                || $node instanceof ObjectTypeExtensionNode
-            );
-
-            foreach ($node->fields as $fieldDef) {
-                self::checkArgUniqueness("{$node->name->value}.{$fieldDef->name->value}", $fieldDef->arguments, $context);
+        $check_arg_uniqueness_per_field = static function ($node) use ($context): Visitor_Operation {
+            assert($node instanceof Interface_Type_Definition_Node || $node instanceof Interface_Type_Extension_Node || $node instanceof Object_Type_Definition_Node || $node instanceof Object_Type_Extension_Node);
+            foreach ($node->fields as $field_def) {
+                self::check_arg_uniqueness("{$node->name->value}.{$field_def->name->value}", $field_def->arguments, $context);
             }
-
-            return Visitor::skipNode();
+            return Visitor::skip_node();
         };
-
-        return [
-            NodeKind::DIRECTIVE_DEFINITION => static fn (DirectiveDefinitionNode $node): VisitorOperation => self::checkArgUniqueness("@{$node->name->value}", $node->arguments, $context),
-            NodeKind::INTERFACE_TYPE_DEFINITION => $checkArgUniquenessPerField,
-            NodeKind::INTERFACE_TYPE_EXTENSION => $checkArgUniquenessPerField,
-            NodeKind::OBJECT_TYPE_DEFINITION => $checkArgUniquenessPerField,
-            NodeKind::OBJECT_TYPE_EXTENSION => $checkArgUniquenessPerField,
-        ];
+        return [Node_Kind::DIRECTIVE_DEFINITION => static fn(Directive_Definition_Node $node): Visitor_Operation => self::check_arg_uniqueness("@{$node->name->value}", $node->arguments, $context), Node_Kind::INTERFACE_TYPE_DEFINITION => $check_arg_uniqueness_per_field, Node_Kind::INTERFACE_TYPE_EXTENSION => $check_arg_uniqueness_per_field, Node_Kind::OBJECT_TYPE_DEFINITION => $check_arg_uniqueness_per_field, Node_Kind::OBJECT_TYPE_EXTENSION => $check_arg_uniqueness_per_field];
     }
-
     /** @param NodeList<InputValueDefinitionNode> $arguments */
-    private static function checkArgUniqueness(string $parentName, NodeList $arguments, SDLValidationContext $context): VisitorOperation
+    private static function check_arg_uniqueness(string $parent_name, Node_List $arguments, Sdl_Validation_Context $context): Visitor_Operation
     {
-        $seenArgs = [];
+        $seen_args = [];
         foreach ($arguments as $argument) {
-            $seenArgs[$argument->name->value][] = $argument;
+            $seen_args[$argument->name->value][] = $argument;
         }
-
-        foreach ($seenArgs as $argName => $argNodes) {
-            if (count($argNodes) > 1) {
-                $context->reportError(
-                    new Error(
-                        "Argument \"{$parentName}({$argName}:)\" can only be defined once.",
-                        $argNodes,
-                    ),
-                );
+        foreach ($seen_args as $arg_name => $arg_nodes) {
+            if (count($arg_nodes) > 1) {
+                $context->report_error(new Error("Argument \"{$parent_name}({$arg_name}:)\" can only be defined once.", $arg_nodes));
             }
         }
-
-        return Visitor::skipNode();
+        return Visitor::skip_node();
     }
 }

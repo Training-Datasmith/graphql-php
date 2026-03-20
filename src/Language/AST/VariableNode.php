@@ -1,12 +1,10 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Language\AST;
 
-namespace GraphQL\Language\AST;
-
-class VariableNode extends Node implements ValueNode
+class Variable_Node extends Node implements Value_Node
 {
-    public string $kind = NodeKind::VARIABLE;
-
-    public NameNode $name;
+    public string $kind = Node_Kind::VARIABLE;
+    public Name_Node $name;
 }

@@ -1,78 +1,58 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Validator\Rules;
 
-namespace GraphQL\Validator\Rules;
-
-use GraphQL\Error\Error;
-use GraphQL\Language\AST\NameNode;
-use GraphQL\Language\AST\NodeKind;
-use GraphQL\Language\AST\ObjectFieldNode;
-use GraphQL\Language\Visitor;
-use GraphQL\Language\VisitorOperation;
-use GraphQL\Validator\QueryValidationContext;
-use GraphQL\Validator\SDLValidationContext;
-use GraphQL\Validator\ValidationContext;
-
+use Graph_Ql\Error\Error;
+use Graph_Ql\Language\AST\Name_Node;
+use Graph_Ql\Language\AST\Node_Kind;
+use Graph_Ql\Language\AST\Object_Field_Node;
+use Graph_Ql\Language\Visitor;
+use Graph_Ql\Language\Visitor_Operation;
+use Graph_Ql\Validator\Query_Validation_Context;
+use Graph_Ql\Validator\Sdl_Validation_Context;
+use Graph_Ql\Validator\Validation_Context;
 /**
  * @phpstan-import-type VisitorArray from Visitor
  */
-class UniqueInputFieldNames extends ValidationRule
+class Unique_Input_Field_Names extends Validation_Rule
 {
     /** @var array<string, NameNode> */
-    protected array $knownNames;
-
+    protected array $known_names;
     /** @var array<array<string, NameNode>> */
-    protected array $knownNameStack;
-
-    public function getVisitor(QueryValidationContext $context): array
+    protected array $known_name_stack;
+    public function get_visitor(Query_Validation_Context $context): array
     {
-        return $this->getASTVisitor($context);
+        return $this->get_ast_visitor($context);
     }
-
-    public function getSDLVisitor(SDLValidationContext $context): array
+    public function get_sdl_visitor(Sdl_Validation_Context $context): array
     {
-        return $this->getASTVisitor($context);
+        return $this->get_ast_visitor($context);
     }
-
     /** @phpstan-return VisitorArray */
-    public function getASTVisitor(ValidationContext $context): array
+    public function get_ast_visitor(Validation_Context $context): array
     {
-        $this->knownNames = [];
-        $this->knownNameStack = [];
-
-        return [
-            NodeKind::OBJECT => [
-                'enter' => function (): void {
-                    $this->knownNameStack[] = $this->knownNames;
-                    $this->knownNames = [];
-                },
-                'leave' => function (): void {
-                    $knownNames = array_pop($this->knownNameStack);
-                    assert(is_array($knownNames), 'should not happen if the visitor works correctly');
-
-                    $this->knownNames = $knownNames;
-                },
-            ],
-            NodeKind::OBJECT_FIELD => function (ObjectFieldNode $node) use ($context): VisitorOperation {
-                $fieldName = $node->name->value;
-
-                if (isset($this->knownNames[$fieldName])) {
-                    $context->reportError(new Error(
-                        static::duplicateInputFieldMessage($fieldName),
-                        [$this->knownNames[$fieldName], $node->name]
-                    ));
-                } else {
-                    $this->knownNames[$fieldName] = $node->name;
-                }
-
-                return Visitor::skipNode();
-            },
-        ];
+        $this->known_names = [];
+        $this->known_name_stack = [];
+        return [Node_Kind::OBJECT => ['enter' => function (): void {
+            $this->known_name_stack[] = $this->known_names;
+            $this->known_names = [];
+        }, 'leave' => function (): void {
+            $known_names = array_pop($this->known_name_stack);
+            assert(is_array($known_names), 'should not happen if the visitor works correctly');
+            $this->known_names = $known_names;
+        }], Node_Kind::OBJECT_FIELD => function (Object_Field_Node $node) use ($context): Visitor_Operation {
+            $field_name = $node->name->value;
+            if (isset($this->known_names[$field_name])) {
+                $context->report_error(new Error(static::duplicate_input_field_message($field_name), [$this->known_names[$field_name], $node->name]));
+            } else {
+                $this->known_names[$field_name] = $node->name;
+            }
+            return Visitor::skip_node();
+        }];
     }
-
-    public static function duplicateInputFieldMessage(string $fieldName): string
+    public static function duplicate_input_field_message(string $field_name): string
     {
-        return "There can be only one input field named \"{$fieldName}\".";
+        return "There can be only one input field named \"{$field_name}\".";
     }
 }

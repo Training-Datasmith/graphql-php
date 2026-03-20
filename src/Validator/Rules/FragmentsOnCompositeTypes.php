@@ -1,63 +1,43 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Validator\Rules;
 
-namespace GraphQL\Validator\Rules;
-
-use GraphQL\Error\Error;
-use GraphQL\Language\AST\FragmentDefinitionNode;
-use GraphQL\Language\AST\InlineFragmentNode;
-use GraphQL\Language\AST\NodeKind;
-use GraphQL\Language\Printer;
-use GraphQL\Type\Definition\Type;
-use GraphQL\Utils\AST;
-use GraphQL\Validator\QueryValidationContext;
-
-class FragmentsOnCompositeTypes extends ValidationRule
+use Graph_Ql\Error\Error;
+use Graph_Ql\Language\AST\Fragment_Definition_Node;
+use Graph_Ql\Language\AST\Inline_Fragment_Node;
+use Graph_Ql\Language\AST\Node_Kind;
+use Graph_Ql\Language\Printer;
+use Graph_Ql\Type\Definition\Type;
+use Graph_Ql\Utils\AST;
+use Graph_Ql\Validator\Query_Validation_Context;
+class Fragments_On_Composite_Types extends Validation_Rule
 {
-    public function getVisitor(QueryValidationContext $context): array
+    public function get_visitor(Query_Validation_Context $context): array
     {
-        return [
-            NodeKind::INLINE_FRAGMENT => static function (InlineFragmentNode $node) use ($context): void {
-                if ($node->typeCondition === null) {
-                    return;
-                }
-
-                $type = AST::typeFromAST([$context->getSchema(), 'getType'], $node->typeCondition);
-                if ($type === null || Type::isCompositeType($type)) {
-                    return;
-                }
-
-                $context->reportError(new Error(
-                    static::inlineFragmentOnNonCompositeErrorMessage($type->toString()),
-                    [$node->typeCondition]
-                ));
-            },
-            NodeKind::FRAGMENT_DEFINITION => static function (FragmentDefinitionNode $node) use ($context): void {
-                $type = AST::typeFromAST([$context->getSchema(), 'getType'], $node->typeCondition);
-
-                if ($type === null || Type::isCompositeType($type)) {
-                    return;
-                }
-
-                $context->reportError(new Error(
-                    static::fragmentOnNonCompositeErrorMessage(
-                        $node->name->value,
-                        Printer::doPrint($node->typeCondition)
-                    ),
-                    [$node->typeCondition]
-                ));
-            },
-        ];
+        return [Node_Kind::INLINE_FRAGMENT => static function (Inline_Fragment_Node $node) use ($context): void {
+            if ($node->type_condition === null) {
+                return;
+            }
+            $type = AST::type_from_ast([$context->get_schema(), 'getType'], $node->type_condition);
+            if ($type === null || Type::is_composite_type($type)) {
+                return;
+            }
+            $context->report_error(new Error(static::inline_fragment_on_non_composite_error_message($type->to_string()), [$node->type_condition]));
+        }, Node_Kind::FRAGMENT_DEFINITION => static function (Fragment_Definition_Node $node) use ($context): void {
+            $type = AST::type_from_ast([$context->get_schema(), 'getType'], $node->type_condition);
+            if ($type === null || Type::is_composite_type($type)) {
+                return;
+            }
+            $context->report_error(new Error(static::fragment_on_non_composite_error_message($node->name->value, Printer::do_print($node->type_condition)), [$node->type_condition]));
+        }];
     }
-
-    public static function inlineFragmentOnNonCompositeErrorMessage(string $type): string
+    public static function inline_fragment_on_non_composite_error_message(string $type): string
     {
         return "Fragment cannot condition on non composite type \"{$type}\".";
     }
-
-    public static function fragmentOnNonCompositeErrorMessage(string $fragName, string $type): string
+    public static function fragment_on_non_composite_error_message(string $frag_name, string $type): string
     {
-        return "Fragment \"{$fragName}\" cannot condition on non composite type \"{$type}\".";
+        return "Fragment \"{$frag_name}\" cannot condition on non composite type \"{$type}\".";
     }
 }

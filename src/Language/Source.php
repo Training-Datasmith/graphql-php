@@ -1,19 +1,14 @@
 <?php
 
-declare(strict_types=1);
-
-namespace GraphQL\Language;
+declare (strict_types=1);
+namespace Graph_Ql\Language;
 
 class Source
 {
     public string $body;
-
     public int $length;
-
     public string $name;
-
-    public SourceLocation $locationOffset;
-
+    public Source_Location $location_offset;
     /**
      * A representation of source input to GraphQL.
      *
@@ -23,32 +18,25 @@ class Source
      * be "Foo.graphql" and location to be `{ line: 40, column: 0 }`.
      * line and column in locationOffset are 1-indexed
      */
-    public function __construct(string $body, ?string $name = null, ?SourceLocation $location = null)
+    public function __construct(string $body, ?string $name = null, ?Source_Location $location = null)
     {
         $this->body = $body;
         $this->length = mb_strlen($body, 'UTF-8');
-        $this->name = $name === '' || $name === null
-            ? 'GraphQL request'
-            : $name;
-        $this->locationOffset = $location ?? new SourceLocation(1, 1);
+        $this->name = $name === '' || $name === null ? 'GraphQL request' : $name;
+        $this->location_offset = $location ?? new Source_Location(1, 1);
     }
-
-    public function getLocation(int $position): SourceLocation
+    public function get_location(int $position): Source_Location
     {
         $line = 1;
         $column = $position + 1;
-
-        $utfChars = json_decode('"\u2028\u2029"');
-        $lineRegexp = '/\r\n|[\n\r' . $utfChars . ']/su';
+        $utf_chars = json_decode('"\u2028\u2029"');
+        $line_regexp = '/\r\n|[\n\r' . $utf_chars . ']/su';
         $matches = [];
-        preg_match_all($lineRegexp, mb_substr($this->body, 0, $position, 'UTF-8'), $matches, \PREG_OFFSET_CAPTURE);
-
+        preg_match_all($line_regexp, mb_substr($this->body, 0, $position, 'UTF-8'), $matches, \PREG_OFFSET_CAPTURE);
         foreach ($matches[0] as $match) {
             ++$line;
-
             $column = $position + 1 - ($match[1] + mb_strlen($match[0], 'UTF-8'));
         }
-
-        return new SourceLocation($line, $column);
+        return new Source_Location($line, $column);
     }
 }

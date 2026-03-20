@@ -1,11 +1,9 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Server\Exception;
 
-namespace GraphQL\Server\Exception;
-
-use GraphQL\Server\RequestError;
-
-class MissingContentTypeHeader extends RequestError
+use Graph_Ql\Server\Request_Error;
+class Missing_Content_Type_Header extends Request_Error
 {
 }

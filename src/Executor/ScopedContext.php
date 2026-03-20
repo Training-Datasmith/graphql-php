@@ -1,15 +1,14 @@
 <?php
 
-declare(strict_types=1);
-
-namespace GraphQL\Executor;
+declare (strict_types=1);
+namespace Graph_Ql\Executor;
 
 /**
  * When the object passed as `$contextValue` to GraphQL execution implements this,
  * its `clone()` method will be called before passing the context down to a field.
  * This allows passing information to child fields in the query tree without affecting sibling or parent fields.
  */
-interface ScopedContext
+interface Scoped_Context
 {
     public function clone(): self;
 }

@@ -1,20 +1,18 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Executor;
 
-namespace GraphQL\Executor;
-
-use GraphQL\Error\InvariantViolation;
-use GraphQL\Executor\Promise\Adapter\SyncPromiseAdapter;
-use GraphQL\Executor\Promise\Promise;
-use GraphQL\Executor\Promise\PromiseAdapter;
-use GraphQL\Language\AST\DocumentNode;
-use GraphQL\Language\AST\FieldNode;
-use GraphQL\Type\Definition\FieldDefinition;
-use GraphQL\Type\Definition\ResolveInfo;
-use GraphQL\Type\Schema;
-use GraphQL\Utils\Utils;
-
+use Graph_Ql\Error\Invariant_Violation;
+use Graph_Ql\Executor\Promise\Adapter\Sync_Promise_Adapter;
+use Graph_Ql\Executor\Promise\Promise;
+use Graph_Ql\Executor\Promise\Promise_Adapter;
+use Graph_Ql\Language\AST\Document_Node;
+use Graph_Ql\Language\AST\Field_Node;
+use Graph_Ql\Type\Definition\Field_Definition;
+use Graph_Ql\Type\Definition\Resolve_Info;
+use Graph_Ql\Type\Schema;
+use Graph_Ql\Utils\Utils;
 /**
  * Implements the "Evaluating requests" section of the GraphQL specification.
  *
@@ -31,79 +29,67 @@ class Executor
      *
      * @phpstan-var FieldResolver
      */
-    private static $defaultFieldResolver = [self::class, 'defaultFieldResolver'];
-
+    private static $default_field_resolver = [self::class, 'defaultFieldResolver'];
     /**
      * @var callable
      *
      * @phpstan-var ArgsMapper
      */
-    private static $defaultArgsMapper = [self::class, 'defaultArgsMapper'];
-
-    private static ?PromiseAdapter $defaultPromiseAdapter;
-
+    private static $default_args_mapper = [self::class, 'defaultArgsMapper'];
+    private static ?Promise_Adapter $default_promise_adapter;
     /**
      * @var callable
      *
      * @phpstan-var ImplementationFactory
      */
-    private static $implementationFactory = [ReferenceExecutor::class, 'create'];
-
+    private static $implementation_factory = [Reference_Executor::class, 'create'];
     /** @phpstan-return FieldResolver */
-    public static function getDefaultFieldResolver(): callable
+    public static function get_default_field_resolver(): callable
     {
-        return self::$defaultFieldResolver;
+        return self::$default_field_resolver;
     }
-
     /**
      * Set a custom default resolve function.
      *
      * @phpstan-param FieldResolver $fieldResolver
      */
-    public static function setDefaultFieldResolver(callable $fieldResolver): void
+    public static function set_default_field_resolver(callable $field_resolver): void
     {
-        self::$defaultFieldResolver = $fieldResolver;
+        self::$default_field_resolver = $field_resolver;
     }
-
     /** @phpstan-return ArgsMapper */
-    public static function getDefaultArgsMapper(): callable
+    public static function get_default_args_mapper(): callable
     {
-        return self::$defaultArgsMapper;
+        return self::$default_args_mapper;
     }
-
     /** @phpstan-param ArgsMapper $argsMapper */
-    public static function setDefaultArgsMapper(callable $argsMapper): void
+    public static function set_default_args_mapper(callable $args_mapper): void
     {
-        self::$defaultArgsMapper = $argsMapper;
+        self::$default_args_mapper = $args_mapper;
     }
-
-    public static function getDefaultPromiseAdapter(): PromiseAdapter
+    public static function get_default_promise_adapter(): Promise_Adapter
     {
-        return self::$defaultPromiseAdapter ??= new SyncPromiseAdapter();
+        return self::$default_promise_adapter ??= new Sync_Promise_Adapter();
     }
-
     /** Set a custom default promise adapter. */
-    public static function setDefaultPromiseAdapter(?PromiseAdapter $defaultPromiseAdapter = null): void
+    public static function set_default_promise_adapter(?Promise_Adapter $default_promise_adapter = null): void
     {
-        self::$defaultPromiseAdapter = $defaultPromiseAdapter;
+        self::$default_promise_adapter = $default_promise_adapter;
     }
-
     /** @phpstan-return ImplementationFactory */
-    public static function getImplementationFactory(): callable
+    public static function get_implementation_factory(): callable
     {
-        return self::$implementationFactory;
+        return self::$implementation_factory;
     }
-
     /**
      * Set a custom executor implementation factory.
      *
      * @phpstan-param ImplementationFactory $implementationFactory
      */
-    public static function setImplementationFactory(callable $implementationFactory): void
+    public static function set_implementation_factory(callable $implementation_factory): void
     {
-        self::$implementationFactory = $implementationFactory;
+        self::$implementation_factory = $implementation_factory;
     }
-
     /**
      * Executes DocumentNode against given $schema.
      *
@@ -120,31 +106,12 @@ class Executor
      *
      * @throws InvariantViolation
      */
-    public static function execute(
-        Schema $schema,
-        DocumentNode $documentNode,
-        $rootValue = null,
-        $contextValue = null,
-        ?array $variableValues = null,
-        ?string $operationName = null,
-        ?callable $fieldResolver = null
-    ): ExecutionResult {
-        $promiseAdapter = new SyncPromiseAdapter();
-
-        $result = static::promiseToExecute(
-            $promiseAdapter,
-            $schema,
-            $documentNode,
-            $rootValue,
-            $contextValue,
-            $variableValues,
-            $operationName,
-            $fieldResolver
-        );
-
-        return $promiseAdapter->wait($result);
+    public static function execute(Schema $schema, Document_Node $document_node, $root_value = null, $context_value = null, ?array $variable_values = null, ?string $operation_name = null, ?callable $field_resolver = null): Execution_Result
+    {
+        $promise_adapter = new Sync_Promise_Adapter();
+        $result = static::promise_to_execute($promise_adapter, $schema, $document_node, $root_value, $context_value, $variable_values, $operation_name, $field_resolver);
+        return $promise_adapter->wait($result);
     }
-
     /**
      * Same as execute(), but requires promise adapter and returns a promise which is always
      * fulfilled with an instance of ExecutionResult and never rejected.
@@ -160,32 +127,11 @@ class Executor
      *
      * @api
      */
-    public static function promiseToExecute(
-        PromiseAdapter $promiseAdapter,
-        Schema $schema,
-        DocumentNode $documentNode,
-        $rootValue = null,
-        $contextValue = null,
-        ?array $variableValues = null,
-        ?string $operationName = null,
-        ?callable $fieldResolver = null,
-        ?callable $argsMapper = null
-    ): Promise {
-        $executor = (self::$implementationFactory)(
-            $promiseAdapter,
-            $schema,
-            $documentNode,
-            $rootValue,
-            $contextValue,
-            $variableValues ?? [],
-            $operationName,
-            $fieldResolver ?? self::$defaultFieldResolver,
-            $argsMapper ?? self::$defaultArgsMapper,
-        );
-
-        return $executor->doExecute();
+    public static function promise_to_execute(Promise_Adapter $promise_adapter, Schema $schema, Document_Node $document_node, $root_value = null, $context_value = null, ?array $variable_values = null, ?string $operation_name = null, ?callable $field_resolver = null, ?callable $args_mapper = null): Promise
+    {
+        $executor = (self::$implementation_factory)($promise_adapter, $schema, $document_node, $root_value, $context_value, $variable_values ?? [], $operation_name, $field_resolver ?? self::$default_field_resolver, $args_mapper ?? self::$default_args_mapper);
+        return $executor->do_execute();
     }
-
     /**
      * If a resolve function is not given, then a default resolve behavior is used
      * which takes the property of the root value of the same name as the field
@@ -198,15 +144,11 @@ class Executor
      *
      * @return mixed
      */
-    public static function defaultFieldResolver($objectLikeValue, array $args, $contextValue, ResolveInfo $info)
+    public static function default_field_resolver($object_like_value, array $args, $context_value, Resolve_Info $info)
     {
-        $property = Utils::extractKey($objectLikeValue, $info->fieldName);
-
-        return $property instanceof \Closure
-            ? $property($objectLikeValue, $args, $contextValue, $info)
-            : $property;
+        $property = Utils::extract_key($object_like_value, $info->field_name);
+        return $property instanceof \Closure ? $property($object_like_value, $args, $context_value, $info) : $property;
     }
-
     /**
      * @template T of array<string, mixed>
      *
@@ -214,7 +156,7 @@ class Executor
      *
      * @return T
      */
-    public static function defaultArgsMapper(array $args): array
+    public static function default_args_mapper(array $args): array
     {
         return $args;
     }

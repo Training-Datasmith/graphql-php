@@ -1,13 +1,11 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Executor;
 
-namespace GraphQL\Executor;
-
-use GraphQL\Error\DebugFlag;
-use GraphQL\Error\Error;
-use GraphQL\Error\FormattedError;
-
+use Graph_Ql\Error\Debug_Flag;
+use Graph_Ql\Error\Error;
+use Graph_Ql\Error\Formatted_Error;
 /**
  * Returned after [query execution](executing-queries.md).
  * Represents both - result of successful execution and of a failed one
@@ -33,7 +31,7 @@ use GraphQL\Error\FormattedError;
  *
  * @see \GraphQL\Tests\Executor\ExecutionResultTest
  */
-class ExecutionResult implements \JsonSerializable
+class Execution_Result implements \JsonSerializable
 {
     /**
      * Data collected from resolvers during query execution.
@@ -43,7 +41,6 @@ class ExecutionResult implements \JsonSerializable
      * @var array<string, mixed>|null
      */
     public ?array $data = null;
-
     /**
      * Errors registered during query execution.
      *
@@ -55,7 +52,6 @@ class ExecutionResult implements \JsonSerializable
      * @var list<Error>
      */
     public array $errors = [];
-
     /**
      * User-defined serializable array of extensions included in serialized result.
      *
@@ -64,21 +60,18 @@ class ExecutionResult implements \JsonSerializable
      * @var array<string, mixed>|null
      */
     public ?array $extensions = null;
-
     /**
      * @var callable|null
      *
      * @phpstan-var ErrorFormatter|null
      */
-    private $errorFormatter;
-
+    private $error_formatter;
     /**
      * @var callable|null
      *
      * @phpstan-var ErrorsHandler|null
      */
-    private $errorsHandler;
-
+    private $errors_handler;
     /**
      * @param array<string, mixed>|null $data
      * @param list<Error> $errors
@@ -90,7 +83,6 @@ class ExecutionResult implements \JsonSerializable
         $this->errors = $errors;
         $this->extensions = $extensions;
     }
-
     /**
      * Define custom error formatting (must conform to http://facebook.github.io/graphql/#sec-Errors).
      *
@@ -108,13 +100,11 @@ class ExecutionResult implements \JsonSerializable
      *
      * @api
      */
-    public function setErrorFormatter(?callable $errorFormatter): self
+    public function set_error_formatter(?callable $error_formatter): self
     {
-        $this->errorFormatter = $errorFormatter;
-
+        $this->error_formatter = $error_formatter;
         return $this;
     }
-
     /**
      * Define custom logic for error handling (filtering, logging, etc).
      *
@@ -128,20 +118,17 @@ class ExecutionResult implements \JsonSerializable
      *
      * @api
      */
-    public function setErrorsHandler(?callable $errorsHandler): self
+    public function set_errors_handler(?callable $errors_handler): self
     {
-        $this->errorsHandler = $errorsHandler;
-
+        $this->errors_handler = $errors_handler;
         return $this;
     }
-
     /** @phpstan-return SerializableResult */
-    #[\ReturnTypeWillChange]
+    #[\Return_Type_Will_Change]
     public function jsonSerialize(): array
     {
-        return $this->toArray();
+        return $this->to_array();
     }
-
     /**
      * Converts GraphQL query result to spec-compliant serializable array using provided
      * errors handler and formatter.
@@ -155,34 +142,24 @@ class ExecutionResult implements \JsonSerializable
      *
      * @api
      */
-    public function toArray(int $debug = DebugFlag::NONE): array
+    public function to_array(int $debug = Debug_Flag::NONE): array
     {
         $result = [];
-
         if ($this->errors !== []) {
-            $errorsHandler = $this->errorsHandler
-                ?? static fn (array $errors, callable $formatter): array => array_map($formatter, $errors);
-
+            $errors_handler = $this->errors_handler ?? static fn(array $errors, callable $formatter): array => array_map($formatter, $errors);
             /** @phpstan-var SerializableErrors */
-            $handledErrors = $errorsHandler(
-                $this->errors,
-                FormattedError::prepareFormatter($this->errorFormatter, $debug)
-            );
-
+            $handled_errors = $errors_handler($this->errors, Formatted_Error::prepare_formatter($this->error_formatter, $debug));
             // While we know that there were errors initially, they might have been discarded
-            if ($handledErrors !== []) {
-                $result['errors'] = $handledErrors;
+            if ($handled_errors !== []) {
+                $result['errors'] = $handled_errors;
             }
         }
-
         if ($this->data !== null) {
             $result['data'] = $this->data;
         }
-
         if ($this->extensions !== null && $this->extensions !== []) {
             $result['extensions'] = $this->extensions;
         }
-
         return $result;
     }
 }

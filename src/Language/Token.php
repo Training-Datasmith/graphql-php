@@ -1,8 +1,7 @@
 <?php
 
-declare(strict_types=1);
-
-namespace GraphQL\Language;
+declare (strict_types=1);
+namespace Graph_Ql\Language;
 
 /**
  * Represents a range of characters represented by a lexical token
@@ -35,33 +34,24 @@ class Token
     public const STRING = 'String';
     public const BLOCK_STRING = 'BlockString';
     public const COMMENT = 'Comment';
-
     /** The kind of Token (see one of constants above). */
     public string $kind;
-
     /** The character offset at which this Node begins. */
     public int $start;
-
     /** The character offset at which this Node ends. */
     public int $end;
-
     /** The 1-indexed line number on which this Token appears. */
     public int $line;
-
     /** The 1-indexed column number at which this Token begins. */
     public int $column;
-
     public ?string $value;
-
     /**
      * Tokens exist as nodes in a double-linked-list amongst all tokens
      * including ignored tokens. <SOF> is always the first node and <EOF>
      * the last.
      */
     public ?Token $prev;
-
     public ?Token $next = null;
-
     public function __construct(string $kind, int $start, int $end, int $line, int $column, ?Token $previous = null, ?string $value = null)
     {
         $this->kind = $kind;
@@ -72,15 +62,10 @@ class Token
         $this->prev = $previous;
         $this->value = $value;
     }
-
-    public function getDescription(): string
+    public function get_description(): string
     {
-        return $this->kind
-            . ($this->value === null
-                ? ''
-                : " \"{$this->value}\"");
+        return $this->kind . ($this->value === null ? '' : " \"{$this->value}\"");
     }
-
     /**
      * @return array{
      *   kind: string,
@@ -89,13 +74,8 @@ class Token
      *   column: int,
      * }
      */
-    public function toArray(): array
+    public function to_array(): array
     {
-        return [
-            'kind' => $this->kind,
-            'value' => $this->value,
-            'line' => $this->line,
-            'column' => $this->column,
-        ];
+        return ['kind' => $this->kind, 'value' => $this->value, 'line' => $this->line, 'column' => $this->column];
     }
 }

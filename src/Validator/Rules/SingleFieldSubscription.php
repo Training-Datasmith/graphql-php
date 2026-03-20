@@ -1,46 +1,34 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Validator\Rules;
 
-namespace GraphQL\Validator\Rules;
-
-use GraphQL\Error\Error;
-use GraphQL\Language\AST\NodeKind;
-use GraphQL\Language\AST\OperationDefinitionNode;
-use GraphQL\Language\Visitor;
-use GraphQL\Language\VisitorOperation;
-use GraphQL\Validator\QueryValidationContext;
-
-class SingleFieldSubscription extends ValidationRule
+use Graph_Ql\Error\Error;
+use Graph_Ql\Language\AST\Node_Kind;
+use Graph_Ql\Language\AST\Operation_Definition_Node;
+use Graph_Ql\Language\Visitor;
+use Graph_Ql\Language\Visitor_Operation;
+use Graph_Ql\Validator\Query_Validation_Context;
+class Single_Field_Subscription extends Validation_Rule
 {
-    public function getVisitor(QueryValidationContext $context): array
+    public function get_visitor(Query_Validation_Context $context): array
     {
-        return [
-            NodeKind::OPERATION_DEFINITION => static function (OperationDefinitionNode $node) use ($context): VisitorOperation {
-                if ($node->operation === 'subscription') {
-                    $selections = $node->selectionSet->selections;
-
-                    if (count($selections) > 1) {
-                        $offendingSelections = $selections->splice(1, count($selections));
-
-                        $context->reportError(new Error(
-                            static::multipleFieldsInOperation($node->name->value ?? null),
-                            $offendingSelections
-                        ));
-                    }
+        return [Node_Kind::OPERATION_DEFINITION => static function (Operation_Definition_Node $node) use ($context): Visitor_Operation {
+            if ($node->operation === 'subscription') {
+                $selections = $node->selection_set->selections;
+                if (count($selections) > 1) {
+                    $offending_selections = $selections->splice(1, count($selections));
+                    $context->report_error(new Error(static::multiple_fields_in_operation($node->name->value ?? null), $offending_selections));
                 }
-
-                return Visitor::skipNode();
-            },
-        ];
+            }
+            return Visitor::skip_node();
+        }];
     }
-
-    public static function multipleFieldsInOperation(?string $operationName): string
+    public static function multiple_fields_in_operation(?string $operation_name): string
     {
-        if ($operationName === null) {
+        if ($operation_name === null) {
             return 'Anonymous Subscription must select only one top level field.';
         }
-
-        return "Subscription \"{$operationName}\" must select only one top level field.";
+        return "Subscription \"{$operation_name}\" must select only one top level field.";
     }
 }

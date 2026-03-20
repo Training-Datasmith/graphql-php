@@ -1,13 +1,11 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Language\AST;
 
-namespace GraphQL\Language\AST;
-
-class SelectionSetNode extends Node
+class Selection_Set_Node extends Node
 {
-    public string $kind = NodeKind::SELECTION_SET;
-
+    public string $kind = Node_Kind::SELECTION_SET;
     /** @var NodeList<SelectionNode&Node> */
-    public NodeList $selections;
+    public Node_List $selections;
 }

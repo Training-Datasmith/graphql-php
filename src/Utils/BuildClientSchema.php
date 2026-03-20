@@ -1,33 +1,31 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Utils;
 
-namespace GraphQL\Utils;
-
-use GraphQL\Error\InvariantViolation;
-use GraphQL\Error\SyntaxError;
-use GraphQL\Language\Parser;
-use GraphQL\Type\Definition\CustomScalarType;
-use GraphQL\Type\Definition\Directive;
-use GraphQL\Type\Definition\EnumType;
-use GraphQL\Type\Definition\FieldDefinition;
-use GraphQL\Type\Definition\InputObjectField;
-use GraphQL\Type\Definition\InputObjectType;
-use GraphQL\Type\Definition\InputType;
-use GraphQL\Type\Definition\InterfaceType;
-use GraphQL\Type\Definition\ListOfType;
-use GraphQL\Type\Definition\NamedType;
-use GraphQL\Type\Definition\NonNull;
-use GraphQL\Type\Definition\ObjectType;
-use GraphQL\Type\Definition\OutputType;
-use GraphQL\Type\Definition\ScalarType;
-use GraphQL\Type\Definition\Type;
-use GraphQL\Type\Definition\UnionType;
-use GraphQL\Type\Introspection;
-use GraphQL\Type\Schema;
-use GraphQL\Type\SchemaConfig;
-use GraphQL\Type\TypeKind;
-
+use Graph_Ql\Error\Invariant_Violation;
+use Graph_Ql\Error\Syntax_Error;
+use Graph_Ql\Language\Parser;
+use Graph_Ql\Type\Definition\Custom_Scalar_Type;
+use Graph_Ql\Type\Definition\Directive;
+use Graph_Ql\Type\Definition\Enum_Type;
+use Graph_Ql\Type\Definition\Field_Definition;
+use Graph_Ql\Type\Definition\Input_Object_Field;
+use Graph_Ql\Type\Definition\Input_Object_Type;
+use Graph_Ql\Type\Definition\Input_Type;
+use Graph_Ql\Type\Definition\Interface_Type;
+use Graph_Ql\Type\Definition\List_Of_Type;
+use Graph_Ql\Type\Definition\Named_Type;
+use Graph_Ql\Type\Definition\Non_Null;
+use Graph_Ql\Type\Definition\Object_Type;
+use Graph_Ql\Type\Definition\Output_Type;
+use Graph_Ql\Type\Definition\Scalar_Type;
+use Graph_Ql\Type\Definition\Type;
+use Graph_Ql\Type\Definition\Union_Type;
+use Graph_Ql\Type\Introspection;
+use Graph_Ql\Type\Schema;
+use Graph_Ql\Type\Schema_Config;
+use Graph_Ql\Type\Type_Kind;
 /**
  * @phpstan-import-type UnnamedFieldDefinitionConfig from FieldDefinition
  * @phpstan-import-type UnnamedInputObjectFieldConfig from InputObjectField
@@ -45,33 +43,29 @@ use GraphQL\Type\TypeKind;
  *
  * @see \GraphQL\Tests\Utils\BuildClientSchemaTest
  */
-class BuildClientSchema
+class Build_Client_Schema
 {
     /** @var array<string, mixed> */
     private array $introspection;
-
     /**
      * @var array<string, bool>
      *
      * @phpstan-var Options
      */
     private array $options;
-
     /** @var array<string, NamedType&Type> */
-    private array $typeMap = [];
-
+    private array $type_map = [];
     /**
      * @param array<string, mixed> $introspectionQuery
      * @param array<string, bool> $options
      *
      * @phpstan-param Options    $options
      */
-    public function __construct(array $introspectionQuery, array $options = [])
+    public function __construct(array $introspection_query, array $options = [])
     {
-        $this->introspection = $introspectionQuery;
+        $this->introspection = $introspection_query;
         $this->options = $options;
     }
-
     /**
      * Build a schema for use by client tools.
      *
@@ -94,133 +88,86 @@ class BuildClientSchema
      * @throws \Exception
      * @throws InvariantViolation
      */
-    public static function build(array $introspectionQuery, array $options = []): Schema
+    public static function build(array $introspection_query, array $options = []): Schema
     {
-        return (new self($introspectionQuery, $options))->buildSchema();
+        return (new self($introspection_query, $options))->build_schema();
     }
-
     /**
      * @throws \Exception
      * @throws InvariantViolation
      */
-    public function buildSchema(): Schema
+    public function build_schema(): Schema
     {
-        if (! array_key_exists('__schema', $this->introspection)) {
-            $missingSchemaIntrospection = Utils::printSafeJson($this->introspection);
-            throw new InvariantViolation("Invalid or incomplete introspection result. Ensure that you are passing \"data\" property of introspection response and no \"errors\" was returned alongside: {$missingSchemaIntrospection}.");
+        if (!array_key_exists('__schema', $this->introspection)) {
+            $missing_schema_introspection = Utils::print_safe_json($this->introspection);
+            throw new Invariant_Violation("Invalid or incomplete introspection result. Ensure that you are passing \"data\" property of introspection response and no \"errors\" was returned alongside: {$missing_schema_introspection}.");
         }
-
-        $schemaIntrospection = $this->introspection['__schema'];
-
-        $builtInTypes = array_merge(
-            Type::builtInScalars(),
-            Introspection::getTypes()
-        );
-
-        foreach ($schemaIntrospection['types'] as $typeIntrospection) {
-            if (! isset($typeIntrospection['name'])) {
-                throw self::invalidOrIncompleteIntrospectionResult($typeIntrospection);
+        $schema_introspection = $this->introspection['__schema'];
+        $built_in_types = array_merge(Type::built_in_scalars(), Introspection::get_types());
+        foreach ($schema_introspection['types'] as $type_introspection) {
+            if (!isset($type_introspection['name'])) {
+                throw self::invalid_or_incomplete_introspection_result($type_introspection);
             }
-
-            $name = $typeIntrospection['name'];
-            if (! is_string($name)) {
-                throw self::invalidOrIncompleteIntrospectionResult($typeIntrospection);
+            $name = $type_introspection['name'];
+            if (!is_string($name)) {
+                throw self::invalid_or_incomplete_introspection_result($type_introspection);
             }
-
             // Use the built-in singleton types to avoid reconstruction
-            $this->typeMap[$name] = $builtInTypes[$name]
-                ?? $this->buildType($typeIntrospection);
+            $this->type_map[$name] = $built_in_types[$name] ?? $this->build_type($type_introspection);
         }
-
-        $description = $schemaIntrospection['description'] ?? null;
-
-        $queryType = isset($schemaIntrospection['queryType'])
-            ? $this->getObjectType($schemaIntrospection['queryType'])
-            : null;
-
-        $mutationType = isset($schemaIntrospection['mutationType'])
-            ? $this->getObjectType($schemaIntrospection['mutationType'])
-            : null;
-
-        $subscriptionType = isset($schemaIntrospection['subscriptionType'])
-            ? $this->getObjectType($schemaIntrospection['subscriptionType'])
-            : null;
-
-        $directives = isset($schemaIntrospection['directives'])
-            ? array_map(
-                [$this, 'buildDirective'],
-                $schemaIntrospection['directives']
-            )
-            : [];
-
-        return new Schema(
-            (new SchemaConfig())
-                ->setDescription($description)
-                ->setQuery($queryType)
-                ->setMutation($mutationType)
-                ->setSubscription($subscriptionType)
-                ->setTypes($this->typeMap)
-                ->setDirectives($directives)
-                ->setAssumeValid($this->options['assumeValid'] ?? false)
-        );
+        $description = $schema_introspection['description'] ?? null;
+        $query_type = isset($schema_introspection['queryType']) ? $this->get_object_type($schema_introspection['queryType']) : null;
+        $mutation_type = isset($schema_introspection['mutationType']) ? $this->get_object_type($schema_introspection['mutationType']) : null;
+        $subscription_type = isset($schema_introspection['subscriptionType']) ? $this->get_object_type($schema_introspection['subscriptionType']) : null;
+        $directives = isset($schema_introspection['directives']) ? array_map([$this, 'buildDirective'], $schema_introspection['directives']) : [];
+        return new Schema((new Schema_Config())->set_description($description)->set_query($query_type)->set_mutation($mutation_type)->set_subscription($subscription_type)->set_types($this->type_map)->set_directives($directives)->set_assume_valid($this->options['assumeValid'] ?? false));
     }
-
     /**
      * @param array<string, mixed> $typeRef
      *
      * @throws InvariantViolation
      */
-    private function getType(array $typeRef): Type
+    private function get_type(array $type_ref): Type
     {
-        if (isset($typeRef['kind'])) {
-            if ($typeRef['kind'] === TypeKind::LIST) {
-                if (! isset($typeRef['ofType'])) {
-                    throw new InvariantViolation('Decorated type deeper than introspection query.');
+        if (isset($type_ref['kind'])) {
+            if ($type_ref['kind'] === Type_Kind::LIST) {
+                if (!isset($type_ref['ofType'])) {
+                    throw new Invariant_Violation('Decorated type deeper than introspection query.');
                 }
-
-                return new ListOfType($this->getType($typeRef['ofType']));
+                return new List_Of_Type($this->get_type($type_ref['ofType']));
             }
-
-            if ($typeRef['kind'] === TypeKind::NON_NULL) {
-                if (! isset($typeRef['ofType'])) {
-                    throw new InvariantViolation('Decorated type deeper than introspection query.');
+            if ($type_ref['kind'] === Type_Kind::NON_NULL) {
+                if (!isset($type_ref['ofType'])) {
+                    throw new Invariant_Violation('Decorated type deeper than introspection query.');
                 }
-
                 // @phpstan-ignore-next-line if the type is not a nullable type, schema validation will catch it
-                return new NonNull($this->getType($typeRef['ofType']));
+                return new Non_Null($this->get_type($type_ref['ofType']));
             }
         }
-
-        if (! isset($typeRef['name'])) {
-            $unknownTypeRef = Utils::printSafeJson($typeRef);
-            throw new InvariantViolation("Unknown type reference: {$unknownTypeRef}.");
+        if (!isset($type_ref['name'])) {
+            $unknown_type_ref = Utils::print_safe_json($type_ref);
+            throw new Invariant_Violation("Unknown type reference: {$unknown_type_ref}.");
         }
-
-        return $this->getNamedType($typeRef['name']);
+        return $this->get_named_type($type_ref['name']);
     }
-
     /**
      * @throws InvariantViolation
      *
      * @return NamedType&Type
      */
-    private function getNamedType(string $typeName): NamedType
+    private function get_named_type(string $type_name): Named_Type
     {
-        if (! isset($this->typeMap[$typeName])) {
-            throw new InvariantViolation("Invalid or incomplete schema, unknown type: {$typeName}. Ensure that a full introspection query is used in order to build a client schema.");
+        if (!isset($this->type_map[$type_name])) {
+            throw new Invariant_Violation("Invalid or incomplete schema, unknown type: {$type_name}. Ensure that a full introspection query is used in order to build a client schema.");
         }
-
-        return $this->typeMap[$typeName];
+        return $this->type_map[$type_name];
     }
-
     /** @param array<mixed> $type */
-    public static function invalidOrIncompleteIntrospectionResult(array $type): InvariantViolation
+    public static function invalid_or_incomplete_introspection_result(array $type): Invariant_Violation
     {
-        $incompleteType = Utils::printSafeJson($type);
-
-        return new InvariantViolation("Invalid or incomplete introspection result. Ensure that a full introspection query is used in order to build a client schema: {$incompleteType}.");
+        $incomplete_type = Utils::print_safe_json($type);
+        return new Invariant_Violation("Invalid or incomplete introspection result. Ensure that a full introspection query is used in order to build a client schema: {$incomplete_type}.");
     }
-
     /**
      * @param array<string, mixed> $typeRef
      *
@@ -228,59 +175,49 @@ class BuildClientSchema
      *
      * @return Type&InputType
      */
-    private function getInputType(array $typeRef): InputType
+    private function get_input_type(array $type_ref): Input_Type
     {
-        $type = $this->getType($typeRef);
-
-        if ($type instanceof InputType) {
+        $type = $this->get_type($type_ref);
+        if ($type instanceof Input_Type) {
             return $type;
         }
-
-        $notInputType = Utils::printSafe($type);
-        throw new InvariantViolation("Introspection must provide input type for arguments, but received: {$notInputType}.");
+        $not_input_type = Utils::print_safe($type);
+        throw new Invariant_Violation("Introspection must provide input type for arguments, but received: {$not_input_type}.");
     }
-
     /**
      * @param array<string, mixed> $typeRef
      *
      * @throws InvariantViolation
      */
-    private function getOutputType(array $typeRef): OutputType
+    private function get_output_type(array $type_ref): Output_Type
     {
-        $type = $this->getType($typeRef);
-
-        if ($type instanceof OutputType) {
+        $type = $this->get_type($type_ref);
+        if ($type instanceof Output_Type) {
             return $type;
         }
-
-        $notInputType = Utils::printSafe($type);
-        throw new InvariantViolation("Introspection must provide output type for fields, but received: {$notInputType}.");
+        $not_input_type = Utils::print_safe($type);
+        throw new Invariant_Violation("Introspection must provide output type for fields, but received: {$not_input_type}.");
     }
-
     /**
      * @param array<string, mixed> $typeRef
      *
      * @throws InvariantViolation
      */
-    private function getObjectType(array $typeRef): ObjectType
+    private function get_object_type(array $type_ref): Object_Type
     {
-        $type = $this->getType($typeRef);
-
-        return ObjectType::assertObjectType($type);
+        $type = $this->get_type($type_ref);
+        return Object_Type::assert_object_type($type);
     }
-
     /**
      * @param array<string, mixed> $typeRef
      *
      * @throws InvariantViolation
      */
-    public function getInterfaceType(array $typeRef): InterfaceType
+    public function get_interface_type(array $type_ref): Interface_Type
     {
-        $type = $this->getType($typeRef);
-
-        return InterfaceType::assertInterfaceType($type);
+        $type = $this->get_type($type_ref);
+        return Interface_Type::assert_interface_type($type);
     }
-
     /**
      * @param array<string, mixed> $type
      *
@@ -288,45 +225,38 @@ class BuildClientSchema
      *
      * @return Type&NamedType
      */
-    private function buildType(array $type): NamedType
+    private function build_type(array $type): Named_Type
     {
-        if (! array_key_exists('kind', $type)) {
-            throw self::invalidOrIncompleteIntrospectionResult($type);
+        if (!array_key_exists('kind', $type)) {
+            throw self::invalid_or_incomplete_introspection_result($type);
         }
-
         switch ($type['kind']) {
-            case TypeKind::SCALAR:
-                return $this->buildScalarDef($type);
-            case TypeKind::OBJECT:
-                return $this->buildObjectDef($type);
-            case TypeKind::INTERFACE:
-                return $this->buildInterfaceDef($type);
-            case TypeKind::UNION:
-                return $this->buildUnionDef($type);
-            case TypeKind::ENUM:
-                return $this->buildEnumDef($type);
-            case TypeKind::INPUT_OBJECT:
-                return $this->buildInputObjectDef($type);
+            case Type_Kind::SCALAR:
+                return $this->build_scalar_def($type);
+            case Type_Kind::OBJECT:
+                return $this->build_object_def($type);
+            case Type_Kind::INTERFACE:
+                return $this->build_interface_def($type);
+            case Type_Kind::UNION:
+                return $this->build_union_def($type);
+            case Type_Kind::ENUM:
+                return $this->build_enum_def($type);
+            case Type_Kind::INPUT_OBJECT:
+                return $this->build_input_object_def($type);
             default:
-                $unknownKindType = Utils::printSafeJson($type);
-                throw new InvariantViolation("Invalid or incomplete introspection result. Received type with unknown kind: {$unknownKindType}.");
+                $unknown_kind_type = Utils::print_safe_json($type);
+                throw new Invariant_Violation("Invalid or incomplete introspection result. Received type with unknown kind: {$unknown_kind_type}.");
         }
     }
-
     /**
      * @param array<string, string> $scalar
      *
      * @throws InvariantViolation
      */
-    private function buildScalarDef(array $scalar): ScalarType
+    private function build_scalar_def(array $scalar): Scalar_Type
     {
-        return new CustomScalarType([
-            'name' => $scalar['name'],
-            'description' => $scalar['description'],
-            'serialize' => static fn ($value) => $value,
-        ]);
+        return new Custom_Scalar_Type(['name' => $scalar['name'], 'description' => $scalar['description'], 'serialize' => static fn($value) => $value]);
     }
-
     /**
      * @param array<string, mixed> $implementingIntrospection
      *
@@ -334,126 +264,79 @@ class BuildClientSchema
      *
      * @return array<int, InterfaceType>
      */
-    private function buildImplementationsList(array $implementingIntrospection): array
+    private function build_implementations_list(array $implementing_introspection): array
     {
         // TODO: Temporary workaround until GraphQL ecosystem will fully support 'interfaces' on interface types.
-        if (
-            array_key_exists('interfaces', $implementingIntrospection)
-            && $implementingIntrospection['interfaces'] === null
-            && $implementingIntrospection['kind'] === TypeKind::INTERFACE
-        ) {
+        if (array_key_exists('interfaces', $implementing_introspection) && $implementing_introspection['interfaces'] === null && $implementing_introspection['kind'] === Type_Kind::INTERFACE) {
             return [];
         }
-
-        if (! array_key_exists('interfaces', $implementingIntrospection)) {
-            $safeIntrospection = Utils::printSafeJson($implementingIntrospection);
-            throw new InvariantViolation("Introspection result missing interfaces: {$safeIntrospection}.");
+        if (!array_key_exists('interfaces', $implementing_introspection)) {
+            $safe_introspection = Utils::print_safe_json($implementing_introspection);
+            throw new Invariant_Violation("Introspection result missing interfaces: {$safe_introspection}.");
         }
-
-        return array_map(
-            [$this, 'getInterfaceType'],
-            $implementingIntrospection['interfaces']
-        );
+        return array_map([$this, 'getInterfaceType'], $implementing_introspection['interfaces']);
     }
-
     /**
      * @param array<string, mixed> $object
      *
      * @throws InvariantViolation
      */
-    private function buildObjectDef(array $object): ObjectType
+    private function build_object_def(array $object): Object_Type
     {
-        return new ObjectType([
-            'name' => $object['name'],
-            'description' => $object['description'],
-            'interfaces' => fn (): array => $this->buildImplementationsList($object),
-            'fields' => fn (): array => $this->buildFieldDefMap($object),
-        ]);
+        return new Object_Type(['name' => $object['name'], 'description' => $object['description'], 'interfaces' => fn(): array => $this->build_implementations_list($object), 'fields' => fn(): array => $this->build_field_def_map($object)]);
     }
-
     /**
      * @param array<string, mixed> $interface
      *
      * @throws InvariantViolation
      */
-    private function buildInterfaceDef(array $interface): InterfaceType
+    private function build_interface_def(array $interface): Interface_Type
     {
-        return new InterfaceType([
-            'name' => $interface['name'],
-            'description' => $interface['description'],
-            'fields' => fn (): array => $this->buildFieldDefMap($interface),
-            'interfaces' => fn (): array => $this->buildImplementationsList($interface),
-        ]);
+        return new Interface_Type(['name' => $interface['name'], 'description' => $interface['description'], 'fields' => fn(): array => $this->build_field_def_map($interface), 'interfaces' => fn(): array => $this->build_implementations_list($interface)]);
     }
-
     /**
      * @param array<string, mixed> $union
      *
      * @throws InvariantViolation
      */
-    private function buildUnionDef(array $union): UnionType
+    private function build_union_def(array $union): Union_Type
     {
-        if (! array_key_exists('possibleTypes', $union)) {
-            $safeUnion = Utils::printSafeJson($union);
-            throw new InvariantViolation("Introspection result missing possibleTypes: {$safeUnion}.");
+        if (!array_key_exists('possibleTypes', $union)) {
+            $safe_union = Utils::print_safe_json($union);
+            throw new Invariant_Violation("Introspection result missing possibleTypes: {$safe_union}.");
         }
-
-        return new UnionType([
-            'name' => $union['name'],
-            'description' => $union['description'],
-            'types' => fn (): array => array_map(
-                [$this, 'getObjectType'],
-                $union['possibleTypes']
-            ),
-        ]);
+        return new Union_Type(['name' => $union['name'], 'description' => $union['description'], 'types' => fn(): array => array_map([$this, 'getObjectType'], $union['possibleTypes'])]);
     }
-
     /**
      * @param array<string, mixed> $enum
      *
      * @throws InvariantViolation
      */
-    private function buildEnumDef(array $enum): EnumType
+    private function build_enum_def(array $enum): Enum_Type
     {
-        if (! array_key_exists('enumValues', $enum)) {
-            $safeEnum = Utils::printSafeJson($enum);
-            throw new InvariantViolation("Introspection result missing enumValues: {$safeEnum}.");
+        if (!array_key_exists('enumValues', $enum)) {
+            $safe_enum = Utils::print_safe_json($enum);
+            throw new Invariant_Violation("Introspection result missing enumValues: {$safe_enum}.");
         }
-
         $values = [];
         foreach ($enum['enumValues'] as $value) {
-            $values[$value['name']] = [
-                'description' => $value['description'],
-                'deprecationReason' => $value['deprecationReason'],
-            ];
+            $values[$value['name']] = ['description' => $value['description'], 'deprecationReason' => $value['deprecationReason']];
         }
-
-        return new EnumType([
-            'name' => $enum['name'],
-            'description' => $enum['description'],
-            'values' => $values,
-        ]);
+        return new Enum_Type(['name' => $enum['name'], 'description' => $enum['description'], 'values' => $values]);
     }
-
     /**
      * @param array<string, mixed> $inputObject
      *
      * @throws InvariantViolation
      */
-    private function buildInputObjectDef(array $inputObject): InputObjectType
+    private function build_input_object_def(array $input_object): Input_Object_Type
     {
-        if (! array_key_exists('inputFields', $inputObject)) {
-            $safeInputObject = Utils::printSafeJson($inputObject);
-            throw new InvariantViolation("Introspection result missing inputFields: {$safeInputObject}.");
+        if (!array_key_exists('inputFields', $input_object)) {
+            $safe_input_object = Utils::print_safe_json($input_object);
+            throw new Invariant_Violation("Introspection result missing inputFields: {$safe_input_object}.");
         }
-
-        return new InputObjectType([
-            'name' => $inputObject['name'],
-            'description' => $inputObject['description'],
-            'fields' => fn (): array => $this->buildInputValueDefMap($inputObject['inputFields']),
-        ]);
+        return new Input_Object_Type(['name' => $input_object['name'], 'description' => $input_object['description'], 'fields' => fn(): array => $this->build_input_value_def_map($input_object['inputFields'])]);
     }
-
     /**
      * @param array<string, mixed> $typeIntrospection
      *
@@ -462,33 +345,24 @@ class BuildClientSchema
      *
      * @return array<string, UnnamedFieldDefinitionConfig>
      */
-    private function buildFieldDefMap(array $typeIntrospection): array
+    private function build_field_def_map(array $type_introspection): array
     {
-        if (! array_key_exists('fields', $typeIntrospection)) {
-            $safeType = Utils::printSafeJson($typeIntrospection);
-            throw new InvariantViolation("Introspection result missing fields: {$safeType}.");
+        if (!array_key_exists('fields', $type_introspection)) {
+            $safe_type = Utils::print_safe_json($type_introspection);
+            throw new Invariant_Violation("Introspection result missing fields: {$safe_type}.");
         }
-
         /** @var array<string, UnnamedFieldDefinitionConfig> $map */
         $map = [];
-        foreach ($typeIntrospection['fields'] as $field) {
-            if (! array_key_exists('args', $field)) {
-                $safeField = Utils::printSafeJson($field);
-                throw new InvariantViolation("Introspection result missing field args: {$safeField}.");
+        foreach ($type_introspection['fields'] as $field) {
+            if (!array_key_exists('args', $field)) {
+                $safe_field = Utils::print_safe_json($field);
+                throw new Invariant_Violation("Introspection result missing field args: {$safe_field}.");
             }
-
-            $map[$field['name']] = [
-                'description' => $field['description'],
-                'deprecationReason' => $field['deprecationReason'],
-                'type' => $this->getOutputType($field['type']),
-                'args' => $this->buildInputValueDefMap($field['args']),
-            ];
+            $map[$field['name']] = ['description' => $field['description'], 'deprecationReason' => $field['deprecationReason'], 'type' => $this->get_output_type($field['type']), 'args' => $this->build_input_value_def_map($field['args'])];
         }
-
         // @phpstan-ignore-next-line unless the returned name was numeric, this works
         return $map;
     }
-
     /**
      * @param array<int, array<string, mixed>> $inputValueIntrospections
      *
@@ -496,17 +370,15 @@ class BuildClientSchema
      *
      * @return array<string, UnnamedInputObjectFieldConfig>
      */
-    private function buildInputValueDefMap(array $inputValueIntrospections): array
+    private function build_input_value_def_map(array $input_value_introspections): array
     {
         /** @var array<string, UnnamedInputObjectFieldConfig> $map */
         $map = [];
-        foreach ($inputValueIntrospections as $value) {
-            $map[$value['name']] = $this->buildInputValue($value);
+        foreach ($input_value_introspections as $value) {
+            $map[$value['name']] = $this->build_input_value($value);
         }
-
         return $map;
     }
-
     /**
      * @param array<string, mixed> $inputValueIntrospection
      *
@@ -515,49 +387,31 @@ class BuildClientSchema
      *
      * @return UnnamedInputObjectFieldConfig
      */
-    public function buildInputValue(array $inputValueIntrospection): array
+    public function build_input_value(array $input_value_introspection): array
     {
-        $type = $this->getInputType($inputValueIntrospection['type']);
-
-        $inputValue = [
-            'description' => $inputValueIntrospection['description'],
-            'type' => $type,
-        ];
-
-        if (isset($inputValueIntrospection['defaultValue'])) {
-            $inputValue['defaultValue'] = AST::valueFromAST(
-                Parser::parseValue($inputValueIntrospection['defaultValue']),
-                $type
-            );
+        $type = $this->get_input_type($input_value_introspection['type']);
+        $input_value = ['description' => $input_value_introspection['description'], 'type' => $type];
+        if (isset($input_value_introspection['defaultValue'])) {
+            $input_value['defaultValue'] = AST::value_from_ast(Parser::parse_value($input_value_introspection['defaultValue']), $type);
         }
-
-        return $inputValue;
+        return $input_value;
     }
-
     /**
      * @param array<string, mixed> $directive
      *
      * @throws \Exception
      * @throws InvariantViolation
      */
-    public function buildDirective(array $directive): Directive
+    public function build_directive(array $directive): Directive
     {
-        if (! array_key_exists('args', $directive)) {
-            $safeDirective = Utils::printSafeJson($directive);
-            throw new InvariantViolation("Introspection result missing directive args: {$safeDirective}.");
+        if (!array_key_exists('args', $directive)) {
+            $safe_directive = Utils::print_safe_json($directive);
+            throw new Invariant_Violation("Introspection result missing directive args: {$safe_directive}.");
         }
-
-        if (! array_key_exists('locations', $directive)) {
-            $safeDirective = Utils::printSafeJson($directive);
-            throw new InvariantViolation("Introspection result missing directive locations: {$safeDirective}.");
+        if (!array_key_exists('locations', $directive)) {
+            $safe_directive = Utils::print_safe_json($directive);
+            throw new Invariant_Violation("Introspection result missing directive locations: {$safe_directive}.");
         }
-
-        return new Directive([
-            'name' => $directive['name'],
-            'description' => $directive['description'],
-            'args' => $this->buildInputValueDefMap($directive['args']),
-            'isRepeatable' => $directive['isRepeatable'] ?? false,
-            'locations' => $directive['locations'],
-        ]);
+        return new Directive(['name' => $directive['name'], 'description' => $directive['description'], 'args' => $this->build_input_value_def_map($directive['args']), 'isRepeatable' => $directive['isRepeatable'] ?? false, 'locations' => $directive['locations']]);
     }
 }

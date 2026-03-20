@@ -1,27 +1,20 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Language\AST;
 
-namespace GraphQL\Language\AST;
-
-class ObjectTypeDefinitionNode extends Node implements TypeDefinitionNode
+class Object_Type_Definition_Node extends Node implements Type_Definition_Node
 {
-    public string $kind = NodeKind::OBJECT_TYPE_DEFINITION;
-
-    public NameNode $name;
-
+    public string $kind = Node_Kind::OBJECT_TYPE_DEFINITION;
+    public Name_Node $name;
     /** @var NodeList<NamedTypeNode> */
-    public NodeList $interfaces;
-
+    public Node_List $interfaces;
     /** @var NodeList<DirectiveNode> */
-    public NodeList $directives;
-
+    public Node_List $directives;
     /** @var NodeList<FieldDefinitionNode> */
-    public NodeList $fields;
-
-    public ?StringValueNode $description = null;
-
-    public function getName(): NameNode
+    public Node_List $fields;
+    public ?String_Value_Node $description = null;
+    public function get_name(): Name_Node
     {
         return $this->name;
     }

@@ -1,19 +1,15 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Language\AST;
 
-namespace GraphQL\Language\AST;
-
-class ScalarTypeExtensionNode extends Node implements TypeExtensionNode
+class Scalar_Type_Extension_Node extends Node implements Type_Extension_Node
 {
-    public string $kind = NodeKind::SCALAR_TYPE_EXTENSION;
-
-    public NameNode $name;
-
+    public string $kind = Node_Kind::SCALAR_TYPE_EXTENSION;
+    public Name_Node $name;
     /** @var NodeList<DirectiveNode> */
-    public NodeList $directives;
-
-    public function getName(): NameNode
+    public Node_List $directives;
+    public function get_name(): Name_Node
     {
         return $this->name;
     }

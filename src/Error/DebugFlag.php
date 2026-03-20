@@ -1,13 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
-namespace GraphQL\Error;
+declare (strict_types=1);
+namespace Graph_Ql\Error;
 
 /**
  * Collection of flags for [error debugging](error-handling.md#debugging-tools).
  */
-final class DebugFlag
+final class Debug_Flag
 {
     public const NONE = 0;
     public const INCLUDE_DEBUG_MESSAGE = 1;

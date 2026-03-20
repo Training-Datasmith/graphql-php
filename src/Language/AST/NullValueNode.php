@@ -1,10 +1,9 @@
 <?php
 
-declare(strict_types=1);
+declare (strict_types=1);
+namespace Graph_Ql\Language\AST;
 
-namespace GraphQL\Language\AST;
-
-class NullValueNode extends Node implements ValueNode
+class Null_Value_Node extends Node implements Value_Node
 {
-    public string $kind = NodeKind::NULL;
+    public string $kind = Node_Kind::NULL;
 }

@@ -1,8 +1,7 @@
 <?php
 
-declare(strict_types=1);
-
-namespace GraphQL\Language\AST;
+declare (strict_types=1);
+namespace Graph_Ql\Language\AST;
 
 /**
  * export type TypeExtensionNode =
@@ -13,7 +12,7 @@ namespace GraphQL\Language\AST;
  * | EnumTypeExtensionNode
  * | InputObjectTypeExtensionNode;.
  */
-interface TypeExtensionNode extends TypeSystemExtensionNode
+interface Type_Extension_Node extends Type_System_Extension_Node
 {
-    public function getName(): NameNode;
+    public function get_name(): Name_Node;
 }
